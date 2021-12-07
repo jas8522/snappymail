@@ -2,12 +2,12 @@
 
 namespace RainLoop\Actions;
 
-use \RainLoop\Enumerations\Capa;
-use \RainLoop\Enumerations\PluginPropertyType;
-use \RainLoop\Exceptions\ClientException;
-use \RainLoop\KeyPathHelper;
-use \RainLoop\Notifications;
-use \RainLoop\Utils;
+use RainLoop\Enumerations\Capa;
+use RainLoop\Enumerations\PluginPropertyType;
+use RainLoop\Exceptions\ClientException;
+use RainLoop\KeyPathHelper;
+use RainLoop\Notifications;
+use RainLoop\Utils;
 
 trait Admin
 {
@@ -198,7 +198,7 @@ trait Admin
 		$sToken = $this->getAdminToken();
 		$this->setAdminAuthToken($sToken);
 
-		return $this->DefaultResponse(__FUNCTION__, $sToken ? true : false);
+		return $this->DefaultResponse(__FUNCTION__, $sToken ? $this->AppData(true) : false);
 	}
 
 	public function DoAdminLogout() : array
@@ -225,7 +225,7 @@ trait Admin
 		$sTestMessage = $this->AddressBookProvider(null, true)->Test();
 		return $this->DefaultResponse(__FUNCTION__, array(
 			'Result' => '' === $sTestMessage,
-			'Message' => \MailSo\Base\Utils::Utf8Clear($sTestMessage, '?')
+			'Message' => \MailSo\Base\Utils::Utf8Clear($sTestMessage)
 		));
 	}
 
@@ -247,6 +247,8 @@ trait Admin
 		}
 
 		$passfile = APP_PRIVATE_DATA.'admin_password.txt';
+
+		$oConfig->Set('security', 'admin_totp', $this->GetActionParam('TOTP', ''));
 
 		if ($oConfig->ValidatePassword($sPassword))
 		{
@@ -498,7 +500,7 @@ trait Admin
 			if ($sRep)
 			{
 				$aRep = \json_decode($sRep);
-				$bReal = \is_array($aRep) && 0 < \count($aRep);
+				$bReal = \is_array($aRep) && \count($aRep);
 
 				if ($bReal)
 				{
@@ -514,7 +516,7 @@ trait Admin
 		else if ('' !== $sRep)
 		{
 			$aRep = \json_decode($sRep, false, 10);
-			$bReal = \is_array($aRep) && 0 < \count($aRep);
+			$bReal = \is_array($aRep) && \count($aRep);
 		}
 
 		return \is_array($aRep) ? $aRep : [];
@@ -695,11 +697,16 @@ trait Admin
 
 	public function DoAdminPHPExtensions() : array
 	{
-		$aResult = [];
-		foreach (['curl','gd','gmagick','imagick','intl','ldap','pdo_mysql','pdo_pgsql','pdo_sqlite','xxtea','zip'] as $name) {
+		$aResult = [
+			[
+				'name' => 'PHP ' . PHP_VERSION,
+				'loaded' => true
+			]
+		];
+		foreach (['APCu', 'cURL','GD','Gmagick','Imagick','intl','LDAP','OpenSSL','pdo_mysql','pdo_pgsql','pdo_sqlite','Sodium','XXTEA','Zip'] as $name) {
 			$aResult[] = [
 				'name' => $name,
-				'loaded' => extension_loaded($name)
+				'loaded' => \extension_loaded(\strtolower($name))
 			];
 		}
 		return $this->DefaultResponse(__FUNCTION__, $aResult);

@@ -57,7 +57,11 @@
 		"LABEL_ADV_DATE_MONTH": "do miesiąca",
 		"LABEL_ADV_DATE_3_MONTHS": "do 3 miesięcy",
 		"LABEL_ADV_DATE_6_MONTHS": "do 6 miesięcy",
-		"LABEL_ADV_DATE_YEAR": "do roku"
+		"LABEL_ADV_DATE_YEAR": "do roku",
+		"LABEL_ADV_SUBFOLDERS": "Subfolders",
+		"LABEL_ADV_SUBFOLDERS_NONE": "None",
+		"LABEL_ADV_SUBFOLDERS_SUBTREE": "All",
+		"LABEL_ADV_SUBFOLDERS_SUBTREE_ONE": "One level"
 	},
 	"PREVIEW_POPUP": {
 		"FULLSCREEN": "Pełny ekran",
@@ -330,10 +334,8 @@
 		"NOTIFICATION_ARCHIVE": "Nie został wybrany folder \"Archiwum\", zostanie użyty systemowy folder archiwizacji wiadomości."
 	},
 	"TITLES": {
-		"LOGIN": "Login",
 		"MAILBOX": "Skrzynka Odbiorcza",
-		"SETTINGS": "Ustawienia",
-		"COMPOSE": "Utwórz"
+		"SETTINGS": "Ustawienia"
 	},
 	"UPLOAD": {
 		"ERROR_FILE_IS_TOO_BIG": "Plik jest za duży",
@@ -520,8 +522,8 @@
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Nieprawidłowy token",
 		"AUTH_ERROR": "Błąd autoryzacji",
-		"ACCESS_ERROR": "Błąd dostępu",
 		"CONNECTION_ERROR": "Błąd połączenia z serwerem",
+		"DOMAIN_ALREADY_EXISTS": "Domena już istnieje",
 		"DOMAIN_NOT_ALLOWED": "Domena jest niedozwolona",
 		"ACCOUNT_NOT_ALLOWED": "Konto nie jest dozwolone",
 		"CONTACTS_SYNC_ERROR": "Błąd synchronizacji kontaktów",
@@ -544,17 +546,11 @@
 		"CANT_DELETE_NON_EMPTY_FOLDER": "Nie można usunąć folderu, w którym znajdują się wiadomości",
 		"CANT_SUBSCRIBE_FOLDER": "Nie można zasubskrybować folderu",
 		"CANT_UNSUBSCRIBE_FOLDER": "Nie można usunąć subskrypcji folderu",
-		"CANT_SAVE_SETTINGS": "Nie można zapisać ustawień",
-		"CANT_SAVE_PLUGIN_SETTINGS": "Nie można zapisać ustawień",
-		"DOMAIN_ALREADY_EXISTS": "Domena już istnieje",
-		"CANT_INSTALL_PACKAGE": "Nieudana instalacja pakietu",
-		"CANT_DELETE_PACKAGE": "Nieudane usunięcie pakietu",
-		"INVALID_PLUGIN_PACKAGE": "Nieprawidłowy pakiet rozszerzenia",
-		"UNSUPPORTED_PLUGIN_PACKAGE": "Nieobsługiwany pakiet rozszerzenia",
 		"DEMO_SEND_MESSAGE_ERROR": "Ze względów bezpieczeństwa konto testowe nie ma możliwości przesyłania wiadomości na zewnętrzne adresy e-mail.",
 		"DEMO_ACCOUNT_ERROR": "Ze względów bezpieczeństwa ta akcja jest niedozwolona na tym koncie!",
 		"ACCOUNT_ALREADY_EXISTS": "Konto o takiej nazwie już istnieje",
 		"ACCOUNT_DOES_NOT_EXIST": "Konto nie istnieje",
+		"ACCOUNT_SWITCH_FAILED": "Switch to account \"%EMAIL%\" failed",
 		"MAIL_SERVER_ERROR": "Wystąpił błąd w trakcie połączenia z serwerem poczty",
 		"INVALID_INPUT_ARGUMENT": "Nieprawidłowy argument",
 		"UNKNOWN_ERROR": "Nieznany błąd"

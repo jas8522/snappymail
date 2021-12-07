@@ -22,6 +22,7 @@ export class SecurityAdminSettings /*extends AbstractViewSettings*/ {
 			adminPasswordNew: '',
 			adminPasswordNew2: '',
 			adminPasswordNewError: false,
+			adminTOTP: SettingsGet('AdminTOTP'),
 
 			adminPasswordUpdateError: false,
 			adminPasswordUpdateSuccess: false,
@@ -50,24 +51,24 @@ export class SecurityAdminSettings /*extends AbstractViewSettings*/ {
 			},
 
 			capaOpenPGP: value =>
-				Remote.saveAdminConfig(null, {
+				Remote.saveConfig({
 					CapaOpenPGP: value ? 1 : 0
 				}),
 
 			useLocalProxyForExternalImages: value =>
-				Remote.saveAdminConfig(null, {
+				Remote.saveConfig({
 					UseLocalProxyForExternalImages: value ? 1 : 0
 				}),
 
 			verifySslCertificate: value => {
-				value => value || this.allowSelfSigned(true);
-				Remote.saveAdminConfig(null, {
+				value || this.allowSelfSigned(true);
+				Remote.saveConfig({
 					VerifySslCertificate: value ? 1 : 0
 				});
 			},
 
 			allowSelfSigned: value =>
-				Remote.saveAdminConfig(null, {
+				Remote.saveConfig({
 					AllowSelfSigned: value ? 1 : 0
 				})
 		});
@@ -91,7 +92,7 @@ export class SecurityAdminSettings /*extends AbstractViewSettings*/ {
 		this.adminPasswordUpdateError(false);
 		this.adminPasswordUpdateSuccess(false);
 
-		Remote.saveNewAdminPassword((iError, data) => {
+		Remote.request('AdminPasswordUpdate', (iError, data) => {
 			if (iError) {
 				this.adminPasswordUpdateError(true);
 			} else {
@@ -106,7 +107,8 @@ export class SecurityAdminSettings /*extends AbstractViewSettings*/ {
 		}, {
 			'Login': this.adminLogin(),
 			'Password': this.adminPassword(),
-			'NewPassword': this.adminPasswordNew()
+			'NewPassword': this.adminPasswordNew(),
+			'TOTP': this.adminTOTP()
 		});
 
 		return true;

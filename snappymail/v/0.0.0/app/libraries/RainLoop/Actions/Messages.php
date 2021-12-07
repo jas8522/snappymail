@@ -2,10 +2,10 @@
 
 namespace RainLoop\Actions;
 
-use \RainLoop\Enumerations\Capa;
-use \RainLoop\Exceptions\ClientException;
-use \RainLoop\Model\Account;
-use \RainLoop\Notifications;
+use RainLoop\Enumerations\Capa;
+use RainLoop\Exceptions\ClientException;
+use RainLoop\Model\Account;
+use RainLoop\Notifications;
 
 trait Messages
 {
@@ -16,54 +16,40 @@ trait Messages
 	{
 //		\sleep(1);
 //		throw new ClientException(Notifications::CantGetMessageList);
-
-		$sFolder = '';
-		$iOffset = 0;
-		$iLimit = 20;
-		$sSearch = '';
-		$iUidNext = 0;
-		$bUseThreads = false;
-		$iThreadUid = 0;
-		$sSort = '';
+		$oParams = new \MailSo\Mail\MessageListParams;
 
 		$sRawKey = $this->GetActionParam('RawKey', '');
-		$aValues = $this->getDecodedClientRawKeyValue($sRawKey, 10);
-
+		$aValues = \json_decode(\MailSo\Base\Utils::UrlSafeBase64Decode($sRawKey), true);
 		if ($aValues && 7 < \count($aValues))
 		{
-			$sFolder = (string) $aValues[2];
-			$iOffset = (int) $aValues[3];
-			$iLimit = (int) $aValues[4];
-			$sSearch = (string) $aValues[5];
-			$iUidNext = (int) $aValues[6];
-			$bUseThreads = (bool) $aValues[7];
-
-			if ($bUseThreads)
-			{
-				$iThreadUid = isset($aValues[8]) ? (int) $aValues[8] : 0;
-			}
-
-			$sSort = isset($aValues[9]) ? (string) $aValues[9] : '';
-
 			$this->verifyCacheByKey($sRawKey);
+
+			$oParams->sFolderName = (string) $aValues['Folder'];
+			$oParams->iOffset = (int) $aValues['Offset'];
+			$oParams->iLimit = (int) $aValues['Limit'];
+			$oParams->sSearch = (string) $aValues['Search'];
+			$oParams->sSort = (string) $aValues['Sort'];
+			$oParams->iPrevUidNext = (int) $aValues['UidNext'];
+			$oParams->bUseThreads = !empty($aValues['UseThreads']);
+			if ($oParams->bUseThreads && isset($aValues['ThreadUid'])) {
+				$oParams->iThreadUid = (int) $aValues['ThreadUid'];
+			}
 		}
 		else
 		{
-			$sFolder = $this->GetActionParam('Folder', '');
-			$iOffset = (int) $this->GetActionParam('Offset', 0);
-			$iLimit = (int) $this->GetActionParam('Limit', 10);
-			$sSearch = $this->GetActionParam('Search', '');
-			$sSort = $this->GetActionParam('Sort', '');
-			$iUidNext = (int) $this->GetActionParam('UidNext', 0);
-			$bUseThreads = !empty($this->GetActionParam('UseThreads', '0'));
-
-			if ($bUseThreads)
-			{
-				$iThreadUid = (int) $this->GetActionParam('ThreadUid', '');
+			$oParams->sFolderName = $this->GetActionParam('Folder', '');
+			$oParams->iOffset = (int) $this->GetActionParam('Offset', 0);
+			$oParams->iLimit = (int) $this->GetActionParam('Limit', 10);
+			$oParams->sSearch = $this->GetActionParam('Search', '');
+			$oParams->sSort = $this->GetActionParam('Sort', '');
+			$oParams->iPrevUidNext = (int) $this->GetActionParam('UidNext', 0);
+			$oParams->bUseThreads = !empty($this->GetActionParam('UseThreads', '0'));
+			if ($oParams->bUseThreads) {
+				$oParams->iThreadUid = (int) $this->GetActionParam('ThreadUid', '');
 			}
 		}
 
-		if (0 === strlen($sFolder))
+		if (!\strlen($oParams->sFolderName))
 		{
 			throw new ClientException(Notifications::CantGetMessageList);
 		}
@@ -72,20 +58,14 @@ trait Messages
 
 		try
 		{
-			if (!$this->Config()->Get('labs', 'use_imap_thread', false))
-			{
-				$bUseThreads = false;
+			if (!$this->Config()->Get('labs', 'use_imap_thread', false)) {
+				$oParams->bUseThreads = false;
 			}
 
-			$oMessageList = $this->MailClient()->MessageList(
-				$sFolder, $iOffset, $iLimit, $sSearch, $iUidNext,
-				$this->cacherForUids(),
-				!!$this->Config()->Get('labs', 'use_imap_sort', true),
-				$bUseThreads,
-				$iThreadUid,
-				'',
-				$sSort
-			);
+			$oParams->oCacher = $this->cacherForUids();
+			$oParams->bUseSortIfSupported = !!$this->Config()->Get('labs', 'use_imap_sort', true);
+
+			$oMessageList = $this->MailClient()->MessageList($oParams);
 		}
 		catch (\Throwable $oException)
 		{
@@ -108,7 +88,7 @@ trait Messages
 		$iMessageUid = $this->GetActionParam('MessageUid', 0);
 
 		$sDraftFolder = $this->GetActionParam('SaveFolder', '');
-		if (0 === strlen($sDraftFolder))
+		if (!\strlen($sDraftFolder))
 		{
 			throw new ClientException(Notifications::UnknownError);
 		}
@@ -144,7 +124,7 @@ trait Messages
 
 				$mResult = true;
 
-				if (0 < strlen($sMessageFolder) && 0 < $iMessageUid)
+				if (\strlen($sMessageFolder) && 0 < $iMessageUid)
 				{
 					$this->MailClient()->MessageDelete($sMessageFolder, array($iMessageUid), true, true);
 				}
@@ -209,7 +189,7 @@ trait Messages
 									break;
 								case 'forward':
 									$sForwardedFlag = $this->Config()->Get('labs', 'imap_forwarded_flag', '');
-									if (0 < strlen($sForwardedFlag))
+									if (\strlen($sForwardedFlag))
 									{
 										$this->MailClient()->MessageSetFlag($sDraftInfoFolder, array($sDraftInfoUid), true,
 											$sForwardedFlag, true);
@@ -223,7 +203,7 @@ trait Messages
 						}
 					}
 
-					if (0 < \strlen($sSentFolder))
+					if (\strlen($sSentFolder))
 					{
 						try
 						{
@@ -277,7 +257,7 @@ trait Messages
 
 					$this->deleteMessageAttachmnets($oAccount);
 
-					if (0 < \strlen($sDraftFolder) && 0 < $iDraftUid)
+					if (\strlen($sDraftFolder) && 0 < $iDraftUid)
 					{
 						try
 						{
@@ -321,12 +301,12 @@ trait Messages
 					}
 				}
 
-				if (0 < \count($aArrayToFrec))
+				if (\count($aArrayToFrec))
 				{
 					$oSettings = $this->SettingsProvider()->Load($oAccount);
 
 					$this->AddressBookProvider($oAccount)->IncFrec(
-						$oAccount->ParentEmailHelper(), \array_values($aArrayToFrec),
+						$this->GetMainEmail($oAccount), \array_values($aArrayToFrec),
 							!!$oSettings->GetConf('ContactsAutosave',
 								!!$oConfig->Get('defaults', 'contacts_autosave', true)));
 				}
@@ -377,7 +357,7 @@ trait Messages
 
 						$this->Cacher($oAccount)->Set(\RainLoop\KeyPathHelper::ReadReceiptCache($oAccount->Email(), $sFolderFullName, $iUid), '1');
 
-						if (0 < \strlen($sFolderFullName) && 0 < $iUid)
+						if (\strlen($sFolderFullName) && 0 < $iUid)
 						{
 							try
 							{
@@ -447,8 +427,8 @@ trait Messages
 		$sFolder = '';
 		$iUid = 0;
 
-		$aValues = $this->getDecodedClientRawKeyValue($sRawKey, 4);
-		if ($aValues && 4 === count($aValues))
+		$aValues = \json_decode(\MailSo\Base\Utils::UrlSafeBase64Decode($sRawKey), true);
+		if ($aValues && 2 <= \count($aValues))
 		{
 			$sFolder = (string) $aValues[0];
 			$iUid = (int) $aValues[1];
@@ -636,7 +616,7 @@ trait Messages
 		try
 		{
 			$aAttachments = $this->GetActionParam('Attachments', array());
-			if (\is_array($aAttachments) && 0 < \count($aAttachments))
+			if (\is_array($aAttachments) && \count($aAttachments))
 			{
 				$mResult = array();
 				foreach ($aAttachments as $sAttachment)
@@ -709,15 +689,12 @@ trait Messages
 					$this->Plugins()->RunHook('filter.smtp-hidden-rcpt', array($oAccount, $oMessage, &$aHiddenRcpt));
 				}
 
-				$bUsePhpMail = $oAccount->Domain()->OutUsePhpMail();
-
 				$oSmtpClient = new \MailSo\Smtp\SmtpClient();
 				$oSmtpClient->SetLogger($this->Logger());
 				$oSmtpClient->SetTimeOuts(10, (int) \RainLoop\Api::Config()->Get('labs', 'smtp_timeout', 60));
 
-				$oAccount->OutConnectAndLoginHelper(
-					$this->Plugins(), $oSmtpClient, $this->Config(), $bUsePhpMail
-				);
+				$bUsePhpMail = false;
+				$oAccount->OutConnectAndLoginHelper($this->Plugins(), $oSmtpClient, $this->Config(), $bUsePhpMail);
 
 				if ($bUsePhpMail)
 				{
@@ -781,7 +758,7 @@ trait Messages
 						$oSmtpClient->Rcpt($oEmail->GetEmail(), $bDsn);
 					}
 
-					if ($bAddHiddenRcpt && \is_array($aHiddenRcpt) && 0 < \count($aHiddenRcpt))
+					if ($bAddHiddenRcpt && \is_array($aHiddenRcpt) && \count($aHiddenRcpt))
 					{
 						foreach ($aHiddenRcpt as $sEmail)
 						{
@@ -849,22 +826,6 @@ trait Messages
 		}
 
 		return $this->TrueResponse($sResponseFunction);
-	}
-
-	private function getDecodedClientRawKeyValue(string $sRawKey, ?int $iLenCache = null) : ?array
-	{
-		if (!empty($sRawKey))
-		{
-			$sRawKey = \MailSo\Base\Utils::UrlSafeBase64Decode($sRawKey);
-			$aValues = explode("\x0", $sRawKey);
-
-			if (null === $iLenCache || $iLenCache  === count($aValues))
-			{
-				return $aValues;
-			}
-		}
-
-		return null;
 	}
 
 	private function deleteMessageAttachmnets(Account $oAccount) : void
@@ -1044,27 +1005,27 @@ trait Messages
 			$oMessage->SetDraftInfo($aDraftInfo[0], $aDraftInfo[1], $aDraftInfo[2]);
 		}
 
-		if (0 < \strlen($sInReplyTo))
+		if (\strlen($sInReplyTo))
 		{
 			$oMessage->SetInReplyTo($sInReplyTo);
 		}
 
-		if (0 < \strlen($sReferences))
+		if (\strlen($sReferences))
 		{
 			$oMessage->SetReferences($sReferences);
 		}
 
-		$aFoundedCids = array();
+		$aFoundCids = array();
 		$mFoundDataURL = array();
-		$aFoundedContentLocationUrls = array();
+		$aFoundContentLocationUrls = array();
 
 		$sTextToAdd = $bTextIsHtml ?
-			\MailSo\Base\HtmlUtils::BuildHtml($sText, $aFoundedCids, $mFoundDataURL, $aFoundedContentLocationUrls) : $sText;
+			\MailSo\Base\HtmlUtils::BuildHtml($sText, $aFoundCids, $mFoundDataURL, $aFoundContentLocationUrls) : $sText;
 
 		$this->Plugins()->RunHook($bTextIsHtml ? 'filter.message-html' : 'filter.message-plain',
 			array($oAccount, $oMessage, &$sTextToAdd));
 
-		if ($bTextIsHtml && 0 < \strlen($sTextToAdd))
+		if ($bTextIsHtml && \strlen($sTextToAdd))
 		{
 			$sTextConverted = \MailSo\Base\HtmlUtils::ConvertHtmlToPlain($sTextToAdd);
 			$this->Plugins()->RunHook('filter.message-plain', array($oAccount, $oMessage, &$sTextConverted));
@@ -1089,7 +1050,7 @@ trait Messages
 
 					$oMessage->Attachments()->append(
 						new \MailSo\Mime\Attachment($rResource, $sFileName, $iFileSize, $bIsInline,
-							\in_array(trim(trim($sCID), '<>'), $aFoundedCids),
+							\in_array(trim(trim($sCID), '<>'), $aFoundCids),
 							$sCID, array(), $sContentLocation
 						)
 					);
@@ -1097,7 +1058,7 @@ trait Messages
 			}
 		}
 
-		if ($mFoundDataURL && \is_array($mFoundDataURL) && 0 < \count($mFoundDataURL))
+		if ($mFoundDataURL && \is_array($mFoundDataURL) && \count($mFoundDataURL))
 		{
 			foreach ($mFoundDataURL as $sCidHash => $sDataUrlString)
 			{

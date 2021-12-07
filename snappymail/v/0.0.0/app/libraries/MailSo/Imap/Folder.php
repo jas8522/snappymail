@@ -23,12 +23,7 @@ class Folder
 	/**
 	 * @var string
 	 */
-	private $sNameRaw;
-
-	/**
-	 * @var string
-	 */
-	private $sFullNameRaw;
+	private $sFullName;
 
 	/**
 	 * @var string
@@ -48,15 +43,21 @@ class Folder
 	/**
 	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
 	 */
-	function __construct(string $sFullNameRaw, string $sDelimiter = null, array $aFlags = array())
+	function __construct(string $sFullName, string $sDelimiter = null, array $aFlags = array())
 	{
-		if (!\strlen($sFullNameRaw)) {
+		if (!\strlen($sFullName)) {
 			throw new \MailSo\Base\Exceptions\InvalidArgumentException;
 		}
-		$this->sFullNameRaw = $sFullNameRaw;
-
+		$this->sFullName = $sFullName;
 		$this->setDelimiter($sDelimiter);
 		$this->setFlags($aFlags);
+/*
+		// RFC 5738
+		if (\in_array('\\noutf8', $this->aFlagsLowerCase)) {
+		}
+		if (\in_array('\\utf8only', $this->aFlagsLowerCase)) {
+		}
+*/
 	}
 
 	public function setFlags(array $aFlags) : void
@@ -66,24 +67,22 @@ class Folder
 
 	public function setDelimiter(?string $sDelimiter) : void
 	{
-		$sDelimiter = 'NIL' === \strtoupper($sDelimiter) ? null : $sDelimiter;
 		$this->sDelimiter = $sDelimiter;
-		if ($sDelimiter) {
-			$aNames = \explode($this->sDelimiter, $this->sFullNameRaw);
-			$this->sNameRaw = \end($aNames);
-		} else {
-			$this->sNameRaw = $this->sFullNameRaw;
+	}
+
+	public function Name() : string
+	{
+		$sNameRaw = $this->sFullName;
+		if ($this->sDelimiter) {
+			$aNames = \explode($this->sDelimiter, $sNameRaw);
+			return \end($aNames);
 		}
+		return $sNameRaw;
 	}
 
-	public function NameRaw() : string
+	public function FullName() : string
 	{
-		return $this->sNameRaw;
-	}
-
-	public function FullNameRaw() : string
-	{
-		return $this->sFullNameRaw;
+		return $this->sFullName;
 	}
 
 	public function Delimiter() : ?string
@@ -103,7 +102,7 @@ class Folder
 
 	public function IsInbox() : bool
 	{
-		return 'INBOX' === \strtoupper($this->sFullNameRaw) || \in_array('\\inbox', $this->aFlagsLowerCase);
+		return 'INBOX' === \strtoupper($this->sFullName) || \in_array('\\inbox', $this->aFlagsLowerCase);
 	}
 
 	/**
@@ -112,6 +111,11 @@ class Folder
 	public function SetMetadata(string $sName, string $sData) : void
 	{
 		$this->aMetadata[$sName] = $sData;
+	}
+
+	public function SetAllMetadata(array $aMetadata) : void
+	{
+		$this->aMetadata = $aMetadata;
 	}
 
 	/**

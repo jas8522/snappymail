@@ -18,44 +18,11 @@ namespace MailSo\Mail;
 class FolderCollection extends \MailSo\Base\Collection
 {
 	/**
-	 * @var string
-	 */
-	public $Namespace = '';
-
-	/**
-	 * @var string
-	 */
-	public $FoldersHash = '';
-
-	/**
-	 * @var bool
-	 */
-	public $IsMetadataSupported = false;
-
-	/**
-	 * @var bool
-	 */
-	public $IsThreadsSupported = false;
-
-	/**
-	 * @var bool
-	 */
-	public $IsSortSupported = false;
-
-	/**
-	 * @var bool
-	 */
-	public $IsListStatusSupported = false;
-
-	/**
 	 * @var bool
 	 */
 	public $Optimized = false;
 
-	/**
-	 * @var array
-	 */
-	public $SystemFolders = array();
+	public $TotalCount = 0;
 
 	public function append($oFolder, bool $bToTop = false) : void
 	{
@@ -63,54 +30,29 @@ class FolderCollection extends \MailSo\Base\Collection
 		parent::append($oFolder, $bToTop);
 	}
 
-	public function GetByFullNameRaw(string $sFullNameRaw) : ?Folder
+	public function GetByFullName(string $sFullName) : ?Folder
 	{
-		$mResult = null;
-		foreach ($this as $oFolder)
-		{
-			if ($oFolder->FullNameRaw() === $sFullNameRaw)
-			{
-				$mResult = $oFolder;
-				break;
+		foreach ($this as $oFolder) {
+			if ($oFolder->FullName() === $sFullName) {
+				return $oFolder;
 			}
-			else if ($oFolder->HasSubFolders())
-			{
-				$mResult = $oFolder->SubFolders(true)->GetByFullNameRaw($sFullNameRaw);
-				if ($mResult)
-				{
-					break;
+
+			if ($oFolder->HasSubFolders()) {
+				$mResult = $oFolder->SubFolders(true)->GetByFullName($sFullName);
+				if ($mResult) {
+					return $mResult;
 				}
 			}
 		}
 
-		return $mResult;
-	}
-
-	public function CountRec() : int
-	{
-		$iResult = $this->Count();
-		foreach ($this as $oFolder)
-		{
-			if ($oFolder)
-			{
-				$oSub = $oFolder->SubFolders();
-				$iResult += $oSub ? $oSub->CountRec() : 0;
-			}
-		}
-
-		return $iResult;
-	}
-
-	public function GetNamespace() : string
-	{
-		return $this->Namespace;
+		return null;
 	}
 
 	public function FindDelimiter() : string
 	{
 		$sDelimiter = '/';
 
-		$oFolder = $this->GetByFullNameRaw('INBOX');
+		$oFolder = $this->GetByFullName('INBOX');
 		if (!$oFolder && isset($this[0]))
 		{
 			$oFolder = $this[0];
@@ -119,18 +61,11 @@ class FolderCollection extends \MailSo\Base\Collection
 		return $oFolder ? $oFolder->Delimiter() : '/';
 	}
 
-	public function SetNamespace(string $sNamespace) : self
-	{
-		$this->Namespace = $sNamespace;
-
-		return $this;
-	}
-
 	public function AddWithPositionSearch(Folder $oMailFolder) : void
 	{
 		foreach ($this as $oItemFolder)
 		{
-			if (0 === \strpos($oMailFolder->FullNameRaw(), $oItemFolder->FullNameRaw().$oItemFolder->Delimiter()))
+			if (\str_starts_with($oMailFolder->FullName(), $oItemFolder->FullName().$oItemFolder->Delimiter()))
 			{
 				$oItemFolder->SubFolders(true)->AddWithPositionSearch($oMailFolder);
 				return;
@@ -138,20 +73,5 @@ class FolderCollection extends \MailSo\Base\Collection
 		}
 
 		$this->append($oMailFolder);
-	}
-
-	public function jsonSerialize()
-	{
-		return \array_merge(parent::jsonSerialize(), array(
-			'Namespace' => $this->GetNamespace(),
-			'FoldersHash' => $this->FoldersHash ?: '',
-			'IsMetadataSupported' => $this->IsMetadataSupported,
-			'IsThreadsSupported' => $this->IsThreadsSupported,
-			'IsSortSupported' => $this->IsSortSupported,
-			'IsListStatusSupported' => $this->IsListStatusSupported,
-			'Optimized' => $this->Optimized,
-			'CountRec' => $this->CountRec(),
-			'SystemFolders' => empty($this->SystemFolders) ? null : $this->SystemFolders
-		));
 	}
 }

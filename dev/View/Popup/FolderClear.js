@@ -11,6 +11,7 @@ import { AbstractViewPopup } from 'Knoin/AbstractViews';
 class FolderClearPopupView extends AbstractViewPopup {
 	constructor() {
 		super('FolderClear');
+		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			selectedFolder: null,
@@ -51,9 +52,9 @@ class FolderClearPopupView extends AbstractViewPopup {
 			folderToClear.messageCountAll(0);
 			folderToClear.messageCountUnread(0);
 
-			setFolderHash(folderToClear.fullNameRaw, '');
+			setFolderHash(folderToClear.fullName, '');
 
-			Remote.folderClear(iError => {
+			Remote.request('FolderClear', iError => {
 				this.clearingProcess(false);
 				if (iError) {
 					this.clearingError(getNotification(iError));
@@ -61,20 +62,15 @@ class FolderClearPopupView extends AbstractViewPopup {
 					rl.app.reloadMessageList(true);
 					this.cancelCommand();
 				}
-			}, folderToClear.fullNameRaw);
+			}, {
+				Folder: folderToClear.fullName
+			});
 		}
-	}
-
-	clearPopup() {
-		this.clearingProcess(false);
-		this.selectedFolder(null);
 	}
 
 	onShow(folder) {
-		this.clearPopup();
-		if (folder) {
-			this.selectedFolder(folder);
-		}
+		this.clearingProcess(false);
+		this.selectedFolder(folder || null);
 	}
 }
 

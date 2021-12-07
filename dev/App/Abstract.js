@@ -1,9 +1,7 @@
 import ko from 'ko';
 
-import {
-	elementById,
-	Settings
-} from 'Common/Globals';
+import { Settings, SettingsGet } from 'Common/Globals';
+import { changeTheme } from 'Common/Utils';
 
 import { logoutLink } from 'Common/Links';
 import { i18nToNodes, initOnStartOrLangChange } from 'Common/Translator';
@@ -25,16 +23,25 @@ export class AbstractApp {
 		this.Remote = Remote;
 	}
 
-	logoutReload(close = false) {
+	logoutReload() {
 		const url = logoutLink();
-
-		close && window.close && window.close();
 
 		if (location.href !== url) {
 			setTimeout(() => (Settings.app('inIframe') ? parent : window).location.href = url, 100);
 		} else {
 			rl.route.reload();
 		}
+	}
+
+	refresh() {
+//		rl.adminArea() || !translatorReload(false, );
+		rl.adminArea() || (
+			LanguageStore.language(SettingsGet('Language'))
+			& ThemeStore.populate()
+			& changeTheme(SettingsGet('Theme'))
+		);
+
+		this.start();
 	}
 
 	bootstart() {
@@ -68,14 +75,7 @@ export class AbstractApp {
 
 		LanguageStore.populate();
 		ThemeStore.populate();
-	}
 
-	/**
-	 * @returns {void}
-	 */
-	hideLoading() {
-		elementById('rl-content').hidden = false;
-		elementById('rl-loading').remove();
+		this.start();
 	}
-
 }

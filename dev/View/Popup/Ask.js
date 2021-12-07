@@ -7,6 +7,7 @@ import { AbstractViewPopup } from 'Knoin/AbstractViews';
 class AskPopupView extends AbstractViewPopup {
 	constructor() {
 		super('Ask');
+		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			askDesc: '',
@@ -19,15 +20,6 @@ class AskPopupView extends AbstractViewPopup {
 
 		this.bFocusYesOnShow = true;
 		this.bDisabeCloseOnEsc = true;
-	}
-
-	clearPopup() {
-		this.askDesc('');
-		this.yesButton(i18n('POPUPS_ASK/BUTTON_YES'));
-		this.noButton(i18n('POPUPS_ASK/BUTTON_NO'));
-
-		this.fYesAction = null;
-		this.fNoAction = null;
 	}
 
 	yesClick() {
@@ -52,21 +44,11 @@ class AskPopupView extends AbstractViewPopup {
 	 * @returns {void}
 	 */
 	onShow(askDesc, fYesFunc = null, fNoFunc = null, yesButton = '', noButton = '', isFocusYesOnShow = true) {
-		this.clearPopup();
-
-		this.fYesAction = fYesFunc || null;
-		this.fNoAction = fNoFunc || null;
-
 		this.askDesc(askDesc || '');
-
-		if (yesButton) {
-			this.yesButton(yesButton);
-		}
-
-		if (noButton) {
-			this.noButton(noButton);
-		}
-
+		this.yesButton(yesButton || i18n('POPUPS_ASK/BUTTON_YES'));
+		this.noButton(noButton || i18n('POPUPS_ASK/BUTTON_NO'));
+		this.fYesAction = fYesFunc;
+		this.fNoAction = fNoFunc;
 		this.bFocusYesOnShow = !!isFocusYesOnShow;
 	}
 

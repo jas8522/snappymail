@@ -132,7 +132,7 @@ ko.bindingHandlers.dropmessages = {
 					if (folder && folder.collapsed()) {
 						dragTimer.start(() => {
 							folder.collapsed(false);
-							rl.app.setExpandedFolder(folder.fullNameHash, true);
+							rl.app.setExpandedFolder(folder.fullName, true);
 						}, 500);
 					}
 				}
@@ -145,7 +145,7 @@ ko.bindingHandlers.dropmessages = {
 			if ('messages' === getDragAction(e) && ['move','copy'].includes(e.dataTransfer.effectAllowed)) {
 				let data = dragData.data;
 				if (folder && data && data.folder && isArray(data.uids)) {
-					rl.app.moveMessagesToFolder(data.folder, data.uids, folder.fullNameRaw, data.copy && e.ctrlKey);
+					rl.app.moveMessagesToFolder(data.folder, data.uids, folder.fullName, data.copy && e.ctrlKey);
 				}
 			}
 		});

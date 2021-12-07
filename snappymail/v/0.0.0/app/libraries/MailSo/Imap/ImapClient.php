@@ -18,6 +18,10 @@ namespace MailSo\Imap;
 class ImapClient extends \MailSo\Net\NetClient
 {
 	use Traits\ResponseParser;
+//	use Commands\ACL;
+	use Commands\Messages;
+	use Commands\Metadata;
+	use Commands\Quota;
 
 	const
 		TAG_PREFIX = 'TAG';
@@ -38,6 +42,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	private $oCurrentFolderInfo = null;
 
 	/**
+	 * Used by \MailSo\Mail\MailClient::MessageMimeStream
 	 * @var array
 	 */
 	private $aFetchCallbacks;
@@ -61,6 +66,11 @@ class ImapClient extends \MailSo\Net\NetClient
 	 * @var bool
 	 */
 	public $__FORCE_SELECT_ON_EXAMINE__ = false;
+
+	/**
+	 * @var bool
+	 */
+	private $UTF8 = false;
 
 	function __construct()
 	{
@@ -240,11 +250,16 @@ class ImapClient extends \MailSo\Net\NetClient
 				$this->SendRequestGetResponse('PROXYAUTH', array($this->EscapeString($sProxyAuthUser)));
 			}
 /*
-			// RFC 9051
+			// TODO: RFC 9051
 			if ($this->IsSupported('IMAP4rev2')) {
 				$this->SendRequestGetResponse('ENABLE', array('IMAP4rev1'));
 			}
 */
+			// RFC 6855 || RFC 5738
+			$this->UTF8 = $this->IsSupported('UTF8=ONLY') || $this->IsSupported('UTF8=ACCEPT');
+			if ($this->UTF8) {
+				$this->SendRequestGetResponse('ENABLE', array('UTF8=ACCEPT'));
+			}
 		}
 		catch (Exceptions\NegativeResponseException $oException)
 		{
@@ -287,8 +302,10 @@ class ImapClient extends \MailSo\Net\NetClient
 	 */
 	public function Capability() : ?array
 	{
-		$this->aCapabilityItems = $this->SendRequestGetResponse('CAPABILITY')
-			->getCapabilityResult();
+		if (!$this->aCapabilityItems) {
+			$this->aCapabilityItems = $this->SendRequestGetResponse('CAPABILITY')
+				->getCapabilityResult();
+		}
 		return $this->aCapabilityItems;
 	}
 
@@ -308,11 +325,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	public function IsSupported(string $sExtentionName) : bool
 	{
 		$sExtentionName = \trim($sExtentionName);
-		if ($sExtentionName && null === $this->aCapabilityItems) {
-			$this->aCapabilityItems = $this->Capability();
-		}
-
-		return $sExtentionName && \in_array(\strtoupper($sExtentionName), $this->aCapabilityItems ?: []);
+		return $sExtentionName && \in_array(\strtoupper($sExtentionName), $this->Capability() ?: []);
 	}
 
 	/**
@@ -321,17 +334,45 @@ class ImapClient extends \MailSo\Net\NetClient
 	 */
 	public function GetNamespace() : ?NamespaceResult
 	{
-		if (!$this->IsSupported('NAMESPACE'))
-		{
+		if (!$this->IsSupported('NAMESPACE')) {
 			return null;
 		}
 
 		try {
-			return $this->SendRequestGetResponse('NAMESPACE')->getNamespaceResult();
+			$oResponseCollection = $this->SendRequestGetResponse('NAMESPACE');
+			foreach ($oResponseCollection as $oResponse) {
+				if (Enumerations\ResponseType::UNTAGGED === $oResponse->ResponseType
+				 && 'NAMESPACE' === $oResponse->StatusOrIndex)
+				{
+					$oReturn = new NamespaceResult;
+					$oReturn->InitByImapResponse($oResponse);
+					return $oReturn;
+				}
+			}
+			throw new Exceptions\ResponseException;
 		} catch (\Throwable $e) {
 			$this->writeLogException($e, \MailSo\Log\Enumerations\Type::ERROR);
 			throw $e;
 		}
+	}
+
+	/**
+	 * RFC 7889
+	 * APPENDLIMIT=<number> indicates that the IMAP server has the same upload limit for all mailboxes.
+	 * APPENDLIMIT without any value indicates that the IMAP server supports this extension,
+	 * and that the client will need to discover upload limits for each mailbox,
+	 * as they might differ from mailbox to mailbox.
+	 */
+	public function AppendLimit() : ?int
+	{
+		if ($this->Capability()) {
+			foreach ($this->aCapabilityItems as $string) {
+				if ('APPENDLIMIT=' === \substr($string, 0, 12)) {
+					return (int) \substr($string, 12);
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -352,7 +393,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	public function FolderCreate(string $sFolderName) : self
 	{
 		$this->SendRequestGetResponse('CREATE',
-			array($this->EscapeString($sFolderName)));
+			array($this->EscapeFolderName($sFolderName)));
 		return $this;
 	}
 
@@ -366,7 +407,7 @@ class ImapClient extends \MailSo\Net\NetClient
 		// Uncomment will work issue #124 ?
 //		$this->selectOrExamineFolder($sFolderName, true);
 		$this->SendRequestGetResponse('DELETE',
-			array($this->EscapeString($sFolderName)));
+			array($this->EscapeFolderName($sFolderName)));
 //		$this->FolderCheck();
 //		$this->FolderUnSelect();
 		return $this;
@@ -380,7 +421,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	public function FolderSubscribe(string $sFolderName) : self
 	{
 		$this->SendRequestGetResponse('SUBSCRIBE',
-			array($this->EscapeString($sFolderName)));
+			array($this->EscapeFolderName($sFolderName)));
 		return $this;
 	}
 
@@ -392,7 +433,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	public function FolderUnSubscribe(string $sFolderName) : self
 	{
 		$this->SendRequestGetResponse('UNSUBSCRIBE',
-			array($this->EscapeString($sFolderName)));
+			array($this->EscapeFolderName($sFolderName)));
 		return $this;
 	}
 
@@ -404,8 +445,8 @@ class ImapClient extends \MailSo\Net\NetClient
 	public function FolderRename(string $sOldFolderName, string $sNewFolderName) : self
 	{
 		$this->SendRequestGetResponse('RENAME', array(
-			$this->EscapeString($sOldFolderName),
-			$this->EscapeString($sNewFolderName)));
+			$this->EscapeFolderName($sOldFolderName),
+			$this->EscapeFolderName($sNewFolderName)));
 		return $this;
 	}
 
@@ -416,16 +457,40 @@ class ImapClient extends \MailSo\Net\NetClient
 	 */
 	public function FolderStatus(string $sFolderName, array $aStatusItems) : ?array
 	{
+		if (!\count($aStatusItems)) {
+			return null;
+		}
 		$oFolderInfo = $this->oCurrentFolderInfo;
+		$bReselect = false;
+		$bWritable = false;
 		if ($oFolderInfo && $sFolderName === $oFolderInfo->FolderName) {
-			$aResult = $oFolderInfo->getStatusItems();
-			// SELECT or EXAMINE command then UNSEEN is the message sequence number of the first unseen message
-			$aResult['UNSEEN'] = $this->simpleESearchOrESortHelper(false, 'UNSEEN', ['COUNT'])['COUNT'];
-		} else {
-			$aResult = \count($aStatusItems)
-				? $this->SendRequestGetResponse('STATUS', array($this->EscapeString($sFolderName), $aStatusItems))
-					->getStatusFolderInformationResult()
-				: null;
+			/**
+			 * There's a long standing IMAP CLIENTBUG where STATUS command is executed
+			 * after SELECT/EXAMINE on same folder (it should not).
+			 * So we must unselect the folder to be able to get the APPENDLIMIT and UNSEEN.
+			 */
+/*
+			if ($this->IsSupported('ESEARCH')) {
+				$aResult = $oFolderInfo->getStatusItems();
+				// SELECT or EXAMINE command then UNSEEN is the message sequence number of the first unseen message
+				$aResult['UNSEEN'] = $this->MessageSimpleESearch('UNSEEN', ['COUNT'])['COUNT'];
+				return $aResult;
+			}
+*/
+			$bWritable = $oFolderInfo->IsWritable;
+			$bReselect = true;
+			$this->FolderUnSelect();
+		}
+
+		$oResponseCollection = $this->SendRequestGetResponse('STATUS', array($this->EscapeFolderName($sFolderName), $aStatusItems));
+		$oInfo = new FolderInformation($sFolderName, false);
+		foreach ($oResponseCollection as $oResponse) {
+			$oInfo->setStatusFromResponse($oResponse);
+		}
+		$aResult = $oInfo->getStatusItems();
+
+		if ($bReselect) {
+			$this->selectOrExamineFolder($sFolderName, $bWritable, false);
 		}
 		return $aResult;
 	}
@@ -434,7 +499,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	 * @throws \MailSo\Net\Exceptions\Exception
 	 * @throws \MailSo\Imap\Exceptions\Exception
 	 */
-	private function specificFolderList(bool $bIsSubscribeList, string $sParentFolderName = '', string $sListPattern = '*', bool $bUseListStatus = false) : array
+	protected function specificFolderList(bool $bIsSubscribeList, string $sParentFolderName = '', string $sListPattern = '*', bool $bUseListStatus = false) : array
 	{
 		$sCmd = 'LIST';
 
@@ -453,44 +518,77 @@ class ImapClient extends \MailSo\Net\NetClient
 			} else {
 //				$aParameters[0] = '()';
 			}
+			// RFC 6154
+			if ($this->IsSupported('SPECIAL-USE')) {
+				$aReturnParams[] = 'SPECIAL-USE';
+			}
 		}
 
-		$aParameters[] = $this->EscapeString($sParentFolderName);
+		$aParameters[] = $this->EscapeFolderName($sParentFolderName);
 		$aParameters[] = $this->EscapeString(\strlen(\trim($sListPattern)) ? $sListPattern : '*');
 
+		// RFC 5819
 		if ($bUseListStatus && !$bIsSubscribeList && $this->IsSupported('LIST-STATUS'))
 		{
-			// RFC 5819
 			$aL = array(
 				Enumerations\FolderStatus::MESSAGES,
 				Enumerations\FolderStatus::UNSEEN,
 				Enumerations\FolderStatus::UIDNEXT
 			);
-
+			// RFC 4551
 			if ($this->IsSupported('CONDSTORE')) {
 				$aL[] = Enumerations\FolderStatus::HIGHESTMODSEQ;
+			}
+			// RFC 7889
+			if ($this->IsSupported('APPENDLIMIT')) {
+				$aL[] = Enumerations\FolderStatus::APPENDLIMIT;
+			}
+			// RFC 8474
+			if ($this->IsSupported('OBJECTID')) {
+				$aTypes[] = Enumerations\FolderStatus::MAILBOXID;
 			}
 
 			$aReturnParams[] = 'STATUS';
 			$aReturnParams[] = $aL;
 		}
-
+/*
+		// RFC 5738
+		if ($this->UTF8) {
+			$aReturnParams[] = 'UTF8'; // 'UTF8ONLY';
+		}
+*/
 		if ($aReturnParams) {
 			$aParameters[] = 'RETURN';
 			$aParameters[] = $aReturnParams;
 		}
 
-		$aReturn = $this->SendRequestGetResponse($sCmd, $aParameters)->getFoldersResult($sCmd);
+		$this->SendRequest($sCmd, $aParameters);
+		$bPassthru = false;
+		if ($bPassthru) {
+			$this->streamResponse();
+		} else {
+			$aReturn = $this->getResponse()->getFoldersResult($sCmd, $this);
+		}
 
 		// RFC 5464
 		if (!$bIsSubscribeList && $this->IsSupported('METADATA')) {
-			foreach ($aReturn as $oFolder) {
-				try {
-					foreach ($this->getMetadata($oFolder->FullNameRaw(), ['/shared', '/private'], ['DEPTH'=>'infinity']) as $key => $value) {
-						$oFolder->SetMetadata($key, $value);
+			// Dovecot supports fetching all METADATA at once
+			$aMetadata = $this->getAllMetadata();
+			if ($aMetadata) {
+				foreach ($aReturn as $oFolder) {
+					if (isset($aMetadata[$oFolder->FullName()])) {
+						$oFolder->SetAllMetadata($aMetadata[$oFolder->FullName()]);
 					}
-				} catch (\Throwable $e) {
-					// Ignore error
+				}
+			} else {
+				foreach ($aReturn as $oFolder) {
+					try {
+						$oFolder->SetAllMetadata(
+							$this->getMetadata($oFolder->FullName(), ['/shared', '/private'], ['DEPTH'=>'infinity'])
+						);
+					} catch (\Throwable $e) {
+						// Ignore error
+					}
 				}
 			}
 		}
@@ -531,7 +629,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	 */
 	public function FolderHierarchyDelimiter(string $sFolderName = '') : ?string
 	{
-		$oResponse = $this->SendRequestGetResponse('LIST', ['""', $this->EscapeString($sParentFolderName)]);
+		$oResponse = $this->SendRequestGetResponse('LIST', ['""', $this->EscapeFolderName($sFolderName)]);
 		return ('LIST' === $oResponse[0]->ResponseList[1]) ? $oResponse[0]->ResponseList[3] : null;
 	}
 
@@ -557,12 +655,58 @@ class ImapClient extends \MailSo\Net\NetClient
 			throw new \MailSo\Base\Exceptions\InvalidArgumentException;
 		}
 
+		$aSelectParams = array();
+/*
+		if ($this->IsSupported('CONDSTORE')) {
+			$aSelectParams[] = 'CONDSTORE';
+		}
+		// RFC 5738
+		if ($this->UTF8) {
+			$aSelectParams[] = 'UTF8';
+		}
+*/
+
+		$aParams = array(
+			$this->EscapeFolderName($sFolderName)
+		);
+		if ($aSelectParams) {
+			$aParams[] = $aSelectParams;
+		}
+
 		/**
 		 * IMAP4rev2 SELECT/EXAMINE are now required to return an untagged LIST response.
 		 */
-		$this->oCurrentFolderInfo = $this->SendRequestGetResponse($bIsWritable ? 'SELECT' : 'EXAMINE',
-			array($this->EscapeString($sFolderName)))
-			->getCurrentFolderInformation($sFolderName, $bIsWritable);
+		$oResponseCollection = $this->SendRequestGetResponse($bIsWritable ? 'SELECT' : 'EXAMINE', $aParams);
+		$oResult = new FolderInformation($sFolderName, $bIsWritable);
+		foreach ($oResponseCollection as $oResponse) {
+			if (Enumerations\ResponseType::UNTAGGED === $oResponse->ResponseType) {
+				if (!$oResult->setStatusFromResponse($oResponse)) {
+					// OK untagged responses
+					if (\is_array($oResponse->OptionalResponse)) {
+						$key = $oResponse->OptionalResponse[0];
+						if (\count($oResponse->OptionalResponse) > 1) {
+							if ('PERMANENTFLAGS' === $key && \is_array($oResponse->OptionalResponse[1])) {
+								$oResult->PermanentFlags = $oResponse->OptionalResponse[1];
+							}
+						} else if ('READ-ONLY' === $key) {
+//							$oResult->IsWritable = false;
+						} else if ('READ-WRITE' === $key) {
+//							$oResult->IsWritable = true;
+						} else if ('NOMODSEQ' === $key) {
+							// https://datatracker.ietf.org/doc/html/rfc4551#section-3.1.2
+						}
+					}
+
+					// untagged responses
+					else if (\count($oResponse->ResponseList) > 2
+					 && 'FLAGS' === $oResponse->ResponseList[1]
+					 && \is_array($oResponse->ResponseList[2])) {
+						$oResult->Flags = $oResponse->ResponseList[2];
+					}
+				}
+			}
+		}
+		$this->oCurrentFolderInfo = $oResult;
 
 		return $this;
 	}
@@ -678,262 +822,22 @@ class ImapClient extends \MailSo\Net\NetClient
 			 *     $aParams[1][] = MODSEQ
 			 */
 
-			$oResult = $this->SendRequestGetResponse(($bIndexIsUid ? 'UID ' : '').'FETCH', $aParams);
+			$oResult = $this->SendRequestGetResponse($bIndexIsUid ? 'UID FETCH' : 'FETCH', $aParams);
 		} finally {
 			$this->aFetchCallbacks = array();
 		}
 
-		return $oResult->getFetchResult($this->oLogger);
-	}
-
-	/**
-	 * https://datatracker.ietf.org/doc/html/rfc2087#section-4.2
-	 *
-	 * @throws \MailSo\Net\Exceptions\Exception
-	 * @throws \MailSo\Imap\Exceptions\Exception
-	 * /
-	public function Quota(string $sRootName = '') : ?array
-	{
-		if ($this->IsSupported('QUOTA'))
-		{
-			return $this->SendRequestGetResponse("GETQUOTA {$this->EscapeString($sRootName)}")->getQuotaResult();
-		}
-
-		return null;
-	}
-*/
-
-	/**
-	 * https://datatracker.ietf.org/doc/html/rfc2087#section-4.3
-	 *
-	 * @throws \MailSo\Net\Exceptions\Exception
-	 * @throws \MailSo\Imap\Exceptions\Exception
-	 */
-	public function QuotaRoot(string $sFolderName = 'INBOX') : ?array
-	{
-		if ($this->IsSupported('QUOTA'))
-		{
-			return $this->SendRequestGetResponse("GETQUOTAROOT {$this->EscapeString($sFolderName)}")->getQuotaResult();
-		}
-
-		return null;
-	}
-
-	/**
-	 * See https://tools.ietf.org/html/rfc5256
-	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
-	 * @throws \MailSo\Net\Exceptions\Exception
-	 * @throws \MailSo\Imap\Exceptions\Exception
-	 */
-	public function MessageSimpleSort(array $aSortTypes, string $sSearchCriterias = 'ALL', bool $bReturnUid = true) : array
-	{
-		$sCommandPrefix = ($bReturnUid) ? 'UID ' : '';
-		$sSearchCriterias = !\strlen(\trim($sSearchCriterias)) || '*' === $sSearchCriterias
-			? 'ALL' : $sSearchCriterias;
-
-		if (!$aSortTypes)
-		{
-			$this->writeLogException(
-				new \MailSo\Base\Exceptions\InvalidArgumentException,
-				\MailSo\Log\Enumerations\Type::ERROR, true);
-		}
-		if (!$this->IsSupported('SORT'))
-		{
-			$this->writeLogException(
-				new \MailSo\Base\Exceptions\InvalidArgumentException,
-				\MailSo\Log\Enumerations\Type::ERROR, true);
-		}
-
-		$aRequest = array();
-		$aRequest[] = $aSortTypes;
-		$aRequest[] = \MailSo\Base\Utils::IsAscii($sSearchCriterias) ? 'US-ASCII' : 'UTF-8';
-		$aRequest[] = $sSearchCriterias;
-
-		$sCmd = 'SORT';
-
-		return $this->SendRequestGetResponse($sCommandPrefix.$sCmd, $aRequest)
-			->getMessageSimpleSortResult($sCmd, $bReturnUid);
-	}
-
-	/**
-	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
-	 * @throws \MailSo\Net\Exceptions\Exception
-	 * @throws \MailSo\Imap\Exceptions\Exception
-	 */
-	private function simpleESearchOrESortHelper(bool $bSort = false, string $sSearchCriterias = 'ALL', array $aSearchOrSortReturn = null, bool $bReturnUid = true, string $sLimit = '', string $sCharset = '', array $aSortTypes = null) : array
-	{
-		$sCommandPrefix = ($bReturnUid) ? 'UID ' : '';
-		$sSearchCriterias = !\strlen($sSearchCriterias) || '*' === $sSearchCriterias
-			? 'ALL' : $sSearchCriterias;
-
-		$sCmd = $bSort ? 'SORT': 'SEARCH';
-		if ($bSort && (!$aSortTypes || !$this->IsSupported('SORT')))
-		{
-			$this->writeLogException(
-				new \MailSo\Base\Exceptions\InvalidArgumentException,
-				\MailSo\Log\Enumerations\Type::ERROR, true);
-		}
-
-		if (!$this->IsSupported($bSort ? 'ESORT' : 'ESEARCH'))
-		{
-			$this->writeLogException(
-				new \MailSo\Base\Exceptions\InvalidArgumentException,
-				\MailSo\Log\Enumerations\Type::ERROR, true);
-		}
-
-		if (!$aSearchOrSortReturn)
-		{
-			// ALL OR COUNT | MIN | MAX
-			$aSearchOrSortReturn = array('ALL');
-		}
-
-		$aRequest = array();
-
-		if ($bSort)
-		{
-			$aRequest[] = 'RETURN';
-			$aRequest[] = $aSearchOrSortReturn;
-
-			$aRequest[] = $aSortTypes;
-			$aRequest[] = \MailSo\Base\Utils::IsAscii($sSearchCriterias) ? 'US-ASCII' : 'UTF-8';
-		}
-		else
-		{
-/*
-			TODO: https://github.com/the-djmaze/snappymail/issues/154
-			https://datatracker.ietf.org/doc/html/rfc6237
-			$sCmd = 'ESEARCH';
-			$aReques[] = 'IN';
-			$aReques[] = ['mailboxes', '"folder1"', 'subtree', '"folder2"'];
-			$aReques[] = ['mailboxes', '"folder1"', 'subtree-one', '"folder2"'];
-*/
-
-			if (\strlen($sCharset))
-			{
-				$aRequest[] = 'CHARSET';
-				$aRequest[] = \strtoupper($sCharset);
-			}
-
-			$aRequest[] = 'RETURN';
-			$aRequest[] = $aSearchOrSortReturn;
-		}
-
-		$aRequest[] = $sSearchCriterias;
-
-		if (\strlen($sLimit))
-		{
-			$aRequest[] = $sLimit;
-		}
-
-		return $this->SendRequestGetResponse($sCommandPrefix.$sCmd, $aRequest)
-			->getSimpleESearchOrESortResult($this->getCurrentTag(), $bReturnUid);
-	}
-
-	/**
-	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
-	 * @throws \MailSo\Net\Exceptions\Exception
-	 * @throws \MailSo\Imap\Exceptions\Exception
-	 */
-	public function MessageSimpleESearch(string $sSearchCriterias = 'ALL', array $aSearchReturn = null, bool $bReturnUid = true, string $sLimit = '', string $sCharset = '') : array
-	{
-		return $this->simpleESearchOrESortHelper(false, $sSearchCriterias, $aSearchReturn, $bReturnUid, $sLimit, $sCharset);
-	}
-
-	/**
-	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
-	 * @throws \MailSo\Net\Exceptions\Exception
-	 * @throws \MailSo\Imap\Exceptions\Exception
-	 */
-	public function MessageSimpleESort(array $aSortTypes, string $sSearchCriterias = 'ALL', array $aSearchReturn = null, bool $bReturnUid = true, string $sLimit = '') : array
-	{
-		return $this->simpleESearchOrESortHelper(true, $sSearchCriterias, $aSearchReturn, $bReturnUid, $sLimit, '', $aSortTypes);
-	}
-
-	/**
-	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
-	 * @throws \MailSo\Net\Exceptions\Exception
-	 * @throws \MailSo\Imap\Exceptions\Exception
-	 */
-	public function MessageSimpleSearch(string $sSearchCriterias = 'ALL', bool $bReturnUid = true, string $sCharset = '') : array
-	{
-		$sCommandPrefix = ($bReturnUid) ? 'UID ' : '';
-
-		$aRequest = array();
-		if (\strlen($sCharset))
-		{
-			$aRequest[] = 'CHARSET';
-			$aRequest[] = \strtoupper($sCharset);
-		}
-
-		$aRequest[] = !\strlen($sSearchCriterias) || '*' === $sSearchCriterias ? 'ALL' : $sSearchCriterias;
-
-		$sCmd = 'SEARCH';
-
-		$sCont = $this->SendRequest($sCommandPrefix.$sCmd, $aRequest, true);
-		$oResult = $this->getResponse();
-		if ('' !== $sCont)
-		{
-			$oItem = $oResult->getLast();
-
-			if ($oItem && Enumerations\ResponseType::CONTINUATION === $oItem->ResponseType)
-			{
-				$aParts = explode("\r\n", $sCont);
-				foreach ($aParts as $sLine)
-				{
-					$this->sendRaw($sLine);
-
-					$oResult = $this->getResponse();
-					$oItem = $oResult->getLast();
-					if ($oItem && Enumerations\ResponseType::CONTINUATION === $oItem->ResponseType)
-					{
-						continue;
-					}
+		$aReturn = array();
+		foreach ($oResult as $oResponse) {
+			if (FetchResponse::IsValidFetchImapResponse($oResponse)) {
+				if (FetchResponse::IsNotEmptyFetchImapResponse($oResponse)) {
+					$aReturn[] = new FetchResponse($oResponse);
+				} else if ($this->oLogger) {
+					$this->oLogger->Write('Skipped Imap Response! ['.$oResponse->ToLine().']', \MailSo\Log\Enumerations\Type::NOTICE);
 				}
 			}
 		}
-
-		return $oResult->getMessageSimpleSearchResult($sCmd, $bReturnUid);
-	}
-
-	/**
-	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
-	 * @throws \MailSo\Net\Exceptions\Exception
-	 * @throws \MailSo\Imap\Exceptions\Exception
-	 */
-	public function MessageSimpleThread(string $sSearchCriterias = 'ALL', bool $bReturnUid = true, string $sCharset = \MailSo\Base\Enumerations\Charset::UTF_8) : array
-	{
-		$sCommandPrefix = ($bReturnUid) ? 'UID ' : '';
-		$sSearchCriterias = !\strlen(\trim($sSearchCriterias)) || '*' === $sSearchCriterias
-			? 'ALL' : $sSearchCriterias;
-
-		$sThreadType = '';
-		switch (true)
-		{
-			case $this->IsSupported('THREAD=REFS'):
-				$sThreadType = 'REFS';
-				break;
-			case $this->IsSupported('THREAD=REFERENCES'):
-				$sThreadType = 'REFERENCES';
-				break;
-			case $this->IsSupported('THREAD=ORDEREDSUBJECT'):
-				$sThreadType = 'ORDEREDSUBJECT';
-				break;
-			default:
-				$this->writeLogException(
-					new Exceptions\RuntimeException('Thread is not supported'),
-					\MailSo\Log\Enumerations\Type::ERROR, true);
-				break;
-		}
-
-		$aRequest = array();
-		$aRequest[] = $sThreadType;
-		$aRequest[] = \strtoupper($sCharset);
-		$aRequest[] = $sSearchCriterias;
-
-		$sCmd = 'THREAD';
-
-		return $this->SendRequestGetResponse($sCommandPrefix.$sCmd, $aRequest)
-			->getMessageSimpleThreadResult($sCmd, $bReturnUid);
+		return $aReturn;
 	}
 
 	/**
@@ -950,9 +854,8 @@ class ImapClient extends \MailSo\Net\NetClient
 				\MailSo\Log\Enumerations\Type::ERROR, true);
 		}
 
-		$sCommandPrefix = ($bIndexIsUid) ? 'UID ' : '';
-		$this->SendRequestGetResponse($sCommandPrefix.'COPY',
-			array($sIndexRange, $this->EscapeString($sToFolder)));
+		$this->SendRequestGetResponse($bIndexIsUid ? 'UID COPY' : 'COPY',
+			array($sIndexRange, $this->EscapeFolderName($sToFolder)));
 		return $this;
 	}
 
@@ -977,9 +880,8 @@ class ImapClient extends \MailSo\Net\NetClient
 				\MailSo\Log\Enumerations\Type::ERROR, true);
 		}
 
-		$sCommandPrefix = ($bIndexIsUid) ? 'UID ' : '';
-		$this->SendRequestGetResponse($sCommandPrefix.'MOVE',
-			array($sIndexRange, $this->EscapeString($sToFolder)));
+		$this->SendRequestGetResponse($bIndexIsUid ? 'UID MOVE' : 'MOVE',
+			array($sIndexRange, $this->EscapeFolderName($sToFolder)));
 		return $this;
 	}
 
@@ -1024,8 +926,10 @@ class ImapClient extends \MailSo\Net\NetClient
 		 *     $sStoreAction[] = (UNCHANGEDSINCE $modsequence)
 		 */
 
-		$sCmd = ($bIndexIsUid) ? 'UID STORE' : 'STORE';
-		$this->SendRequestGetResponse($sCmd, array($sIndexRange, $sStoreAction, $aInputStoreItems));
+		$this->SendRequestGetResponse(
+			$bIndexIsUid ? 'UID STORE' : 'STORE',
+			array($sIndexRange, $sStoreAction, $aInputStoreItems)
+		);
 		return $this;
 	}
 
@@ -1038,7 +942,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	 */
 	public function MessageAppendStream(string $sFolderName, $rMessageAppendStream, int $iStreamSize, array $aAppendFlags = null, int &$iUid = null, int $iDateTime = 0) : self
 	{
-		$aData = array($this->EscapeString($sFolderName), $aAppendFlags);
+		$aData = array($this->EscapeFolderName($sFolderName), $aAppendFlags);
 		if (0 < $iDateTime)
 		{
 			$aData[] = $this->EscapeString(\gmdate('d-M-Y H:i:s', $iDateTime).' +0000');
@@ -1126,7 +1030,7 @@ class ImapClient extends \MailSo\Net\NetClient
 		return '';
 	}
 
-	private function secureRequestParams(string $sCommand, array $aParams) : ?array
+	protected function secureRequestParams(string $sCommand, array $aParams) : ?array
 	{
 		if ('LOGIN' === $sCommand && isset($aParams[1])) {
 			$aParams[1] = '"********"';
@@ -1146,7 +1050,7 @@ class ImapClient extends \MailSo\Net\NetClient
 		return $this->getResponse();
 	}
 
-	private function getResponseValue(ResponseCollection $oResponseCollection, int $type = 0) : string
+	protected function getResponseValue(ResponseCollection $oResponseCollection, int $type = 0) : string
 	{
 		$oResponse = $oResponseCollection->getLast();
 		if ($oResponse && (!$type || $type === $oResponse->ResponseType)) {
@@ -1164,11 +1068,38 @@ class ImapClient extends \MailSo\Net\NetClient
 	}
 
 	/**
+	 * TODO: passthru to parse response in JavaScript
+	 * This will reduce CPU time on server and moves it to the client
+	 * And can be used with the new JavaScript AbstractFetchRemote.streamPerLine(fCallback, sGetAdd)
+	 *
 	 * @throws \MailSo\Imap\Exceptions\ResponseNotFoundException
 	 * @throws \MailSo\Imap\Exceptions\InvalidResponseException
 	 * @throws \MailSo\Imap\Exceptions\NegativeResponseException
 	 */
-	private function getResponse(string $sEndTag = null) : ResponseCollection
+	protected function streamResponse(string $sEndTag = null) : void
+	{
+		try {
+			if (\is_resource($this->ConnectionResource())) {
+				\SnappyMail\HTTP\Stream::start();
+				$sEndTag = ($sEndTag ?: $this->getCurrentTag()) . ' ';
+				$sLine = \fgets($this->ConnectionResource());
+				do {
+					if (\str_starts_with($sLine, $sEndTag)) {
+						echo 'T '.\substr($sLine, \strlen($sEndTag));
+						break;
+					}
+					echo $sLine;
+					$sLine = \fgets($this->ConnectionResource());
+				} while (\strlen($sLine));
+				exit;
+			}
+		} catch (\Throwable $e) {
+			$this->writeLogException($e, \MailSo\Log\Enumerations\Type::WARNING);
+			throw $e;
+		}
+	}
+
+	protected function getResponse(string $sEndTag = null) : ResponseCollection
 	{
 		try {
 			$oResult = new ResponseCollection;
@@ -1209,7 +1140,7 @@ class ImapClient extends \MailSo\Net\NetClient
 		return $oResult;
 	}
 
-	private function prepareParamLine(array $aParams = array()) : string
+	protected function prepareParamLine(array $aParams = array()) : string
 	{
 		$sReturn = '';
 		foreach ($aParams as $mParamItem)
@@ -1226,13 +1157,13 @@ class ImapClient extends \MailSo\Net\NetClient
 		return $sReturn;
 	}
 
-	private function getNewTag() : string
+	protected function getNewTag() : string
 	{
 		++$this->iTagCount;
 		return $this->getCurrentTag();
 	}
 
-	private function getCurrentTag() : string
+	protected function getCurrentTag() : string
 	{
 		return self::TAG_PREFIX.$this->iTagCount;
 	}
@@ -1258,37 +1189,7 @@ class ImapClient extends \MailSo\Net\NetClient
 	}
 
 	/**
-	 * RFC 5464
-	 */
-
-	private function getMetadata(string $sFolderName, array $aEntries, array $aOptions = []) : array
-	{
-		$arguments = [];
-
-		if ($aOptions) {
-			$options = [];
-			$aOptions = \array_intersect_key(
-				\array_change_key_case($aOptions, CASE_UPPER),
-				['MAXSIZE' => 0, 'DEPTH' => 0]
-			);
-			if (isset($aOptions['MAXSIZE']) && 0 < \intval($aOptions['MAXSIZE'])) {
-				$options[] = 'MAXSIZE ' . \intval($aOptions['MAXSIZE']);
-			}
-			if (isset($aOptions['DEPTH']) && (1 == $aOptions['DEPTH'] || 'infinity' === $aOptions['DEPTH'])) {
-				$options[] = "DEPTH {$aOptions['DEPTH']}";
-			}
-			if ($options) {
-				$arguments[] = '(' . \implode(' ', $options) . ')';
-			}
-		}
-
-		$arguments[] = $this->EscapeString($sFolderName);
-
-		$arguments[] = '(' . \implode(' ', \array_map([$this, 'EscapeString'], $aEntries)) . ')';
-		return $this->SendRequestGetResponse('GETMETADATA', $arguments)->getFolderMetadataResult();
-	}
-
-	/**
+	 * RFC 2971
 	 * Don't have to be logged in to call this command
 	 */
 	public function ServerID() : string
@@ -1308,36 +1209,14 @@ class ImapClient extends \MailSo\Net\NetClient
 		return 'UNKNOWN';
 	}
 
-	public function ServerGetMetadata(array $aEntries, array $aOptions = []) : array
+	public function EscapeFolderName(string $sFolderName) : string
 	{
-		return $this->IsSupported('METADATA-SERVER')
-			? $this->getMetadata('', $aEntries, $aOptions)
-			: [];
+		return $this->EscapeString($this->UTF8 ? $sFolderName : \MailSo\Base\Utils::Utf8ToUtf7Modified($sFolderName));
 	}
 
-	public function FolderGetMetadata(string $sFolderName, array $aEntries, array $aOptions = []) : array
+	public function toUTF8(string $sText) : string
 	{
-		return $this->IsSupported('METADATA')
-			? $this->getMetadata($sFolderName, $aEntries, $aOptions)
-			: [];
-	}
-
-	public function FolderSetMetadata(string $sFolderName, array $aEntries) : void
-	{
-		if ($this->IsSupported('METADATA')) {
-			if (!$aEntries) {
-				throw new \MailSo\Base\Exceptions\InvalidArgumentException("Wrong argument for SETMETADATA command");
-			}
-
-			$arguments = [$this->EscapeString($sFolderName)];
-
-			\array_walk($aEntries, function(&$v, $k){
-				$v = $this->EscapeString($k) . ' ' . $this->EscapeString($v);
-			});
-			$arguments[] = '(' . \implode(' ', $aEntries) . ')';
-
-			$this->SendRequestGetResponse('SETMETADATA', $arguments);
-		}
+		return $this->UTF8 ? $sText : \MailSo\Base\Utils::Utf7ModifiedToUtf8($sText);
 	}
 
 }

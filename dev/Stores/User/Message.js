@@ -212,7 +212,9 @@ export const MessageUserStore = new class {
 				if (message && folder && folder !== message.folder) {
 					this.message(null);
 				}
-			}
+			},
+
+			isMessageSelected: value => elementById('rl-right').classList.toggle('message-selected', value)
 		});
 
 		this.purgeMessageBodyCache = this.purgeMessageBodyCache.throttle(30000);
@@ -265,12 +267,12 @@ export const MessageUserStore = new class {
 	}
 
 	/**
-	 * @param {string} fromFolderFullNameRaw
+	 * @param {string} fromFolderFullName
 	 * @param {Array} uidForRemove
-	 * @param {string=} toFolderFullNameRaw = ''
+	 * @param {string=} toFolderFullName = ''
 	 * @param {boolean=} copy = false
 	 */
-	removeMessagesFromList(fromFolderFullNameRaw, uidForRemove, toFolderFullNameRaw = '', copy = false) {
+	removeMessagesFromList(fromFolderFullName, uidForRemove, toFolderFullName = '', copy = false) {
 		uidForRemove = uidForRemove.map(mValue => pInt(mValue));
 
 		let unseenCount = 0,
@@ -279,11 +281,10 @@ export const MessageUserStore = new class {
 
 		const trashFolder = FolderUserStore.trashFolder(),
 			spamFolder = FolderUserStore.spamFolder(),
-			fromFolder = getFolderFromCacheList(fromFolderFullNameRaw),
-			toFolder = toFolderFullNameRaw ? getFolderFromCacheList(toFolderFullNameRaw) : null,
-			currentFolderFullNameRaw = FolderUserStore.currentFolderFullNameRaw(),
+			fromFolder = getFolderFromCacheList(fromFolderFullName),
+			toFolder = toFolderFullName ? getFolderFromCacheList(toFolderFullName) : null,
 			messages =
-				currentFolderFullNameRaw === fromFolderFullNameRaw
+				FolderUserStore.currentFolderFullName() === fromFolderFullName
 					? messageList.filter(item => item && uidForRemove.includes(pInt(item.uid)))
 					: [];
 
@@ -306,7 +307,7 @@ export const MessageUserStore = new class {
 		}
 
 		if (toFolder) {
-			if (trashFolder === toFolder.fullNameRaw || spamFolder === toFolder.fullNameRaw) {
+			if (trashFolder === toFolder.fullName || spamFolder === toFolder.fullName) {
 				unseenCount = 0;
 			}
 
@@ -337,12 +338,12 @@ export const MessageUserStore = new class {
 			}
 		}
 
-		if (fromFolderFullNameRaw) {
-			setFolderHash(fromFolderFullNameRaw, '');
+		if (fromFolderFullName) {
+			setFolderHash(fromFolderFullName, '');
 		}
 
-		if (toFolderFullNameRaw) {
-			setFolderHash(toFolderFullNameRaw, '');
+		if (toFolderFullName) {
+			setFolderHash(toFolderFullName, '');
 		}
 
 		if (this.listThreadUid()) {
@@ -452,16 +453,11 @@ export const MessageUserStore = new class {
 
 			if (message && message.uid == json.Uid) {
 				oMessage || this.messageError('');
-
+/*
 				if (cached) {
-					delete json.IsSeen;
-					delete json.IsFlagged;
-					delete json.IsAnswered;
-					delete json.IsForwarded;
-					delete json.IsReadReceipt;
-					delete json.IsDeleted;
+					delete json.Flags;
 				}
-
+*/
 				message.revivePropertiesFromJson(json);
 				addRequestedMessage(message.folder, message.uid);
 
@@ -479,12 +475,12 @@ export const MessageUserStore = new class {
 							plain = '',
 							resultHtml = '<pre></pre>';
 						if (isHtml) {
-							resultHtml = json.Html.toString();
+							resultHtml = json.Html.toString().replace(/font-size:\s*[0-9]px/g,'font-size:11px');
 							if (SettingsUserStore.removeColors()) {
 								resultHtml = removeColors(resultHtml);
 							}
 						} else if (json.Plain) {
-							resultHtml = plainToHtml(json.Plain.toString());
+							resultHtml = findEmailAndLinks(plainToHtml(json.Plain.toString()));
 
 							if ((message.isPgpSigned() || message.isPgpEncrypted()) && PgpUserStore.capaOpenPGP()) {
 								plain = pString(json.Plain);
@@ -506,7 +502,7 @@ export const MessageUserStore = new class {
 
 						body = Element.fromHTML('<div id="' + id + '" hidden="" class="b-text-part '
 							+ (isHtml ? 'html' : 'plain') + '">'
-							+ findEmailAndLinks(resultHtml)
+							+ resultHtml
 							+ '</div>');
 
 						if (isHtml) {
@@ -635,7 +631,7 @@ export const MessageUserStore = new class {
 	 * @returns {string}
 	 */
 	calculateMessageListHash(list) {
-		return list.map(message => '' + message.hash + '_' + message.threadsLen() + '_' + message.flagHash()).join(
+		return list.map(message => message.hash + '_' + message.threadsLen() + '_' + message.flagHash()).join(
 			'|'
 		);
 	}
@@ -661,13 +657,13 @@ export const MessageUserStore = new class {
 				if (null != collection.MessageUnseenCount) {
 					if (pInt(folder.messageCountUnread()) !== pInt(collection.MessageUnseenCount)) {
 						unreadCountChange = true;
-						MessageFlagsCache.clearFolder(folder.fullNameRaw);
+						MessageFlagsCache.clearFolder(folder.fullName);
 					}
 
 					folder.messageCountUnread(collection.MessageUnseenCount);
 				}
 
-				this.initUidNextAndNewMessages(folder.fullNameRaw, collection.UidNext, collection.NewMessages);
+				this.initUidNextAndNewMessages(folder.fullName, collection.UidNext, collection.NewMessages);
 			}
 
 			this.listCount(iCount);
@@ -688,7 +684,7 @@ export const MessageUserStore = new class {
 			clearNewMessageCache();
 
 			if (folder && (cached || unreadCountChange || SettingsUserStore.useThreads())) {
-				rl.app.folderInformation(folder.fullNameRaw, collection);
+				rl.app.folderInformation(folder.fullName, collection);
 			}
 		} else {
 			this.listCount(0);

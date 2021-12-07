@@ -2,7 +2,7 @@ import ko from 'ko';
 
 import { inFocus, addObservablesTo, addComputablesTo, addSubscribablesTo } from 'Common/Utils';
 import { Scope } from 'Common/Enums';
-import { keyScope } from 'Common/Globals';
+import { keyScope, Settings, leftPanelDisabled } from 'Common/Globals';
 import { ViewType } from 'Knoin/Knoin';
 
 class AbstractView {
@@ -12,8 +12,7 @@ class AbstractView {
 		this.viewModelTemplateID = templateID;
 		this.viewType = type;
 		this.viewModelDom = null;
-
-		this.modalVisibility = ko.observable(false).extend({ rateLimit: 0 });
+		this.viewNoUserSelect = false;
 
 		this.keyScope = {
 			scope: Scope.None,
@@ -62,6 +61,7 @@ export class AbstractViewPopup extends AbstractView
 			this.keyScope.scope = Scope[name];
 		}
 		this.bDisabeCloseOnEsc = false;
+		this.modalVisibility = ko.observable(false).extend({ rateLimit: 0 });
 	}
 /*
 	onShowWithDelay() {}
@@ -102,6 +102,7 @@ export class AbstractViewLeft extends AbstractView
 	constructor(templateID)
 	{
 		super(templateID, ViewType.Left);
+		this.leftPanelDisabled = leftPanelDisabled;
 	}
 }
 
@@ -123,3 +124,23 @@ export class AbstractViewSettings
 	viewModelDom
 }
 */
+
+export class AbstractViewLogin extends AbstractViewCenter {
+	constructor(templateID) {
+		super(templateID);
+		this.hideSubmitButton = Settings.app('hideSubmitButton');
+		this.formError = ko.observable(false).extend({ falseTimeout: 500 });
+	}
+
+	onBuild(dom) {
+		dom.classList.add('LoginView');
+	}
+
+	onShow() {
+		rl.route.off();
+	}
+
+	submitForm() {
+//		return false;
+	}
+}

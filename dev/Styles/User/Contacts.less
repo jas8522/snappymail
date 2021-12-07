@@ -1,26 +1,24 @@
 
 @contacts-popup-left-width: 25%;
 
-.RL-PopupsContacts {
+#V-PopupsContacts {
+
+	bottom: 0;
+	width: auto;
+	min-width: 550px;
+	max-width: 900px;
+	min-height: 300px;
+	max-height: 700px;
 
 	.control-group {
-		.control-label {
+		label {
 			padding-top: 0;
 			width: 50px;
 		}
 	}
 
-	.modal {
-		bottom: 0;
-		width: auto;
-		min-width: 550px;
-		max-width: 900px;
-		min-height: 300px;
-		max-height: 700px;
-	}
-
 	.modal-body {
-		height: calc(100% - 49px);
+		height: calc(100vh - 49px);
 		padding: 0;
 		position: relative;
 	}
@@ -77,12 +75,6 @@
 			padding: 60px 10px;
 			font-size: 24px;
 			line-height: 30px;
-		}
-
-		&.hideContactListCheckbox {
-			.checkboxItem {
-				visibility: hidden;
-			}
 		}
 	}
 
@@ -262,6 +254,14 @@
 			input, textarea, .e-share-sign {
 				display: none;
 			}
+		}
+	}
+}
+
+html:not(rl-mobile) {
+	.hideContactListCheckbox {
+		.checkboxItem {
+			visibility: hidden;
 		}
 	}
 }

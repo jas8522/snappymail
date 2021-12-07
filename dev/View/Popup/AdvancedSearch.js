@@ -6,10 +6,12 @@ import { MessageUserStore } from 'Stores/User/Message';
 
 import { decorateKoCommands } from 'Knoin/Knoin';
 import { AbstractViewPopup } from 'Knoin/AbstractViews';
+import { FolderUserStore } from 'Stores/User/Folder';
 
 class AdvancedSearchPopupView extends AbstractViewPopup {
 	constructor() {
 		super('AdvancedSearch');
+		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			from: '',
@@ -17,11 +19,14 @@ class AdvancedSearchPopupView extends AbstractViewPopup {
 			subject: '',
 			text: '',
 			selectedDateValue: -1,
+			selectedTreeValue: '',
 
 			hasAttachment: false,
 			starred: false,
 			unseen: false
 		});
+
+		this.showMultisearch = ko.computed(() => FolderUserStore.hasCapability('MULTISEARCH'));
 
 		let prefix = 'SEARCH/LABEL_ADV_DATE_';
 		this.selectedDates = ko.computed(() => {
@@ -34,6 +39,16 @@ class AdvancedSearchPopupView extends AbstractViewPopup {
 				{ id: 90, name: i18n(prefix + '3_MONTHS') },
 				{ id: 180, name: i18n(prefix + '6_MONTHS') },
 				{ id: 365, name: i18n(prefix + 'YEAR') }
+			];
+		});
+
+		prefix = 'SEARCH/LABEL_ADV_SUBFOLDERS_';
+		this.selectedTree = ko.computed(() => {
+			translatorTrigger();
+			return [
+				{ id: '', name: i18n(prefix + 'NONE') },
+				{ id: 'subtree-one', name: i18n(prefix + 'SUBTREE_ONE') },
+				{ id: 'subtree', name: i18n(prefix + 'SUBTREE') }
 			];
 		});
 
@@ -69,68 +84,38 @@ class AdvancedSearchPopupView extends AbstractViewPopup {
 		});
 	}
 
-	buildSearchStringValue(value) {
-		if (value.includes(' ')) {
-			value = '"' + value + '"';
-		}
-		return value;
-	}
-
 	buildSearchString() {
-		const result = [],
-			from_ = this.from().trim(),
-			to = this.to().trim(),
-			subject = this.subject().trim(),
-			text = this.text().trim(),
-			isPart = [],
-			hasPart = [];
+		const
+			data = new FormData(),
+			append = (key, value) => value.length && data.append(key, value);
 
-		if (from_) {
-			result.push('from:' + this.buildSearchStringValue(from_));
-		}
-
-		if (to) {
-			result.push('to:' + this.buildSearchStringValue(to));
-		}
-
-		if (subject) {
-			result.push('subject:' + this.buildSearchStringValue(subject));
-		}
-
-		if (this.hasAttachment()) {
-			hasPart.push('attachment');
-		}
-
-		if (this.unseen()) {
-			isPart.push('unseen');
-		}
-
-		if (this.starred()) {
-			isPart.push('flagged');
-		}
-
-		if (hasPart.length) {
-			result.push('has:' + hasPart.join(','));
-		}
-
-		if (isPart.length) {
-			result.push('is:' + isPart.join(','));
-		}
-
+		append('from', this.from().trim());
+		append('to', this.to().trim());
+		append('subject', this.subject().trim());
+		append('text', this.text().trim());
+		append('in', this.selectedTreeValue());
 		if (-1 < this.selectedDateValue()) {
 			let d = new Date();
 			d.setDate(d.getDate() - this.selectedDateValue());
-			result.push('date:' + d.format('Y.m.d') + '/');
+			append('date', d.format('Y.m.d') + '/');
 		}
 
-		if (text) {
-			result.push('text:' + this.buildSearchStringValue(text));
+		let result = new URLSearchParams(data).toString();
+
+		if (this.hasAttachment()) {
+			result += '&attachment';
+		}
+		if (this.unseen()) {
+			result += '&unseen';
+		}
+		if (this.starred()) {
+			result += '&flagged';
 		}
 
-		return result.join(' ').trim();
+		return result.replace(/^&+/, '');
 	}
 
-	clearPopup() {
+	onShow(search) {
 		this.from('');
 		this.to('');
 		this.subject('');
@@ -140,10 +125,7 @@ class AdvancedSearchPopupView extends AbstractViewPopup {
 		this.hasAttachment(false);
 		this.starred(false);
 		this.unseen(false);
-	}
 
-	onShow(search) {
-		this.clearPopup();
 		this.parseSearchStringValue(search);
 	}
 }

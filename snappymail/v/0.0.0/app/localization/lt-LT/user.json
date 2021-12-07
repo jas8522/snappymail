@@ -57,7 +57,11 @@
 		"LABEL_ADV_DATE_MONTH": "Nesenesni kaip 1 mėnesio",
 		"LABEL_ADV_DATE_3_MONTHS": "Nesenesni kaip 3 mėnesių",
 		"LABEL_ADV_DATE_6_MONTHS": "Nesenesni kaip 6 mėnesių",
-		"LABEL_ADV_DATE_YEAR": "Nesenesni kaip 1 metų"
+		"LABEL_ADV_DATE_YEAR": "Nesenesni kaip 1 metų",
+		"LABEL_ADV_SUBFOLDERS": "Subfolders",
+		"LABEL_ADV_SUBFOLDERS_NONE": "None",
+		"LABEL_ADV_SUBFOLDERS_SUBTREE": "All",
+		"LABEL_ADV_SUBFOLDERS_SUBTREE_ONE": "One level"
 	},
 	"PREVIEW_POPUP": {
 		"FULLSCREEN": "Perjungti viso ekrano režimą",
@@ -330,10 +334,8 @@
 		"NOTIFICATION_ARCHIVE": "Nepasirinkote \"Archyvas\" sisteminio katalogo."
 	},
 	"TITLES": {
-		"LOGIN": "Vartotojas",
 		"MAILBOX": "Pašto dėžutė",
-		"SETTINGS": "Nustatymai",
-		"COMPOSE": "Sukurti"
+		"SETTINGS": "Nustatymai"
 	},
 	"UPLOAD": {
 		"ERROR_FILE_IS_TOO_BIG": "Prisegamas failas per didelis",
@@ -520,8 +522,8 @@
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Neteisingas raktas",
 		"AUTH_ERROR": "Autorizacija nepavyko",
-		"ACCESS_ERROR": "Prieigos klaida",
 		"CONNECTION_ERROR": "Nepavyskta prisijungti prie serverio",
+		"DOMAIN_ALREADY_EXISTS": "Subdomenas jau egzistuoja",
 		"DOMAIN_NOT_ALLOWED": "Šis subdomenas neleidžiamas",
 		"ACCOUNT_NOT_ALLOWED": "Paskyra neleidžiama",
 		"CONTACTS_SYNC_ERROR": "Kontaktų sinchronizavimo klaida",
@@ -544,17 +546,11 @@
 		"CANT_DELETE_NON_EMPTY_FOLDER": "Negalima pašalinti ne tuščio katalogo",
 		"CANT_SUBSCRIBE_FOLDER": "Nepavyskta užprenumeruoti katalogo",
 		"CANT_UNSUBSCRIBE_FOLDER": "Nepavyksta nutraukti katalogo prenumeratos",
-		"CANT_SAVE_SETTINGS": "Nepavyksta išsaugoti nustatymų",
-		"CANT_SAVE_PLUGIN_SETTINGS": "Nepavyksta išsaugoti nustatymų",
-		"DOMAIN_ALREADY_EXISTS": "Subdomenas jau egzistuoja",
-		"CANT_INSTALL_PACKAGE": "Nepavyksta instaliuoti paketo",
-		"CANT_DELETE_PACKAGE": "Nepavyksta pašalinti paketo",
-		"INVALID_PLUGIN_PACKAGE": "Netinkamas įskiepio paketas",
-		"UNSUPPORTED_PLUGIN_PACKAGE": "Nepalaikomas įskiepio paketas",
 		"DEMO_SEND_MESSAGE_ERROR": "Saugumo sumetimais, ši demo paskyra neleidžia siųsti laiškų išoriniais e-pašto adresais!",
 		"DEMO_ACCOUNT_ERROR": "Saugumo sumetimais, su šia paskyra negalima atlikti norimo veiksmo!",
 		"ACCOUNT_ALREADY_EXISTS": "Paskyra jau egzistuoja",
 		"ACCOUNT_DOES_NOT_EXIST": "Nėra tokios paskyros",
+		"ACCOUNT_SWITCH_FAILED": "Switch to account \"%EMAIL%\" failed",
 		"MAIL_SERVER_ERROR": "Klaida bandant pasiekti pašto serverį",
 		"INVALID_INPUT_ARGUMENT": "Neteisingas įvesties argumentas",
 		"UNKNOWN_ERROR": "Nežinoma klaida"

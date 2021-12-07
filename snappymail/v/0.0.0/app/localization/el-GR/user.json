@@ -57,7 +57,11 @@
 		"LABEL_ADV_DATE_MONTH": "Έως 1 μήνα πριν",
 		"LABEL_ADV_DATE_3_MONTHS": "Έως 3 μήνες πριν",
 		"LABEL_ADV_DATE_6_MONTHS": "Έως 6 μήνες πριν",
-		"LABEL_ADV_DATE_YEAR": "Έως 1 χρόνο πριν"
+		"LABEL_ADV_DATE_YEAR": "Έως 1 χρόνο πριν",
+		"LABEL_ADV_SUBFOLDERS": "Subfolders",
+		"LABEL_ADV_SUBFOLDERS_NONE": "None",
+		"LABEL_ADV_SUBFOLDERS_SUBTREE": "All",
+		"LABEL_ADV_SUBFOLDERS_SUBTREE_ONE": "One level"
 	},
 	"PREVIEW_POPUP": {
 		"FULLSCREEN": "Ενναλαγή πλήρους οθόνης",
@@ -330,10 +334,8 @@
 		"NOTIFICATION_ARCHIVE": "Δεν έχετε επιλέξει το φάκελο συστήματος \"Αρχείο\" όπου θα τοποθετούνται τα αρχειοθετημένα μηνύματα."
 	},
 	"TITLES": {
-		"LOGIN": "Είσοδος",
 		"MAILBOX": "Γραμματοθυρίδα",
-		"SETTINGS": "Ρυθμίσεις",
-		"COMPOSE": "Νέο μήνυμα"
+		"SETTINGS": "Ρυθμίσεις"
 	},
 	"UPLOAD": {
 		"ERROR_FILE_IS_TOO_BIG": "Το αρχείο είναι πολύ μεγάλο",
@@ -520,8 +522,8 @@
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Invalid token",
 		"AUTH_ERROR": "Authentication failed",
-		"ACCESS_ERROR": "Access error",
 		"CONNECTION_ERROR": "Can't connect to server",
+		"DOMAIN_ALREADY_EXISTS": "Domain already exists",
 		"DOMAIN_NOT_ALLOWED": "Domain is not allowed",
 		"ACCOUNT_NOT_ALLOWED": "Account is not allowed",
 		"CONTACTS_SYNC_ERROR": "Contacts synchronization error",
@@ -544,17 +546,11 @@
 		"CANT_DELETE_NON_EMPTY_FOLDER": "Can't delete non-empty directory",
 		"CANT_SUBSCRIBE_FOLDER": "Can't subscribe folder",
 		"CANT_UNSUBSCRIBE_FOLDER": "Can't unsubscribe folder",
-		"CANT_SAVE_SETTINGS": "Can't save settings",
-		"CANT_SAVE_PLUGIN_SETTINGS": "Can't save settings",
-		"DOMAIN_ALREADY_EXISTS": "Domain already exists",
-		"CANT_INSTALL_PACKAGE": "Failed to install package",
-		"CANT_DELETE_PACKAGE": "Failed to remove package",
-		"INVALID_PLUGIN_PACKAGE": "Invalid plugin package",
-		"UNSUPPORTED_PLUGIN_PACKAGE": "Unsupported plugin package",
 		"DEMO_SEND_MESSAGE_ERROR": "For security purposes, this account is not allowed to send messages to external e-mail addresses!",
 		"DEMO_ACCOUNT_ERROR": "For security purposes, this account is not allowed for this action!",
 		"ACCOUNT_ALREADY_EXISTS": "Account already exists",
 		"ACCOUNT_DOES_NOT_EXIST": "Account doesn't exist",
+		"ACCOUNT_SWITCH_FAILED": "Switch to account \"%EMAIL%\" failed",
 		"MAIL_SERVER_ERROR": "An error has occured while accessing mail server",
 		"INVALID_INPUT_ARGUMENT": "Invalid input argument",
 		"UNKNOWN_ERROR": "Unknown error"

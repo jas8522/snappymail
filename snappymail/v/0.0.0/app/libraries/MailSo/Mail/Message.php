@@ -64,7 +64,6 @@ class Message implements \JsonSerializable
 		/**
 		 * @var int
 		 */
-		$iSensitivity,
 		$iPriority,
 
 		$sDeliveryReceipt = '',
@@ -84,7 +83,6 @@ class Message implements \JsonSerializable
 
 	function __construct()
 	{
-		$this->iSensitivity = \MailSo\Mime\Enumerations\Sensitivity::NOTHING;
 		$this->iPriority = \MailSo\Mime\Enumerations\MessagePriority::NORMAL;
 	}
 
@@ -201,11 +199,6 @@ class Message implements \JsonSerializable
 	public function From() : ?\MailSo\Mime\EmailCollection
 	{
 		return $this->oFrom;
-	}
-
-	public function Sensitivity() : int
-	{
-		return $this->iSensitivity;
 	}
 
 	public function Priority() : int
@@ -329,18 +322,18 @@ class Message implements \JsonSerializable
 				\MailSo\Mime\Enumerations\Parameter::CHARSET
 			);
 
-			if (0 < \strlen($sContentTypeCharset))
+			if (\strlen($sContentTypeCharset))
 			{
 				$sCharset = $sContentTypeCharset;
 				$sCharset = \MailSo\Base\Utils::NormalizeCharset($sCharset);
 			}
 
-			if (0 < \strlen($sCharset))
+			if (\strlen($sCharset))
 			{
 				$oHeaders->SetParentCharset($sCharset);
 			}
 
-			$bCharsetAutoDetect = 0 === \strlen($sCharset);
+			$bCharsetAutoDetect = !\strlen($sCharset);
 
 			$this->sSubject = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::SUBJECT, $bCharsetAutoDetect);
 			$this->sMessageId = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::MESSAGE_ID);
@@ -367,34 +360,18 @@ class Message implements \JsonSerializable
 			$this->sHeaderDate = $sHeaderDate;
 			$this->iHeaderTimeStampInUTC = \MailSo\Base\DateTimeHelper::ParseRFC2822DateString($sHeaderDate);
 
-			// Sensitivity
-			$this->iSensitivity = \MailSo\Mime\Enumerations\Sensitivity::NOTHING;
-			$sSensitivity = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::SENSITIVITY);
-			switch (\strtolower($sSensitivity))
-			{
-				case 'personal':
-					$this->iSensitivity = \MailSo\Mime\Enumerations\Sensitivity::PERSONAL;
-					break;
-				case 'private':
-					$this->iSensitivity = \MailSo\Mime\Enumerations\Sensitivity::PRIVATE_;
-					break;
-				case 'company-confidential':
-					$this->iSensitivity = \MailSo\Mime\Enumerations\Sensitivity::CONFIDENTIAL;
-					break;
-			}
-
 			// Priority
 			$this->iPriority = \MailSo\Mime\Enumerations\MessagePriority::NORMAL;
 			$sPriority = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::X_MSMAIL_PRIORITY);
-			if (0 === \strlen($sPriority))
+			if (!\strlen($sPriority))
 			{
 				$sPriority = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::IMPORTANCE);
 			}
-			if (0 === \strlen($sPriority))
+			if (!\strlen($sPriority))
 			{
 				$sPriority = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::X_PRIORITY);
 			}
-			if (0 < \strlen($sPriority))
+			if (\strlen($sPriority))
 			{
 				switch (\str_replace(' ', '', \strtolower($sPriority)))
 				{
@@ -446,7 +423,7 @@ class Message implements \JsonSerializable
 			if ($spam = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::X_SPAMD_RESULT)) {
 				if (\preg_match('/\\[([\\d\\.-]+)\\s*\\/\\s*([\\d\\.]+)\\];/', $spam, $match)) {
 					if ($threshold = \floatval($match[2])) {
-						$this->iSpamScore = \max(0, \min(100, 100 * \floatval($match[1]) / $threshold));
+						$this->iSpamScore = \intval(\max(0, \min(100, 100 * \floatval($match[1]) / $threshold)));
 						$this->sSpamResult = "{$match[1]} / {$match[2]}";
 					}
 				}
@@ -455,19 +432,20 @@ class Message implements \JsonSerializable
 				$this->sSpamResult = $spam;
 				$this->bIsSpam = !!\preg_match('/yes|spam/', $spam);
 				if (\preg_match('/spamicity=([\\d\\.]+)/', $spam, $spamicity)) {
-					$this->iSpamScore = \max(0, \min(100, \floatval($spamicity[1])));
+					$this->iSpamScore = \intval(\max(0, \min(100, \floatval($spamicity[1]))));
 				}
 			} else if ($spam = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::X_SPAM_STATUS)) {
 				$this->sSpamResult = $spam;
 				if (\preg_match('/(?:hits|score)=([\\d\\.-]+)/', $spam, $value)
 				 && \preg_match('/required=([\\d\\.-]+)/', $spam, $required)) {
 					if ($threshold = \floatval($required[1])) {
-						$this->iSpamScore = \max(0, \min(100, 100 * \floatval($value[1]) / $threshold));
+						$this->iSpamScore = \intval(\max(0, \min(100, 100 * \floatval($value[1]) / $threshold)));
 						$this->sSpamResult = "{$value[1]} / {$required[1]}";
 					}
 				}
-				$spam = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::X_SPAM_FLAG);
-				$this->bIsSpam = false !== \stripos($spam, 'YES');
+				$this->bIsSpam = 'Yes' === \substr($spam, 0, 3);
+//				$spam = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::X_SPAM_FLAG);
+//				$this->bIsSpam = false !== \stripos($spam, 'YES');
 			}
 
 			if ($virus = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::X_VIRUS)) {
@@ -485,7 +463,7 @@ class Message implements \JsonSerializable
 			}
 
 			$sDraftInfo = $oHeaders->ValueByName(\MailSo\Mime\Enumerations\Header::X_DRAFT_INFO);
-			if (0 < \strlen($sDraftInfo)) {
+			if (\strlen($sDraftInfo)) {
 				$sType = '';
 				$sFolder = '';
 				$iUid = 0;
@@ -506,20 +484,20 @@ class Message implements \JsonSerializable
 					}
 				}
 
-				if (0 < \strlen($sType) && 0 < \strlen($sFolder) && $iUid) {
+				if (\strlen($sType) && \strlen($sFolder) && $iUid) {
 					$this->aDraftInfo = array($sType, $iUid, $sFolder);
 				}
 			}
 		}
 		else if ($oFetchResponse->GetEnvelope())
 		{
-			if (0 === \strlen($sCharset) && $oBodyStructure)
+			if (!\strlen($sCharset) && $oBodyStructure)
 			{
 				$sCharset = $oBodyStructure->SearchCharset();
 				$sCharset = \MailSo\Base\Utils::NormalizeCharset($sCharset);
 			}
 
-			if (0 === \strlen($sCharset))
+			if (!\strlen($sCharset))
 			{
 				$sCharset = \MailSo\Base\Enumerations\Charset::ISO_8859_1;
 			}
@@ -544,7 +522,7 @@ class Message implements \JsonSerializable
 			$aPgpSignatureParts = $oBodyStructure ? $oBodyStructure->SearchByContentType('application/pgp-signature') : null;
 			if ($this->bPgpSigned = !empty($aPgpSignatureParts)) {
 				$sPgpSignatureText = $oFetchResponse->GetFetchValue(\MailSo\Imap\Enumerations\FetchType::BODY.'['.$aPgpSignatureParts[0]->PartID().']');
-				if (\is_string($sPgpSignatureText) && 0 < \strlen($sPgpSignatureText) && 0 < \strpos($sPgpSignatureText, 'BEGIN PGP SIGNATURE')) {
+				if (\is_string($sPgpSignatureText) && \strlen($sPgpSignatureText) && 0 < \strpos($sPgpSignatureText, 'BEGIN PGP SIGNATURE')) {
 					$this->sPgpSignature = \trim($sPgpSignatureText);
 					$this->sPgpSignatureMicAlg = (string) $oHeaders->ParameterValue(\MailSo\Mime\Enumerations\Header::CONTENT_TYPE, 'micalg');
 				}
@@ -558,7 +536,7 @@ class Message implements \JsonSerializable
 		$aTextParts = $oBodyStructure ? $oBodyStructure->SearchHtmlOrPlainParts() : null;
 		if ($aTextParts)
 		{
-			if (0 === \strlen($sCharset))
+			if (!\strlen($sCharset))
 			{
 				$sCharset = \MailSo\Base\Enumerations\Charset::UTF_8;
 			}
@@ -572,13 +550,13 @@ class Message implements \JsonSerializable
 				if (null === $sText)
 				{
 					$sText = $oFetchResponse->GetFetchValue(\MailSo\Imap\Enumerations\FetchType::BODY.'['.$oPart->PartID().']<0>');
-					if (\is_string($sText) && 0 < \strlen($sText))
+					if (\is_string($sText) && \strlen($sText))
 					{
 						$this->bTextPartIsTrimmed = true;
 					}
 				}
 
-				if (\is_string($sText) && 0 < \strlen($sText))
+				if (\is_string($sText) && \strlen($sText))
 				{
 					$sTextCharset = $oPart->Charset();
 					if (empty($sTextCharset))
@@ -608,7 +586,7 @@ class Message implements \JsonSerializable
 				}
 			}
 
-			if (0 < \count($aHtmlParts))
+			if (\count($aHtmlParts))
 			{
 				$this->sHtml = \implode('<br />', $aHtmlParts);
 			}
@@ -632,7 +610,7 @@ class Message implements \JsonSerializable
 		if ($oBodyStructure)
 		{
 			$aAttachmentsParts = $oBodyStructure->SearchAttachmentsParts();
-			if ($aAttachmentsParts && 0 < count($aAttachmentsParts))
+			if ($aAttachmentsParts && \count($aAttachmentsParts))
 			{
 				$this->oAttachments = new AttachmentCollection;
 				foreach ($aAttachmentsParts as /* @var $oAttachmentItem \MailSo\Imap\BodyStructure */ $oAttachmentItem)
@@ -673,23 +651,13 @@ class Message implements \JsonSerializable
 
 			'Priority' => $this->iPriority,
 			'Threads' => $this->aThreads,
-			'Sensitivity' => $this->iSensitivity,
 			'UnsubsribeLinks' => $this->aUnsubsribeLinks,
 			'ReadReceipt' => '',
 
-			'HasAttachments' => $this->oAttachments && 0 < $this->oAttachments->Count(),
+			'HasAttachments' => $this->oAttachments && 0 < $this->oAttachments->count(),
 			'AttachmentsSpecData' => $this->oAttachments ? $this->oAttachments->SpecData() : array(),
 
-			// Flags
-			'IsUnseen' => \in_array('\\unseen', $this->aFlagsLowerCase) || !\in_array('\\seen', $this->aFlagsLowerCase),
-			'IsSeen' => \in_array('\\seen', $this->aFlagsLowerCase),
-			'IsFlagged' => \in_array('\\flagged', $this->aFlagsLowerCase),
-			'IsAnswered' => \in_array('\\answered', $this->aFlagsLowerCase),
-			'IsDeleted' => \in_array('\\deleted', $this->aFlagsLowerCase),
-			'IsForwarded' => \in_array(\strtolower('$Forwarded'), $this->aFlagsLowerCase),
-			'IsReadReceipt' => \in_array(\strtolower('$MDNSent'), $this->aFlagsLowerCase),
-			'IsJunk' => !\in_array(\strtolower('$NonJunk'), $this->aFlagsLowerCase) && \in_array(\strtolower('$Junk'), $this->aFlagsLowerCase),
-			'IsPhishing' => \in_array(\strtolower('$Phishing'), $this->aFlagsLowerCase)
+			'Flags' => $this->aFlagsLowerCase
 		);
 	}
 }

@@ -9,6 +9,7 @@ import { AbstractViewPopup } from 'Knoin/AbstractViews';
 class MessageOpenPgpPopupView extends AbstractViewPopup {
 	constructor() {
 		super('MessageOpenPgp');
+		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			notification: '',
@@ -112,7 +113,7 @@ class MessageOpenPgpPopupView extends AbstractViewPopup {
 		this.privateKeys(privateKeys);
 
 		if (this.viewModelDom) {
-			const el = this.viewModelDom.querySelector('.key-list__item');
+			const el = this.querySelector('.key-list__item');
 			el && el.click();
 		}
 	}

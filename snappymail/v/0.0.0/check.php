@@ -17,8 +17,10 @@
 			'imagick' => extension_loaded('imagick'),
 			'intl' => function_exists('idn_to_ascii'),
 			'ldap' => extension_loaded('ldap'),
+			'OpenSSL' => extension_loaded('openssl'),
 			'mysql' => extension_loaded('pdo_mysql'),
 			'pgsql' => extension_loaded('pdo_pgsql'),
+			'Sodium' => extension_loaded('sodium'),
 			'sqlite' => extension_loaded('pdo_sqlite'),
 			'xxtea' => extension_loaded('xxtea'),
 			'zip' => extension_loaded('zip')

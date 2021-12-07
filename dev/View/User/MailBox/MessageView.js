@@ -17,7 +17,7 @@ import {
 import { $htmlCL, leftPanelDisabled, keyScopeReal, moveAction, Settings, getFullscreenElement, exitFullscreen } from 'Common/Globals';
 
 import { arrayLength, inFocus } from 'Common/Utils';
-import { mailToHelper, showMessageComposer } from 'Common/UtilsUser';
+import { mailToHelper, showMessageComposer, initFullscreen } from 'Common/UtilsUser';
 
 import { SMAudio } from 'Common/Audio';
 
@@ -60,7 +60,6 @@ export class MailMessageView extends AbstractViewRight {
 					}
 				}, this.messageVisibility);
 
-		this.oHeaderDom = null;
 		this.oMessageScrollerDom = null;
 
 		this.addObservables({
@@ -82,7 +81,6 @@ export class MailMessageView extends AbstractViewRight {
 		this.hasCheckedMessages = MessageUserStore.hasCheckedMessages;
 		this.messageLoadingThrottle = MessageUserStore.messageLoading;
 		this.messagesBodiesDom = MessageUserStore.messagesBodiesDom;
-		this.isMessageSelected = MessageUserStore.isMessageSelected;
 		this.messageActiveDom = MessageUserStore.messageActiveDom;
 		this.messageError = MessageUserStore.messageError;
 
@@ -116,7 +114,6 @@ export class MailMessageView extends AbstractViewRight {
 		this.viewUid = '';
 		this.viewHash = '';
 		this.addObservables({
-			viewBodyTopValue: 0,
 			viewSubject: '',
 			viewFromShort: '',
 			viewFromDkimData: ['none', ''],
@@ -179,10 +176,8 @@ export class MailMessageView extends AbstractViewRight {
 				return '';
 			},
 
-			messageFocused: () => Scope.MessageView === AppUserStore.focusedState(),
-
-			messageListAndMessageViewLoading:
-				() => MessageUserStore.listCompleteLoading() || MessageUserStore.messageLoading()
+			messageListOrViewLoading:
+				() => MessageUserStore.listCompleteLoading() | MessageUserStore.messageLoading()
 		});
 
 		this.addSubscribables({
@@ -263,8 +258,8 @@ export class MailMessageView extends AbstractViewRight {
 		decorateKoCommands(this, {
 			closeMessageCommand: 1,
 			messageEditCommand: self => self.messageVisibility(),
-			goUpCommand: self => !self.messageListAndMessageViewLoading(),
-			goDownCommand: self => !self.messageListAndMessageViewLoading()
+			goUpCommand: self => !self.messageListOrViewLoading(),
+			goDownCommand: self => !self.messageListOrViewLoading()
 		});
 	}
 
@@ -304,10 +299,6 @@ export class MailMessageView extends AbstractViewRight {
 		showMessageComposer([sType, MessageUserStore.message()]);
 	}
 
-	checkHeaderHeight() {
-		this.oHeaderDom && this.viewBodyTopValue(MessageUserStore.message() ? this.oHeaderDom.offsetHeight : 0);
-	}
-
 	onBuild(dom) {
 		this.oMessageScrollerDom = dom.querySelector('.messageItem');
 
@@ -316,29 +307,8 @@ export class MailMessageView extends AbstractViewRight {
 
 		this.showFullInfo.subscribe(value => Local.set(ClientSideKeyName.MessageHeaderFullInfo, value ? '1' : '0'));
 
-		let el = dom.querySelector('.messageItemHeader');
-		this.oHeaderDom = el;
-		if (el) {
-			if (!this.resizeObserver) {
-				this.resizeObserver = new ResizeObserver(this.checkHeaderHeight.debounce(50).bind(this));
-			}
-			this.resizeObserver.observe(el);
-		} else if (this.resizeObserver) {
-			this.resizeObserver.disconnect();
-		}
-
-		let event = 'fullscreenchange';
-		el = dom.querySelector('.b-message-view-wrapper');
-		if (!el.requestFullscreen && el.webkitRequestFullscreen) {
-			el.requestFullscreen = el.webkitRequestFullscreen;
-			event = 'webkit'+event;
-		}
-		if (el.requestFullscreen) {
-			this.oContent = el;
-			el.addEventListener(event, () =>
-				this.fullScreenMode(getFullscreenElement() === el)
-			);
-		}
+		const el = dom.querySelector('.b-content');
+		this.oContent = initFullscreen(el, () => this.fullScreenMode(getFullscreenElement() === el));
 
 		const eqs = (ev, s) => ev.target.closestWithin(s, dom);
 		dom.addEventListener('click', event => {
@@ -389,20 +359,6 @@ export class MailMessageView extends AbstractViewRight {
 					message.isFlagged() ? MessageSetAction.UnsetFlag : MessageSetAction.SetFlag,
 					[message]
 				);
-			}
-
-			el = eqs(event, '.thread-list .flagParent');
-			if (el) {
-				const message = ko.dataFor(el);
-				message && message.folder && message.uid &&  rl.app.messageListAction(
-					message.folder,
-					message.isFlagged() ? MessageSetAction.UnsetFlag : MessageSetAction.SetFlag,
-					[message]
-				);
-
-				this.threadsDropdownTrigger(true);
-
-				return false;
 			}
 		});
 
@@ -537,7 +493,7 @@ export class MailMessageView extends AbstractViewRight {
 	 * @returns {boolean}
 	 */
 	isDraftFolder() {
-		return MessageUserStore.message() && FolderUserStore.draftFolder() === MessageUserStore.message().folder;
+		return MessageUserStore.message() && FolderUserStore.draftsFolder() === MessageUserStore.message().folder;
 	}
 
 	/**
@@ -642,16 +598,16 @@ export class MailMessageView extends AbstractViewRight {
 	readReceipt() {
 		let oMessage = MessageUserStore.message()
 		if (oMessage && oMessage.readReceipt()) {
-			Remote.sendReadReceiptMessage(
-				()=>0,
-				oMessage.folder,
-				oMessage.uid,
-				oMessage.readReceipt(),
-				i18n('READ_RECEIPT/SUBJECT', { SUBJECT: oMessage.subject() }),
-				i18n('READ_RECEIPT/BODY', { 'READ-RECEIPT': AccountUserStore.email() })
-			);
+			Remote.request('SendReadReceiptMessage', null, {
+				MessageFolder: oMessage.folder,
+				MessageUid: oMessage.uid,
+				ReadReceipt: oMessage.readReceipt(),
+				Subject: i18n('READ_RECEIPT/SUBJECT', { SUBJECT: oMessage.subject() }),
+				Text: i18n('READ_RECEIPT/BODY', { 'READ-RECEIPT': AccountUserStore.email() })
+			});
 
-			oMessage.isReadReceipt(true);
+			oMessage.flags.push('$mdnsent');
+//			oMessage.flags.valueHasMutated();
 
 			MessageFlagsCache.store(oMessage);
 

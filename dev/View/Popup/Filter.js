@@ -2,10 +2,10 @@ import ko from 'ko';
 
 import { FilterAction } from 'Model/Filter';
 import { FilterConditionField, FilterConditionType } from 'Model/FilterCondition';
+import { SettingsGet } from 'Common/Globals';
 import { defaultOptionsAfterRender } from 'Common/Utils';
 import { i18n, initOnStartOrLangChange } from 'Common/Translator';
 
-import { FolderUserStore } from 'Stores/User/Folder';
 import { SieveUserStore } from 'Stores/User/Sieve';
 
 import { decorateKoCommands } from 'Knoin/Knoin';
@@ -16,6 +16,7 @@ import { folderListOptionsBuilder } from 'Common/UtilsUser';
 class FilterPopupView extends AbstractViewPopup {
 	constructor() {
 		super('Filter');
+		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			isNew: true,
@@ -29,12 +30,11 @@ class FilterPopupView extends AbstractViewPopup {
 		this.defaultOptionsAfterRender = defaultOptionsAfterRender;
 		this.folderSelectList = ko.computed(() =>
 			folderListOptionsBuilder(
-				[FolderUserStore.sieveAllowFileintoInbox ? '' : 'INBOX'],
+				[SettingsGet('SieveAllowFileintoInbox') ? '' : 'INBOX'],
 				[['', '']],
 				item => item ? item.localName() : ''
 			)
 		);
-
 
 		this.selectedFolderValue.subscribe(() => this.filter() && this.filter().actionValueError(false));
 
@@ -147,15 +147,8 @@ class FilterPopupView extends AbstractViewPopup {
 		}
 	}
 
-	clearPopup() {
-		this.isNew(true);
-
-		this.fTrueCallback = null;
-		this.filter(null);
-	}
-
 	onShow(oFilter, fTrueCallback, bEdit) {
-		this.clearPopup();
+		this.isNew(!bEdit);
 
 		this.fTrueCallback = fTrueCallback;
 		this.filter(oFilter);
@@ -163,8 +156,6 @@ class FilterPopupView extends AbstractViewPopup {
 		if (oFilter) {
 			this.selectedFolderValue(oFilter.actionValue());
 		}
-
-		this.isNew(!bEdit);
 
 		if (!bEdit && oFilter) {
 			oFilter.nameFocused(true);

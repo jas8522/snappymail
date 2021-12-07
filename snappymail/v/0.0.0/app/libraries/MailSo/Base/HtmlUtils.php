@@ -19,20 +19,17 @@ abstract class HtmlUtils
 {
 	static $KOS = '@@_KOS_@@';
 
-	public static function GetElementAttributesAsArray(?\DOMElement $oElement) : array
+	private static function GetElementAttributesAsArray(?\DOMElement $oElement) : array
 	{
 		$aResult = array();
-		if ($oElement)
+		if ($oElement && $oElement->hasAttributes() && isset($oElement->attributes) && $oElement->attributes)
 		{
-			if ($oElement->hasAttributes() && isset($oElement->attributes) && $oElement->attributes)
+			foreach ($oElement->attributes as $oAttr)
 			{
-				foreach ($oElement->attributes as $oAttr)
+				if ($oAttr && !empty($oAttr->nodeName))
 				{
-					if ($oAttr && !empty($oAttr->nodeName))
-					{
-						$sAttrName = \trim(\strtolower($oAttr->nodeName));
-						$aResult[$sAttrName] = $oAttr->nodeValue;
-					}
+					$sAttrName = \trim(\strtolower($oAttr->nodeName));
+					$aResult[$sAttrName] = $oAttr->nodeValue;
 				}
 			}
 		}
@@ -40,7 +37,7 @@ abstract class HtmlUtils
 		return $aResult;
 	}
 
-	public static function GetDomFromText(string $sText) : \DOMDocument
+	private static function GetDomFromText(string $sText) : \DOMDocument
 	{
 		$bState = true;
 		if (\MailSo\Base\Utils::FunctionExistsAndEnabled('libxml_use_internal_errors'))
@@ -55,12 +52,12 @@ abstract class HtmlUtils
 		$sText = static::ClearBodyAndHtmlTag($sText, $sHtmlAttrs, $sBodyAttrs);
 
 		$oDom = self::createDOMDocument();
-		@$oDom->loadHTML('<'.'?xml version="1.0" encoding="utf-8"?'.'>'.
+		@$oDom->loadHTML('<?xml version="1.0" encoding="utf-8"?>'.
 			'<html '.$sHtmlAttrs.'><head>'.
 			'<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>'.
 			'<body '.$sBodyAttrs.'>'.\MailSo\Base\Utils::Utf8Clear($sText).'</body></html>');
 
-		@$oDom->normalizeDocument();
+		$oDom->normalizeDocument();
 
 		if (\MailSo\Base\Utils::FunctionExistsAndEnabled('libxml_clear_errors'))
 		{
@@ -91,33 +88,23 @@ abstract class HtmlUtils
 		$sResult = '';
 		if ($oElem instanceof \DOMDocument)
 		{
-			if (isset($oElem->documentElement))
-			{
-				$sResult = $oElem->saveHTML($oElem->documentElement);
-			}
-			else
-			{
-				$sResult = $oElem->saveHTML();
-			}
+			$sResult = $oElem->saveHTML(isset($oElem->documentElement) ? $oElem->documentElement : null);
 		}
-		else if ($oElem)
+		else if ($oDom)
 		{
-			if ($oDom)
-			{
-				$sResult = $oDom->saveHTML($oElem);
-			}
-			else
-			{
-				$oTempDoc = self::createDOMDocument();
-				$oTempDoc->appendChild($oTempDoc->importNode($oElem->cloneNode(true), true));
-				$sResult = $oTempDoc->saveHTML();
-			}
+			$sResult = $oDom->saveHTML($oElem);
+		}
+		else
+		{
+			$oTempDoc = self::createDOMDocument();
+			$oTempDoc->appendChild($oTempDoc->importNode($oElem->cloneNode(true), true));
+			$sResult = $oTempDoc->saveHTML();
 		}
 
 		return \trim($sResult);
 	}
 
-	public static function GetTextFromDom(\DOMDocument $oDom, bool $bWrapByFakeHtmlAndBodyDiv = true) : string
+	private static function GetTextFromDom(\DOMDocument $oDom, bool $bWrapByFakeHtmlAndBodyDiv = true) : string
 	{
 		$sResult = '';
 
@@ -161,7 +148,7 @@ abstract class HtmlUtils
 		return $sResult;
 	}
 
-	public static function ClearBodyAndHtmlTag(string $sHtml, string &$sHtmlAttrs = '', string &$sBodyAttrs = '') : string
+	private static function ClearBodyAndHtmlTag(string $sHtml, string &$sHtmlAttrs = '', string &$sBodyAttrs = '') : string
 	{
 		$aMatch = array();
 		if (\preg_match('/<html([^>]+)>/im', $sHtml, $aMatch) && !empty($aMatch[1]))
@@ -175,11 +162,8 @@ abstract class HtmlUtils
 			$sBodyAttrs = $aMatch[1];
 		}
 
-		$sHtml = \preg_replace('/<head([^>]*)>/si', '', $sHtml);
-		$sHtml = \preg_replace('/<body([^>]*)>/si', '', $sHtml);
-		$sHtml = \preg_replace('/<\/body>/i', '', $sHtml);
-		$sHtml = \preg_replace('/<html([^>]*)>/i', '', $sHtml);
-		$sHtml = \preg_replace('/<\/html>/i', '', $sHtml);
+//		$sHtml = \preg_replace('/^.*<body([^>]*)>/si', '', $sHtml);
+		$sHtml = \preg_replace('/<\/?(head|body|html)(\\s[^>]*)?>/si', '', $sHtml);
 
 		$sHtmlAttrs = \preg_replace('/xmlns:[a-z]="[^"]*"/i', '', $sHtmlAttrs);
 		$sHtmlAttrs = \preg_replace('/xmlns:[a-z]=\'[^\']*\'/i', '', $sHtmlAttrs);
@@ -188,13 +172,13 @@ abstract class HtmlUtils
 		$sBodyAttrs = \preg_replace('/xmlns:[a-z]="[^"]*"/i', '', $sBodyAttrs);
 		$sBodyAttrs = \preg_replace('/xmlns:[a-z]=\'[^\']*\'/i', '', $sBodyAttrs);
 
-		$sHtmlAttrs = trim($sHtmlAttrs);
-		$sBodyAttrs = trim($sBodyAttrs);
+		$sHtmlAttrs = \trim($sHtmlAttrs);
+		$sBodyAttrs = \trim($sBodyAttrs);
 
 		return $sHtml;
 	}
 
-	public static function FixSchemas(string $sHtml, bool $bClearEmpty = true) : string
+	private static function FixSchemas(string $sHtml, bool $bClearEmpty = true) : string
 	{
 		if ($bClearEmpty)
 		{
@@ -207,7 +191,7 @@ abstract class HtmlUtils
 		return $sHtml;
 	}
 
-	public static function ClearFastTags(string $sHtml) : string
+	private static function ClearFastTags(string $sHtml) : string
 	{
 		return \preg_replace(array(
 			'/<p[^>]*><\/p>/i',
@@ -216,7 +200,7 @@ abstract class HtmlUtils
 		), '', $sHtml);
 	}
 
-	public static function ClearComments(\DOMDocument $oDom) : void
+	private static function ClearComments(\DOMDocument $oDom) : void
 	{
 		$aRemove = array();
 
@@ -241,7 +225,7 @@ abstract class HtmlUtils
 		}
 	}
 
-	public static function ClearTags(\DOMDocument $oDom, bool $bClearStyleAndHead = true) : void
+	private static function ClearTags(\DOMDocument $oDom, bool $bClearStyleAndHead = true) : void
 	{
 		$aRemoveTags = array(
 			'svg', 'link', 'base', 'meta', 'title', 'x-script', 'script', 'bgsound', 'keygen', 'source',
@@ -255,7 +239,7 @@ abstract class HtmlUtils
 		}
 
 		$aHtmlAllowedTags = isset(\MailSo\Config::$HtmlStrictAllowedTags) &&
-			\is_array(\MailSo\Config::$HtmlStrictAllowedTags) && 0 < \count(\MailSo\Config::$HtmlStrictAllowedTags) ?
+			\is_array(\MailSo\Config::$HtmlStrictAllowedTags) && \count(\MailSo\Config::$HtmlStrictAllowedTags) ?
 				\MailSo\Config::$HtmlStrictAllowedTags : null;
 
 		$aRemove = array();
@@ -287,17 +271,12 @@ abstract class HtmlUtils
 	/**
 	 * @param callback|null $fAdditionalExternalFilter = null
 	 */
-	public static function ClearStyle(string $sStyle, \DOMElement $oElement, bool &$bHasExternals, array &$aFoundCIDs,
-		array $aContentLocationUrls, array &$aFoundedContentLocationUrls, bool $bDoNotReplaceExternalUrl = false, $fAdditionalExternalFilter = null)
+	private static function ClearStyle(string $sStyle, \DOMElement $oElement, bool &$bHasExternals,
+		array &$aFoundCIDs, array $aContentLocationUrls, array &$aFoundContentLocationUrls, callable $fAdditionalExternalFilter = null)
 	{
 		$sStyle = \trim($sStyle, " \n\r\t\v\0;");
 		$aOutStyles = array();
 		$aStyles = \explode(';', $sStyle);
-
-		if ($fAdditionalExternalFilter && !\is_callable($fAdditionalExternalFilter))
-		{
-			$fAdditionalExternalFilter = null;
-		}
 
 		$aMatch = array();
 		foreach ($aStyles as $sStyleItem)
@@ -311,7 +290,7 @@ abstract class HtmlUtils
 				$sValue = 'absolute';
 			}
 
-			if (0 === \strlen($sName) || 0 === \strlen($sValue))
+			if (!\strlen($sName) || !\strlen($sValue))
 			{
 				continue;
 			}
@@ -359,32 +338,29 @@ abstract class HtmlUtils
 						if (\preg_match('/http[s]?:\/\//i', $sUrl) || '//' === \substr($sUrl, 0, 2))
 						{
 							$bHasExternals = true;
-							if (!$bDoNotReplaceExternalUrl)
+							if (\in_array($sName, array('background-image', 'list-style-image', 'content')))
 							{
-								if (\in_array($sName, array('background-image', 'list-style-image', 'content')))
+								$sStyleItem = '';
+							}
+
+							$sTemp = '';
+							if ($oElement->hasAttribute('data-x-style-url'))
+							{
+								$sTemp = \trim($oElement->getAttribute('data-x-style-url'));
+							}
+
+							$sTemp = empty($sTemp) ? '' : (';' === \substr($sTemp, -1) ? $sTemp.' ' : $sTemp.'; ');
+
+							$oElement->setAttribute('data-x-style-url', \trim($sTemp.
+								('background' === $sName ? 'background-image' : $sName).': '.$sFullUrl, ' ;'));
+
+							if ($fAdditionalExternalFilter)
+							{
+								$sAdditionalResult = $fAdditionalExternalFilter($sUrl);
+								if (\strlen($sAdditionalResult))
 								{
-									$sStyleItem = '';
-								}
-
-								$sTemp = '';
-								if ($oElement->hasAttribute('data-x-style-url'))
-								{
-									$sTemp = \trim($oElement->getAttribute('data-x-style-url'));
-								}
-
-								$sTemp = empty($sTemp) ? '' : (';' === \substr($sTemp, -1) ? $sTemp.' ' : $sTemp.'; ');
-
-								$oElement->setAttribute('data-x-style-url', \trim($sTemp.
-									('background' === $sName ? 'background-image' : $sName).': '.$sFullUrl, ' ;'));
-
-								if ($fAdditionalExternalFilter)
-								{
-									$sAdditionalResult = \call_user_func($fAdditionalExternalFilter, $sUrl);
-									if (0 < \strlen($sAdditionalResult))
-									{
-										$oElement->setAttribute('data-x-additional-style-url',
-											('background' === $sName ? 'background-image' : $sName).': url('.$sAdditionalResult.')');
-									}
+									$oElement->setAttribute('data-x-additional-style-url',
+										('background' === $sName ? 'background-image' : $sName).': url('.$sAdditionalResult.')');
 								}
 							}
 						}
@@ -414,110 +390,18 @@ abstract class HtmlUtils
 		return \implode(';', $aOutStyles);
 	}
 
-	public static function FindLinksInDOM(\DOMDocument $oDom) : void
-	{
-		$aNodes = $oDom->getElementsByTagName('*');
-		foreach ($aNodes as /* @var $oElement \DOMElement */ $oElement)
-		{
-			$sTagNameLower = \strtolower($oElement->tagName);
-			$sParentTagNameLower = isset($oElement->parentNode) && isset($oElement->parentNode->tagName) ?
-				\strtolower($oElement->parentNode->tagName) : '';
-
-			if (!\in_array($sTagNameLower, array('html', 'meta', 'head', 'style', 'script', 'img', 'button', 'input', 'textarea', 'a')) &&
-				'a' !== $sParentTagNameLower && $oElement->childNodes && 0 < $oElement->childNodes->length)
-			{
-				$oSubItem = null;
-				$aTextNodes = array();
-				$iIndex = $oElement->childNodes->length - 1;
-				while ($iIndex > -1)
-				{
-					$oSubItem = $oElement->childNodes->item($iIndex);
-					if ($oSubItem && XML_TEXT_NODE === $oSubItem->nodeType)
-					{
-						$aTextNodes[] = $oSubItem;
-					}
-
-					$iIndex--;
-				}
-
-				unset($oSubItem);
-
-				foreach ($aTextNodes as $oTextNode)
-				{
-					if ($oTextNode && 0 < \strlen($oTextNode->wholeText)/* && \preg_match('/http[s]?:\/\//i', $oTextNode->wholeText)*/)
-					{
-						$sText = (new \MailSo\Base\LinkFinder)
-							->Text($oTextNode->wholeText)
-							->UseDefaultWrappers(true)
-							->CompileText()
-						;
-
-						$oSubDom = static::GetDomFromText($sText);
-						if ($oSubDom)
-						{
-							$oBodyNodes = $oSubDom->getElementsByTagName('body');
-							if ($oBodyNodes && 0 < $oBodyNodes->length)
-							{
-								$oBodyChildNodes = $oBodyNodes->item(0)->childNodes;
-								if ($oBodyChildNodes && $oBodyChildNodes->length)
-								{
-									for ($iIndex = 0, $iLen = $oBodyChildNodes->length; $iIndex < $iLen; $iIndex++)
-									{
-										$oSubItem = $oBodyChildNodes->item($iIndex);
-										if ($oSubItem)
-										{
-											if (XML_ELEMENT_NODE === $oSubItem->nodeType &&
-												'a' === \strtolower($oSubItem->tagName))
-											{
-												$oLink = $oDom->createElement('a',
-													\str_replace(':', static::$KOS, \htmlspecialchars($oSubItem->nodeValue)));
-
-												$sHref = $oSubItem->getAttribute('href');
-												if ($sHref)
-												{
-													$oLink->setAttribute('href', $sHref);
-												}
-
-												$oElement->insertBefore($oLink, $oTextNode);
-											}
-											else
-											{
-												$oElement->insertBefore($oDom->importNode($oSubItem), $oTextNode);
-											}
-										}
-									}
-
-									$oElement->removeChild($oTextNode);
-								}
-							}
-
-							unset($oBodyNodes);
-						}
-
-						unset($oSubDom, $sText);
-					}
-				}
-			}
-		}
-
-		unset($aNodes);
-	}
-
 	/**
-	 * @param callback|null $fAdditionalExternalFilter = null
-	 * @param callback|null $fAdditionalDomReader = null
+	 * Clears the MailSo\Mail\Message Html for viewing
 	 */
 	public static function ClearHtml(string $sHtml, bool &$bHasExternals = false, array &$aFoundCIDs = array(),
-		array $aContentLocationUrls = array(), array &$aFoundedContentLocationUrls = array(),
-		bool $bDoNotReplaceExternalUrl = false, bool $bFindLinksInHtml = false,
-		$fAdditionalExternalFilter = null, $fAdditionalDomReader = false,
-		bool $bTryToDetectHiddenImages = false, bool $bWrapByFakeHtmlAndBodyDiv = true)
+		array $aContentLocationUrls = array(), array &$aFoundContentLocationUrls = array(),
+		callable $fAdditionalExternalFilter = null, bool $bTryToDetectHiddenImages = false)
 	{
 		$sResult = '';
 
 		$sHtml = null === $sHtml ? '' : (string) $sHtml;
 		$sHtml = \trim($sHtml);
-		if (0 === \strlen($sHtml))
+		if (!\strlen($sHtml))
 		{
 			return '';
 		}
@@ -525,11 +409,6 @@ abstract class HtmlUtils
 		if ($fAdditionalExternalFilter && !\is_callable($fAdditionalExternalFilter))
 		{
 			$fAdditionalExternalFilter = null;
-		}
-
-		if ($fAdditionalDomReader && !\is_callable($fAdditionalDomReader))
-		{
-			$fAdditionalDomReader = null;
 		}
 
 		$bHasExternals = false;
@@ -541,22 +420,6 @@ abstract class HtmlUtils
 		if (!$oDom)
 		{
 			return '';
-		}
-
-		if ($fAdditionalDomReader)
-		{
-			$oResDom = \call_user_func($fAdditionalDomReader, $oDom);
-			if ($oResDom)
-			{
-				$oDom = $oResDom;
-			}
-
-			unset($oResDom);
-		}
-
-		if ($bFindLinksInHtml)
-		{
-			static::FindLinksInDOM($oDom);
 		}
 
 		static::ClearComments($oDom);
@@ -633,7 +496,7 @@ abstract class HtmlUtils
 					}
 				}
 
-				if (0 < \count($aStyles))
+				if (\count($aStyles))
 				{
 					$sStyles .= $sStyles . '; ' . \implode('; ', $aStyles);
 				}
@@ -652,7 +515,7 @@ abstract class HtmlUtils
 			if ($oElement->hasAttributes() && isset($oElement->attributes) && $oElement->attributes)
 			{
 				$aHtmlAllowedAttributes = isset(\MailSo\Config::$HtmlStrictAllowedAttributes) &&
-					\is_array(\MailSo\Config::$HtmlStrictAllowedAttributes) && 0 < \count(\MailSo\Config::$HtmlStrictAllowedAttributes) ?
+					\is_array(\MailSo\Config::$HtmlStrictAllowedAttributes) && \count(\MailSo\Config::$HtmlStrictAllowedAttributes) ?
 						\MailSo\Config::$HtmlStrictAllowedAttributes : null;
 
 				$sAttrsForRemove = array();
@@ -676,7 +539,7 @@ abstract class HtmlUtils
 					}
 				}
 
-				if (0 < \count($sAttrsForRemove))
+				if (\count($sAttrsForRemove))
 				{
 					foreach ($sAttrsForRemove as $sName)
 					{
@@ -777,7 +640,7 @@ abstract class HtmlUtils
 				if (\in_array($sSrc, $aContentLocationUrls))
 				{
 					$oElement->setAttribute('data-x-src-location', $sSrc);
-					$aFoundedContentLocationUrls[] = $sSrc;
+					$aFoundContentLocationUrls[] = $sSrc;
 				}
 				else if ('cid:' === \strtolower(\substr($sSrc, 0, 4)))
 				{
@@ -788,20 +651,13 @@ abstract class HtmlUtils
 				{
 					if (\preg_match('/^http[s]?:\/\//i', $sSrc) || '//' === \substr($sSrc, 0, 2))
 					{
-						if ($bDoNotReplaceExternalUrl)
+						$oElement->setAttribute('data-x-src', $sSrc);
+						if ($fAdditionalExternalFilter)
 						{
-							$oElement->setAttribute('src', $sSrc);
-						}
-						else
-						{
-							$oElement->setAttribute('data-x-src', $sSrc);
-							if ($fAdditionalExternalFilter)
+							$sCallResult = $fAdditionalExternalFilter($sSrc);
+							if (\strlen($sCallResult))
 							{
-								$sCallResult = \call_user_func($fAdditionalExternalFilter, $sSrc);
-								if (0 < \strlen($sCallResult))
-								{
-									$oElement->setAttribute('data-x-additional-src', $sCallResult);
-								}
+								$oElement->setAttribute('data-x-additional-src', $sCallResult);
 							}
 						}
 
@@ -846,29 +702,32 @@ abstract class HtmlUtils
 			{
 				$oElement->setAttribute('style',
 					static::ClearStyle($sStyles, $oElement, $bHasExternals,
-						$aFoundCIDs, $aContentLocationUrls, $aFoundedContentLocationUrls, $bDoNotReplaceExternalUrl, $fAdditionalExternalFilter));
+						$aFoundCIDs, $aContentLocationUrls, $aFoundContentLocationUrls, $fAdditionalExternalFilter));
 			}
 
-			if (\MailSo\Config::$HtmlStrictDebug && 0 < \count($aRemovedAttrs))
+			if (\MailSo\Config::$HtmlStrictDebug && \count($aRemovedAttrs))
 			{
 				unset($aRemovedAttrs['class'], $aRemovedAttrs['target'], $aRemovedAttrs['id'], $aRemovedAttrs['name'],
 					$aRemovedAttrs['itemprop'], $aRemovedAttrs['itemscope'], $aRemovedAttrs['itemtype']);
 
 				$aRemovedAttrs = \array_keys($aRemovedAttrs);
-				if (0 < \count($aRemovedAttrs))
+				if (\count($aRemovedAttrs))
 				{
 					$oElement->setAttribute('data-removed-attrs', \implode(',', $aRemovedAttrs));
 				}
 			}
 		}
 
-		$sResult = static::GetTextFromDom($oDom, $bWrapByFakeHtmlAndBodyDiv);
+		$sResult = static::GetTextFromDom($oDom, true);
 		unset($oDom);
 
 		return $sResult;
 	}
 
-	public static function BuildHtml(string $sHtml, array &$aFoundCids = array(), &$mFoundDataURL = null, array &$aFoundedContentLocationUrls = array()) : string
+	/**
+	 * Used by DoSaveMessage() and DoSendMessage()
+	 */
+	public static function BuildHtml(string $sHtml, array &$aFoundCids = array(), &$mFoundDataURL = null, array &$aFoundContentLocationUrls = array()) : string
 	{
 		$oDom = static::GetDomFromText($sHtml);
 
@@ -901,7 +760,7 @@ abstract class HtmlUtils
 
 				if (!empty($sSrc))
 				{
-					$aFoundedContentLocationUrls[] = $sSrc;
+					$aFoundContentLocationUrls[] = $sSrc;
 
 					@$oElement->removeAttribute('src');
 					$oElement->setAttribute('src', $sSrc);
@@ -1006,7 +865,7 @@ abstract class HtmlUtils
 	public static function ConvertPlainToHtml(string $sText, bool $bLinksWithTargetBlank = true) : string
 	{
 		$sText = \trim($sText);
-		if (0 === \strlen($sText))
+		if (!\strlen($sText))
 		{
 			return '';
 		}
@@ -1078,8 +937,8 @@ abstract class HtmlUtils
 
 		$sText = \strtr($sText, array(
 			"\n" => "<br />",
-			"\t" => '&nbsp;&nbsp;&nbsp;',
-			'  ' => '&nbsp;&nbsp;'
+			"\t" => "\xC2\xA0\xC2\xA0\xC2\xA0\xC2\xA0",
+			'  ' => "\xC2\xA0\xC2\xA0"
 		));
 
 		return $sText;
@@ -1089,20 +948,20 @@ abstract class HtmlUtils
 	{
 		$sText = \MailSo\Base\Utils::StripSpaces($sText);
 
+		$sText = \preg_replace_callback('/<h([1-6])[^>]*>/', function($m) {
+			return "\n\n" . \str_repeat('#', $m[1]) . ' ';
+		}, $sText);
+
 		$sText = \preg_replace(array(
 			"/\r/",
 			"/[\n\t]+/",
-			'/<script[^>]*>.*?<\/script>/i',
-			'/<style[^>]*>.*?<\/style>/i',
-			'/<title[^>]*>.*?<\/title>/i',
-			'/<h[123][^>]*>(.+?)<\/h[123]>/i',
-			'/<h[456][^>]*>(.+?)<\/h[456]>/i',
+			'/<script[^>]*>.*?<\/script>|<style[^>]*>.*?<\/style>|<title[^>]*>.*?<\/title>/i',
+			'/<\/h[1-6]>/i',
 			'/<p[^>]*>/i',
 			'/<br[^>]*>/i',
 			'/<b[^>]*>(.+?)<\/b>/i',
 			'/<i[^>]*>(.+?)<\/i>/i',
-			'/(<ul[^>]*>|<\/ul>)/i',
-			'/(<ol[^>]*>|<\/ol>)/i',
+			'/<ul[^>]*>|<\/ul>|<ol[^>]*>|<\/ol>/i',
 			'/<li[^>]*>/i',
 			'/<a[^>]*href="([^"]+)"[^>]*>(.+?)<\/a>/i',
 			'/<hr[^>]*>/i',
@@ -1110,40 +969,15 @@ abstract class HtmlUtils
 			'/(<tr[^>]*>|<\/tr>)/i',
 			'/<td[^>]*>(.+?)<\/td>/i',
 			'/<th[^>]*>(.+?)<\/th>/i',
-			'/&nbsp;/i',
-			'/&quot;/i',
-			'/&amp;/i',
-			'/&copy;/i',
-			'/&trade;/i',
-			'/&#8220;/',
-			'/&#8221;/',
-			'/&#8211;/',
-			'/&#8217;/',
-			'/&#38;/',
-			'/&#169;/',
-			'/&#8482;/',
-			'/&#151;/',
-			'/&#147;/',
-			'/&#148;/',
-			'/&#149;/',
-			'/&reg;/i',
-			'/&bull;/i',
-			'/&[&;]+;/i',
-			'/&#39;/',
-			'/&#160;/'
 		), array(
 			'',
 			' ',
 			'',
-			'',
-			'',
-			"\n\n\\1\n\n",
-			"\n\n\\1\n\n",
+			"\n\n",
 			"\n\n\t",
 			"\n",
 			'\\1',
 			'\\1',
-			"\n\n",
 			"\n\n",
 			"\n\t* ",
 			'\\2 (\\1)',
@@ -1151,28 +985,7 @@ abstract class HtmlUtils
 			"\n",
 			"\n",
 			"\t\\1\n",
-			"\t\\1\n",
-			' ',
-			'"',
-			'&',
-			'(c)',
-			'(tm)',
-			'"',
-			'"',
-			'-',
-			"'",
-			'&',
-			'(c)',
-			'(tm)',
-			'--',
-			'"',
-			'"',
-			'*',
-			'(R)',
-			'*',
-			'',
-			'\'',
-			''
+			"\t\\1\n"
 		), $sText);
 
 		$sText = \str_ireplace('<div>',"\n<div>", $sText);
@@ -1180,13 +993,7 @@ abstract class HtmlUtils
 		$sText = \preg_replace("/\n\\s+\n/", "\n", $sText);
 		$sText = \preg_replace("/[\n]{3,}/", "\n\n", $sText);
 
-		$sText = \preg_replace(array(
-			'/&gt;/i',
-			'/&lt;/i'
-		), array(
-			'>',
-			'<'
-		), $sText);
+		$sText = \html_entity_decode($sText, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8');
 
 		return \trim($sText);
 	}

@@ -20,14 +20,8 @@ class PaneSettingsAdminView extends AbstractViewRight {
 			.computed(() => PackageAdminStore.loading() ? 'visible' : 'hidden');
 	}
 
-	toggleLeft(item, event) {
-		event.preventDefault();
-		event.stopPropagation();
-		leftPanelDisabled(!leftPanelDisabled());
-	}
-
 	logoutClick() {
-		Remote.adminLogout(() => rl.logoutReload());
+		Remote.request('AdminLogout', () => rl.logoutReload());
 	}
 }
 

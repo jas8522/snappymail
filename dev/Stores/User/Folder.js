@@ -2,14 +2,15 @@ import ko from 'ko';
 
 import { FolderType, FolderSortMode } from 'Common/EnumsUser';
 import { UNUSED_OPTION_VALUE } from 'Common/Consts';
-import { addObservablesTo, addSubscribablesTo, addComputablesTo } from 'Common/Utils';
+import { addObservablesTo, addSubscribablesTo, addComputablesTo, forEachObjectEntry } from 'Common/Utils';
 import { getFolderInboxName, getFolderFromCacheList } from 'Common/Cache';
-import { Settings, SettingsGet } from 'Common/Globals';
+import { Settings } from 'Common/Globals';
 //import Remote from 'Remote/User/Fetch'; Circular dependency
 
 export const FolderUserStore = new class {
 	constructor() {
-		addObservablesTo(this, {
+		const self = this;
+		addObservablesTo(self, {
 			/**
 			 * To use "checkable" option in /#/settings/folders
 			 * When true, getNextFolderNames only lists system and "checkable" folders
@@ -19,16 +20,13 @@ export const FolderUserStore = new class {
 			 */
 			displaySpecSetting: false,
 
-			/**
-			 * If the IMAP server supports SORT, METADATA
-			 */
-			sortSupported: false,
-			metadataSupported: false,
-			listStatusSupported: false,
 //			sortMode: '',
 
+			quotaLimit: 0,
+			quotaUsage: 0,
+
 			sentFolder: '',
-			draftFolder: '',
+			draftsFolder: '',
 			spamFolder: '',
 			trashFolder: '',
 			archiveFolder: '',
@@ -44,40 +42,38 @@ export const FolderUserStore = new class {
 			foldersInboxUnreadCount: 0
 		});
 
-		this.sortMode = ko.observable('').extend({ limitedList: Object.values(FolderSortMode) });
+		self.sortMode = ko.observable('').extend({ limitedList: Object.values(FolderSortMode) });
 
-		this.namespace = '';
+		self.namespace = '';
 
-		this.folderList = ko.observableArray();
+		self.folderList = ko.observableArray(/*new FolderCollectionModel*/);
 
-		this.currentFolder = ko.observable(null).extend({ toggleSubscribeProperty: [this, 'selected'] });
+		self.capabilities = ko.observableArray();
 
-		this.sieveAllowFileintoInbox = !!SettingsGet('SieveAllowFileintoInbox');
+		self.currentFolder = ko.observable(null).extend({ toggleSubscribeProperty: [self, 'selected'] });
 
-		addComputablesTo(this, {
+		addComputablesTo(self, {
 
-			draftFolderNotEnabled: () => !this.draftFolder() || UNUSED_OPTION_VALUE === this.draftFolder(),
+			draftsFolderNotEnabled: () => !self.draftsFolder() || UNUSED_OPTION_VALUE === self.draftsFolder(),
 
-			currentFolderFullNameRaw: () => (this.currentFolder() ? this.currentFolder().fullNameRaw : ''),
-
-			currentFolderFullName: () => (this.currentFolder() ? this.currentFolder().fullName : ''),
-			currentFolderFullNameHash: () => (this.currentFolder() ? this.currentFolder().fullNameHash : ''),
+			currentFolderFullName: () => (self.currentFolder() ? self.currentFolder().fullName : ''),
+			currentFolderFullNameHash: () => (self.currentFolder() ? self.currentFolder().fullNameHash : ''),
 
 			foldersChanging: () =>
-				this.foldersLoading() | this.foldersCreating() | this.foldersDeleting() | this.foldersRenaming(),
+				self.foldersLoading() | self.foldersCreating() | self.foldersDeleting() | self.foldersRenaming(),
 
 			folderListSystemNames: () => {
 				const list = [getFolderInboxName()],
-				others = [this.sentFolder(), this.draftFolder(), this.spamFolder(), this.trashFolder(), this.archiveFolder()];
+				others = [self.sentFolder(), self.draftsFolder(), self.spamFolder(), self.trashFolder(), self.archiveFolder()];
 
-				this.folderList().length &&
+				self.folderList().length &&
 					others.forEach(name => name && UNUSED_OPTION_VALUE !== name && list.push(name));
 
 				return list;
 			},
 
 			folderListSystem: () =>
-				this.folderListSystemNames().map(name => getFolderFromCacheList(name)).filter(v => v)
+				self.folderListSystemNames().map(name => getFolderFromCacheList(name)).filter(v => v)
 		});
 
 		const
@@ -90,19 +86,31 @@ export const FolderUserStore = new class {
 				folder && folder.type(type);
 			};
 
-		this.sentFolder.subscribe(fRemoveSystemFolderType(this.sentFolder), this, 'beforeChange');
-		this.draftFolder.subscribe(fRemoveSystemFolderType(this.draftFolder), this, 'beforeChange');
-		this.spamFolder.subscribe(fRemoveSystemFolderType(this.spamFolder), this, 'beforeChange');
-		this.trashFolder.subscribe(fRemoveSystemFolderType(this.trashFolder), this, 'beforeChange');
-		this.archiveFolder.subscribe(fRemoveSystemFolderType(this.archiveFolder), this, 'beforeChange');
+		self.sentFolder.subscribe(fRemoveSystemFolderType(self.sentFolder), self, 'beforeChange');
+		self.draftsFolder.subscribe(fRemoveSystemFolderType(self.draftsFolder), self, 'beforeChange');
+		self.spamFolder.subscribe(fRemoveSystemFolderType(self.spamFolder), self, 'beforeChange');
+		self.trashFolder.subscribe(fRemoveSystemFolderType(self.trashFolder), self, 'beforeChange');
+		self.archiveFolder.subscribe(fRemoveSystemFolderType(self.archiveFolder), self, 'beforeChange');
 
-		addSubscribablesTo(this, {
+		addSubscribablesTo(self, {
 			sentFolder: fSetSystemFolderType(FolderType.Sent),
-			draftFolder: fSetSystemFolderType(FolderType.Drafts),
+			draftsFolder: fSetSystemFolderType(FolderType.Drafts),
 			spamFolder: fSetSystemFolderType(FolderType.Spam),
 			trashFolder: fSetSystemFolderType(FolderType.Trash),
 			archiveFolder: fSetSystemFolderType(FolderType.Archive)
 		});
+
+		self.quotaPercentage = ko.computed(() => {
+			const quota = self.quotaLimit(), usage = self.quotaUsage();
+			return 0 < quota ? Math.ceil((usage / quota) * 100) : 0;
+		});
+	}
+
+	/**
+	 * If the IMAP server supports SORT, METADATA
+	 */
+	hasCapability(name) {
+		return this.capabilities().includes(name);
 	}
 
 	/**
@@ -124,7 +132,7 @@ export const FolderUserStore = new class {
 						timeout > folder.expires &&
 						(folder.isSystemFolder() || (folder.subscribed() && (folder.checkable() || !bDisplaySpecSetting)))
 					) {
-						timeouts.push([folder.expires, folder.fullNameRaw]);
+						timeouts.push([folder.expires, folder.fullName]);
 					}
 
 					if (folder && folder.subFolders.length) {
@@ -152,13 +160,13 @@ export const FolderUserStore = new class {
 
 	saveSystemFolders(folders) {
 		folders = folders || {
-			SentFolder: FolderUserStore.sentFolder(),
-			DraftFolder: FolderUserStore.draftFolder(),
-			SpamFolder: FolderUserStore.spamFolder(),
-			TrashFolder: FolderUserStore.trashFolder(),
-			ArchiveFolder: FolderUserStore.archiveFolder()
+			Sent: FolderUserStore.sentFolder(),
+			Drafts: FolderUserStore.draftsFolder(),
+			Spam: FolderUserStore.spamFolder(),
+			Trash: FolderUserStore.trashFolder(),
+			Archive: FolderUserStore.archiveFolder()
 		};
-		Object.entries(folders).forEach(([k,v])=>Settings.set(k,v));
-		rl.app.Remote.saveSystemFolders(()=>0, folders);
+		forEachObjectEntry(folders, (k,v)=>Settings.set(k+'Folder',v));
+		rl.app.Remote.request('SystemFoldersUpdate', null, folders);
 	}
 };

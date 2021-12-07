@@ -19,11 +19,11 @@ class Application extends \RainLoop\Config\AbstractConfig
 		$bResult = parent::Load();
 
 		$this->aReplaceEnv = null;
-		if ((isset($_ENV) && \is_array($_ENV) && 0 < \count($_ENV)) ||
-			(isset($_SERVER) && \is_array($_SERVER) && 0 < \count($_SERVER)))
+		if ((isset($_ENV) && \is_array($_ENV) && \count($_ENV)) ||
+			(isset($_SERVER) && \is_array($_SERVER) && \count($_SERVER)))
 		{
 			$sEnvNames = $this->Get('labs', 'replace_env_in_configuration', '');
-			if (0 < \strlen($sEnvNames))
+			if (\strlen($sEnvNames))
 			{
 				$this->aReplaceEnv = \explode(',', $sEnvNames);
 				if (\is_array($this->aReplaceEnv))
@@ -93,7 +93,7 @@ class Application extends \RainLoop\Config\AbstractConfig
 			$this->SetPassword($sPassword);
 			return true;
 		}
-		return 0 < \strlen($sPassword) && \password_verify($sPassword, $sConfigPassword);
+		return \strlen($sPassword) && \password_verify($sPassword, $sConfigPassword);
 	}
 
 	public function Save() : bool
@@ -114,6 +114,12 @@ class Application extends \RainLoop\Config\AbstractConfig
 			case 'K': $upload_max_filesize *= 1024;
 		}
 		$upload_max_filesize = $upload_max_filesize / 1024 / 1024;
+
+		$sCipher = 'aes-256-cbc-hmac-sha1';
+		$aCiphers = \SnappyMail\Crypt::listCiphers();
+		if (!\in_array($sCipher, $aCiphers)) {
+			$sCipher = $aCiphers[\array_rand($aCiphers)];
+		}
 
 		return array(
 
@@ -174,7 +180,8 @@ class Application extends \RainLoop\Config\AbstractConfig
 				'hide_x_mailer_header'       => array(true),
 				'admin_panel_host'           => array(''),
 				'admin_panel_key'            => array('admin'),
-				'content_security_policy'    => array('')
+				'content_security_policy'    => array(''),
+				'encrypt_cipher'             => array($sCipher)
 			),
 
 			'ssl' => array(
@@ -342,7 +349,6 @@ Enables caching in the system'),
 				'smtp_show_server_errors' => array(false),
 				'smtp_use_auth_plain' => array(true),
 				'smtp_use_auth_cram_md5' => array(false),
-				'sieve_utf8_folder_name' => array(true),
 				'sieve_auth_plain_initial' => array(true),
 				'sieve_allow_fileinto_inbox' => array(false),
 				'imap_timeout' => array(300),

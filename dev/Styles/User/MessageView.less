@@ -1,12 +1,24 @@
-.g-ui-min-height-300 {
-	min-height: 300px;
+
+html.rl-no-preview-pane {
+	#rl-right:not(.message-selected) #V-MailMessageView {
+		display: none;
+	}
+}
+
+#V-MailMessageView.focused .messageView {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	border-color: darken(@rlMainDarkColor, 5%);
 }
 
 .messageView {
+	background-color: #fff;
+	border: 1px solid @rlMainDarkColor;
+	border-radius: @rlMainBorderRadius;
+	height: 100%;
 
 	.toolbar {
 		position: absolute;
-		top: 0;
+		top: -50px - @rlLowMargin;
 		right: 0;
 		left: 0;
 		height: 30px;
@@ -15,92 +27,92 @@
 	}
 
 	.b-content {
+		height: 100%;
+	}
 
+	.b-message {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	.b-message-view-checked-helper {
+		text-align: center;
+		font-size: 70px;
+		line-height: 70px;
+		padding-top: 100px;
+		color: #999;
+
+		.icon-mail {
+			font-size: 100px;
+			font-size: 50px;
+			line-height: 90px;
+			padding-left: 10px;
+		}
+	}
+
+	.b-message-view-desc {
+		text-align: center;
+		font-size: 24px;
+		line-height: 30px;
+		color: #999;
+		padding: 120px 10px 0 10px;
+	}
+
+	.b-message-view-desc.error {
+		color: #DA4F49;
+	}
+
+	.message-fixed-button-toolbar {
+		z-index: 100;
 		position: absolute;
-		margin: 0;
-		top: 50px + @rlLowMargin;
-		bottom: @rlLowMargin + @rlBottomMargin;
-		right: @rlLowMargin;
-		left: -2px;
-		/*overflow: hidden;*/
-		border: 1px solid @rlMainDarkColor;
+		top: 33px;
+		right: 10px;
+	}
 
-		border-radius: @rlMainBorderRadius;
+	.infoParent {
+		cursor: pointer;
+		opacity: 0.5;
 
-		background-color: #fff;
+		&:hover {
+			opacity: 1;
+		}
+	}
 
-		.b-message-view-checked-helper {
-			text-align: center;
-			font-size: 70px;
-			line-height: 70px;
-			padding-top: 100px;
-			color: #999;
+	.flagParent {
 
-			.icon-mail {
-				font-size: 100px;
-				font-size: 50px;
-				line-height: 90px;
-				padding-left: 10px;
-			}
+		cursor: pointer;
+		margin: 0 0.25em;
+
+		.flagOn {
+			color: orange;
 		}
 
-		.b-message-view-desc {
-			text-align: center;
-			font-size: 24px;
-			line-height: 30px;
-			color: #999;
-			padding: 120px 10px 0 10px;
-		}
-
-		.b-message-view-desc.error {
-			color: #DA4F49;
-		}
-
-		.message-fixed-button-toolbar {
-			z-index: 100;
-			position: absolute;
-			top: 33px;
-			right: 10px;
-		}
-
-		.infoParent {
-			cursor: pointer;
+		&.flagOff:not(:hover) {
 			opacity: 0.5;
-
-			&:hover {
-				opacity: 1;
-			}
-		}
-
-		.flagParent {
-
-			cursor: pointer;
-			margin: 0 0.25em;
-
-			.flagOn {
-				color: orange;
-			}
-
-			&.flagOff:not(:hover) {
-				opacity: 0.5;
-			}
 		}
 	}
 
 	.messageItemHeader {
 
-		padding: 10px;
 		background-color: #f8f8f8;
 		border-bottom: 1px solid #ddd;
 		border-radius: @rlMainBorderRadius @rlMainBorderRadius 0 0;
+		padding: 10px;
+		flex-shrink: 0;
 
 		.subjectParent {
+			display: flex;
 			font-size: 18px;
 			font-weight: bold;
-			text-overflow: ellipsis;
-			overflow: hidden;
-			white-space: nowrap;
 			margin-bottom: 8px;
+		}
+
+		.subject, .emptySubjectText {
+			flex-grow: 1;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 		}
 
 		.messageButtons {
@@ -150,14 +162,9 @@
 		}
 
 		.emptySubjectText {
-			display: none;
 			font-style: italic;
 			font-weight: normal;
 			color: #999;
-		}
-
-		&.emptySubject .emptySubjectText {
-			display: inline;
 		}
 
 		.hasVirus {
@@ -170,11 +177,7 @@
 	.messageItem {
 
 		color: #000;
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		right: 0;
+		height: 100%;
 		overflow: auto;
 		scroll-behavior: smooth;
 
@@ -209,7 +212,7 @@
 			text-align: center;
 			font-size: 24px;
 			color: grey;
-			padding-top: 50px;
+			padding: 50px 0;
 		}
 
 		.showImages, .readReceipt, .pgpSigned, .pgpEncrypted {
@@ -451,12 +454,6 @@
 		}
 	}
 
-	&.focused .b-content {
-		z-index: 101;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-		border-color: darken(@rlMainDarkColor, 5%);
-	}
-
 	.thread-controls {
 		.dropdown-toggle {
 			padding-left: 10px;
@@ -467,39 +464,9 @@
 			padding-right: 10px;
 		}
 	}
-
-	.thread-list {
-
-		.e-link {
-			padding: 4px 8px 6px 10px;
-		}
-
-		&.hide-more .thread-list-message.more-that {
-			display: none;
-		}
-
-		.thread-date {
-			font-size: 13px;
-			color: #999;
-		}
-
-		.more-threads {
-			text-align: center;
-			padding: 8px;
-			background-color: #F5F5F5;
-			color: #555;
-			text-decoration: underline;
-			border-top: 1px dashed #555;
-		}
-	}
 }
 
-html.rl-mobile .messageView,
 html.rl-no-preview-pane .messageView {
-
-	&:not(.message-selected) {
-		display: none;
-	}
 
 	.toolbar {
 		padding-left: 1px;
@@ -521,7 +488,7 @@ html:not(.rl-mobile):not(.rl-no-preview-pane) .messageView {
 	}
 }
 
-html.rl-bottom-preview-pane:not(.rl-mobile) .messageView {
+html.rl-bottom-preview-pane .messageView {
 	.b-content {
 		bottom: @rlBottomMargin;
 	}
@@ -534,10 +501,10 @@ html.rl-message-fullscreen {
 	}
 
 	#rl-right {
-		.RL-MailMessageList,
-		.RL-SettingsPane,
-		.RL-SystemDropDown,
-		.RL-MailMessageView .messageView .toolbar {
+		#V-MailMessageList,
+		#V-SettingsPane,
+		#V-SystemDropDown,
+		#V-MailMessageView .messageView .toolbar {
 			display: none !important;
 		}
 	}

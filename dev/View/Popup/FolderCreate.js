@@ -15,6 +15,7 @@ import { AbstractViewPopup } from 'Knoin/AbstractViews';
 class FolderCreatePopupView extends AbstractViewPopup {
 	constructor() {
 		super('FolderCreate');
+		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			folderName: '',
@@ -29,7 +30,7 @@ class FolderCreatePopupView extends AbstractViewPopup {
 				oItem =>
 					oItem ? (oItem.isSystemFolder() ? oItem.name() + ' ' + oItem.manageFolderSystemName() : oItem.name()) : '',
 				FolderUserStore.namespace
-					? item => FolderUserStore.namespace !== item.fullNameRaw.substr(0, FolderUserStore.namespace.length)
+					? item => FolderUserStore.namespace !== item.fullName.substr(0, FolderUserStore.namespace.length)
 					: null,
 				true
 			)
@@ -49,7 +50,10 @@ class FolderCreatePopupView extends AbstractViewPopup {
 		}
 
 		rl.app.foldersPromisesActionHelper(
-			Remote.folderCreate(this.folderName(), parentFolderName),
+			Remote.post('FolderCreate', FolderUserStore.foldersCreating, {
+				Folder: this.folderName(),
+				Parent: parentFolderName
+			}),
 			Notification.CantCreateFolder
 		);
 
@@ -60,13 +64,9 @@ class FolderCreatePopupView extends AbstractViewPopup {
 		return /^[^\\/]+$/g.test(sName);
 	}
 
-	clearPopup() {
+	onShow() {
 		this.folderName('');
 		this.selectedParentValue('');
-	}
-
-	onShow() {
-		this.clearPopup();
 	}
 }
 

@@ -13,6 +13,7 @@ import { AbstractViewPopup } from 'Knoin/AbstractViews';
 class FolderSystemPopupView extends AbstractViewPopup {
 	constructor() {
 		super('FolderSystem');
+		this.viewNoUserSelect = true;
 
 		this.sChooseOnText = '';
 		this.sUnuseText = '';
@@ -35,7 +36,7 @@ class FolderSystemPopupView extends AbstractViewPopup {
 		);
 
 		this.sentFolder = FolderUserStore.sentFolder;
-		this.draftFolder = FolderUserStore.draftFolder;
+		this.draftsFolder = FolderUserStore.draftsFolder;
 		this.spamFolder = FolderUserStore.spamFolder;
 		this.trashFolder = FolderUserStore.trashFolder;
 		this.archiveFolder = FolderUserStore.archiveFolder;
@@ -44,7 +45,7 @@ class FolderSystemPopupView extends AbstractViewPopup {
 
 		addSubscribablesTo(FolderUserStore, {
 			sentFolder: fSaveSystemFolders,
-			draftFolder: fSaveSystemFolders,
+			draftsFolder: fSaveSystemFolders,
 			spamFolder: fSaveSystemFolders,
 			trashFolder: fSaveSystemFolders,
 			archiveFolder: fSaveSystemFolders

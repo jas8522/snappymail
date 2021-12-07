@@ -2,10 +2,10 @@
 
 namespace RainLoop\Actions;
 
-use \RainLoop\Enumerations\Capa;
-use \RainLoop\Exceptions\ClientException;
-use \RainLoop\Notifications;
-use \RainLoop\Utils;
+use RainLoop\Enumerations\Capa;
+use RainLoop\Exceptions\ClientException;
+use RainLoop\Notifications;
+use RainLoop\Utils;
 
 trait User
 {
@@ -23,26 +23,18 @@ trait User
 		$sEmail = \MailSo\Base\Utils::Trim($this->GetActionParam('Email', ''));
 		$sPassword = $this->GetActionParam('Password', '');
 		$sLanguage = $this->GetActionParam('Language', '');
-		$bSignMe = '1' === (string) $this->GetActionParam('SignMe', '0');
+		$bSignMe = !empty($this->GetActionParam('SignMe', 0));
 
 		$oAccount = null;
 
 		$this->Logger()->AddSecret($sPassword);
 
-		try
-		{
-			$oAccount = $this->LoginProcess($sEmail, $sPassword,
-				$bSignMe ? $this->generateSignMeToken($sEmail) : '');
-			$this->Plugins()->RunHook('login.success', array($oAccount));
-		}
-		catch (ClientException $oException)
-		{
-			throw $oException;
-		}
+		$oAccount = $this->LoginProcess($sEmail, $sPassword, $bSignMe);
+		$this->Plugins()->RunHook('login.success', array($oAccount));
 
-		$this->AuthToken($oAccount);
+		$this->SetAuthToken($oAccount);
 
-		if ($oAccount && 0 < \strlen($sLanguage))
+		if ($oAccount && \strlen($sLanguage))
 		{
 			$oSettings = $this->SettingsProvider()->Load($oAccount);
 			if ($oSettings)
@@ -58,7 +50,7 @@ trait User
 			}
 		}
 
-		return $this->TrueResponse(__FUNCTION__);
+		return $this->DefaultResponse(__FUNCTION__, $this->AppData(false));
 	}
 
 	/**
@@ -80,7 +72,7 @@ trait User
 		$bError = false;
 		$aData = false;
 
-		if (\is_array($aHashes) && 0 < \count($aHashes))
+		if (\is_array($aHashes) && \count($aHashes))
 		{
 			$aData = array();
 			foreach ($aHashes as $sZipHash)
@@ -99,7 +91,7 @@ trait User
 		}
 
 		$oFilesProvider = $this->FilesProvider();
-		if (!empty($sAction) && !$bError && \is_array($aData) && 0 < \count($aData) &&
+		if (!empty($sAction) && !$bError && \is_array($aData) && \count($aData) &&
 			$oFilesProvider && $oFilesProvider->IsActive())
 		{
 			$bError = false;
@@ -209,19 +201,13 @@ trait User
 	public function DoLogout() : array
 	{
 		$oAccount = $this->getAccountFromToken(false);
-		if ($oAccount)
-		{
-			if ($oAccount->SignMe())
-			{
-				$this->ClearSignMeData($oAccount);
-			}
-
-			if (!$oAccount->IsAdditionalAccount())
-			{
+		if ($oAccount) {
+			if ($oAccount instanceof \RainLoop\Model\MainAccount) {
+				$this->ClearSignMeData();
 				Utils::ClearCookie(self::AUTH_SPEC_TOKEN_KEY);
 			}
+			Utils::ClearCookie(self::AUTH_ADDITIONAL_TOKEN_KEY);
 		}
-
 		return $this->TrueResponse(__FUNCTION__);
 	}
 
@@ -327,7 +313,7 @@ trait User
 		}
 
 		$this->setSettingsFromParams($oSettings, 'MPP', 'int', function ($iValue) {
-			return (int) (\in_array($iValue, array(10, 20, 30, 50, 100, 150, 200, 300)) ? $iValue : 20);
+			return \min(50, \max(10, $iValue));
 		});
 
 		$this->setSettingsFromParams($oSettings, 'Layout', 'int', function ($iValue) {
@@ -397,7 +383,7 @@ trait User
 
 		$this->Plugins()->RunHook('json.suggestions-pre', array(&$aResult, $sQuery, $oAccount, $iLimit));
 
-		if ($iLimit > \count($aResult) && 0 < \strlen($sQuery))
+		if ($iLimit > \count($aResult) && \strlen($sQuery))
 		{
 			try
 			{
@@ -405,8 +391,8 @@ trait User
 				$oAddressBookProvider = $this->AddressBookProvider($oAccount);
 				if ($oAddressBookProvider && $oAddressBookProvider->IsActive())
 				{
-					$aSuggestions = $oAddressBookProvider->GetSuggestions($oAccount->ParentEmailHelper(), $sQuery, $iLimit);
-					if (0 === \count($aResult))
+					$aSuggestions = $oAddressBookProvider->GetSuggestions($this->GetMainEmail($oAccount), $sQuery, $iLimit);
+					if (!\count($aResult))
 					{
 						$aResult = $aSuggestions;
 					}
@@ -422,13 +408,13 @@ trait User
 			}
 		}
 
-		if ($iLimit > \count($aResult) && 0 < \strlen($sQuery))
+		if ($iLimit > \count($aResult) && \strlen($sQuery))
 		{
 			$oSuggestionsProvider = $this->SuggestionsProvider();
 			if ($oSuggestionsProvider && $oSuggestionsProvider->IsActive())
 			{
 				$aSuggestionsProviderResult = $oSuggestionsProvider->Process($oAccount, $sQuery, $iLimit);
-				if (\is_array($aSuggestionsProviderResult) && 0 < \count($aSuggestionsProviderResult))
+				if (\is_array($aSuggestionsProviderResult) && \count($aSuggestionsProviderResult))
 				{
 					$aResult = \array_merge($aResult, $aSuggestionsProviderResult);
 				}
@@ -451,43 +437,6 @@ trait User
 		}
 
 		return $this->DefaultResponse(__FUNCTION__, $aResult);
-	}
-
-	public function DoComposeUploadExternals() : array
-	{
-		$oAccount = $this->getAccountFromToken();
-
-		$mResult = false;
-		$aExternals = $this->GetActionParam('Externals', array());
-		if (\is_array($aExternals) && 0 < \count($aExternals))
-		{
-			$oHttp = \MailSo\Base\Http::SingletonInstance();
-
-			$mResult = array();
-			foreach ($aExternals as $sUrl)
-			{
-				$mResult[$sUrl] = '';
-
-				$sTempName = \md5($sUrl);
-
-				$iCode = 0;
-				$sContentType = '';
-
-				$rFile = $this->FilesProvider()->GetFile($oAccount, $sTempName, 'wb+');
-				if ($rFile && $oHttp->SaveUrlToFile($sUrl, $rFile, '', $sContentType, $iCode, $this->Logger(), 60,
-						$this->Config()->Get('labs', 'curl_proxy', ''), $this->Config()->Get('labs', 'curl_proxy_auth', '')))
-				{
-					$mResult[$sUrl] = $sTempName;
-				}
-
-				if (\is_resource($rFile))
-				{
-					\fclose($rFile);
-				}
-			}
-		}
-
-		return $this->DefaultResponse(__FUNCTION__, $mResult);
 	}
 
 	public function DoClearUserBackground() : array
@@ -513,22 +462,6 @@ trait User
 
 		return $this->DefaultResponse(__FUNCTION__, $oAccount && $oSettings ?
 			$this->SettingsProvider()->Save($oAccount, $oSettings) : false);
-	}
-
-	protected function ClearSignMeData(\RainLoop\Model\Account $oAccount) : void
-	{
-		if ($oAccount) {
-			Utils::ClearCookie(self::AUTH_SIGN_ME_TOKEN_KEY);
-			$this->StorageProvider()->Clear($oAccount,
-				\RainLoop\Providers\Storage\Enumerations\StorageType::CONFIG,
-				'sign_me'
-			);
-		}
-	}
-
-	private function generateSignMeToken(string $sEmail) : string
-	{
-		return \MailSo\Base\Utils::Sha1Rand(APP_SALT.$sEmail);
 	}
 
 	private function getMimeFileByHash(\RainLoop\Model\Account $oAccount, string $sHash) : array
@@ -578,7 +511,7 @@ trait User
 		return $aValues;
 	}
 
-	private function setSettingsFromParams(\RainLoop\Settings $oSettings, string $sConfigName, string $sType = 'string', ?callable $mStringCallback = null) : void
+	private function setSettingsFromParams(\RainLoop\Settings $oSettings, string $sConfigName, string $sType = 'string', ?callable $cCallback = null) : void
 	{
 		if ($this->HasActionParam($sConfigName))
 		{
@@ -588,21 +521,22 @@ trait User
 				default:
 				case 'string':
 					$sValue = (string) $sValue;
-					if ($mStringCallback && is_callable($mStringCallback))
-					{
-						$sValue = call_user_func($mStringCallback, $sValue);
+					if ($cCallback) {
+						$sValue = $cCallback($sValue);
 					}
-
 					$oSettings->SetConf($sConfigName, (string) $sValue);
 					break;
 
 				case 'int':
 					$iValue = (int) $sValue;
+					if ($cCallback) {
+						$sValue = $cCallback($iValue);
+					}
 					$oSettings->SetConf($sConfigName, $iValue);
 					break;
 
 				case 'bool':
-					$oSettings->SetConf($sConfigName, '1' === (string) $sValue);
+					$oSettings->SetConf($sConfigName, !empty($sValue));
 					break;
 			}
 		}

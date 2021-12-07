@@ -37,7 +37,7 @@ class TempFile
 	{
 		if (!in_array(self::STREAM_NAME, stream_get_wrappers()))
 		{
-			stream_wrapper_register(self::STREAM_NAME, '\MailSo\Base\StreamWrappers\TempFile');
+			stream_wrapper_register(self::STREAM_NAME, '\\MailSo\\Base\\StreamWrappers\\TempFile');
 		}
 	}
 
@@ -58,7 +58,7 @@ class TempFile
 		$aPath = parse_url($sPath);
 
 		if (isset($aPath['host']) && isset($aPath['scheme']) &&
-			0 < strlen($aPath['host']) && 0 < strlen($aPath['scheme']) &&
+			\strlen($aPath['host']) && \strlen($aPath['scheme']) &&
 			self::STREAM_NAME === $aPath['scheme'])
 		{
 			$sHashName = $aPath['host'];

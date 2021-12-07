@@ -1,7 +1,7 @@
 import ko from 'ko';
 
 import { Capa } from 'Common/Enums';
-import { Settings } from 'Common/Globals';
+import { Settings, SettingsGet } from 'Common/Globals';
 
 import { AccountUserStore } from 'Stores/User/Account';
 import { IdentityUserStore } from 'Stores/User/Identity';
@@ -20,6 +20,7 @@ export class AccountsUserSettings /*extends AbstractViewSettings*/ {
 		this.accounts = AccountUserStore.accounts;
 		this.loading = AccountUserStore.loading;
 		this.identities = IdentityUserStore;
+		this.mainEmail = SettingsGet('MainEmail');
 
 		this.accountForDeletion = ko.observable(null).deleteAccessHelper();
 		this.identityForDeletion = ko.observable(null).deleteAccessHelper();
@@ -30,7 +31,7 @@ export class AccountsUserSettings /*extends AbstractViewSettings*/ {
 	}
 
 	editAccount(account) {
-		if (account && account.canBeEdit()) {
+		if (account && account.isAdditional()) {
 			showScreenPopup(AccountPopupView, [account]);
 		}
 	}
@@ -53,14 +54,16 @@ export class AccountsUserSettings /*extends AbstractViewSettings*/ {
 			if (accountToRemove) {
 				this.accounts.remove((account) => accountToRemove === account);
 
-				Remote.accountDelete((iError, data) => {
+				Remote.request('AccountDelete', (iError, data) => {
 					if (!iError && data.Reload) {
 						rl.route.root();
 						setTimeout(() => location.reload(), 1);
 					} else {
 						rl.app.accountsAndIdentities();
 					}
-				}, accountToRemove.email);
+				}, {
+					EmailToDelete: accountToRemove.email
+				});
 			}
 		}
 	}
@@ -75,13 +78,18 @@ export class AccountsUserSettings /*extends AbstractViewSettings*/ {
 
 			if (identityToRemove) {
 				IdentityUserStore.remove(oIdentity => identityToRemove === oIdentity);
-				Remote.identityDelete(() => rl.app.accountsAndIdentities(), identityToRemove.id());
+				Remote.request('IdentityDelete', () => rl.app.accountsAndIdentities(), {
+					IdToDelete: identityToRemove.id()
+				});
 			}
 		}
 	}
 
 	accountsAndIdentitiesAfterMove() {
-		Remote.accountsAndIdentitiesSortOrder(null, AccountUserStore.getEmailAddresses(), IdentityUserStore.getIDS());
+		Remote.request('AccountsAndIdentitiesSortOrder', null, {
+			Accounts: AccountUserStore.getEmailAddresses().filter(v => v != SettingsGet('MainEmail')),
+			Identities: IdentityUserStore.getIDS()
+		});
 	}
 
 	onBuild(oDom) {

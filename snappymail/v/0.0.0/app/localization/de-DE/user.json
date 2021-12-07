@@ -57,7 +57,11 @@
 		"LABEL_ADV_DATE_MONTH": "Nicht älter als 1 Monat",
 		"LABEL_ADV_DATE_3_MONTHS": "Nicht älter als 3 Monate",
 		"LABEL_ADV_DATE_6_MONTHS": "Nicht älter als 6 Monate",
-		"LABEL_ADV_DATE_YEAR": "Nicht älter als 1 Jahr"
+		"LABEL_ADV_DATE_YEAR": "Nicht älter als 1 Jahr",
+		"LABEL_ADV_SUBFOLDERS": "Subfolders",
+		"LABEL_ADV_SUBFOLDERS_NONE": "None",
+		"LABEL_ADV_SUBFOLDERS_SUBTREE": "All",
+		"LABEL_ADV_SUBFOLDERS_SUBTREE_ONE": "One level"
 	},
 	"PREVIEW_POPUP": {
 		"FULLSCREEN": "Vollbild umschalten",
@@ -330,10 +334,8 @@
 		"NOTIFICATION_ARCHIVE": "Sie haben keinen \"Archiv\"-Systemordner gewählt, in dem die archivierten Nachrichten abgelegt werden."
 	},
 	"TITLES": {
-		"LOGIN": "Anmeldung",
 		"MAILBOX": "Postfach",
-		"SETTINGS": "Einstellungen",
-		"COMPOSE": "Erstellen"
+		"SETTINGS": "Einstellungen"
 	},
 	"UPLOAD": {
 		"ERROR_FILE_IS_TOO_BIG": "Datei ist zu groß",
@@ -520,8 +522,8 @@
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Ungültiger Token",
 		"AUTH_ERROR": "Authentifizierung fehlgeschlagen",
-		"ACCESS_ERROR": "Zugriffsfehler",
 		"CONNECTION_ERROR": "Serververbindung kann nicht hergestellt werden",
+		"DOMAIN_ALREADY_EXISTS": "Diese Domain existiert bereits",
 		"DOMAIN_NOT_ALLOWED": "Diese Domain ist nicht zugelassen.",
 		"ACCOUNT_NOT_ALLOWED": "Konto ist nicht zugelassen.",
 		"CONTACTS_SYNC_ERROR": "Fehler bei Kontakte-Synchronisierung",
@@ -544,17 +546,11 @@
 		"CANT_DELETE_NON_EMPTY_FOLDER": "Der Ordner kann nicht gelöscht werden; er ist nicht leer",
 		"CANT_SUBSCRIBE_FOLDER": "Dieser Ordner kann nicht abonniert werden",
 		"CANT_UNSUBSCRIBE_FOLDER": "Das Abonnement dieses Ordners kann nicht gelöscht werden",
-		"CANT_SAVE_SETTINGS": "Einstellungen können nicht gespeichert werden",
-		"CANT_SAVE_PLUGIN_SETTINGS": "Einstellungen können nicht gespeichert werden",
-		"DOMAIN_ALREADY_EXISTS": "Diese Domain existiert bereits",
-		"CANT_INSTALL_PACKAGE": "Paket konnte nicht installiert werden",
-		"CANT_DELETE_PACKAGE": "Paket konnte nicht entfernt werden",
-		"INVALID_PLUGIN_PACKAGE": "Plugin-Paket ist ungültig",
-		"UNSUPPORTED_PLUGIN_PACKAGE": "Plugin-Paket wird nicht unterstützt",
 		"DEMO_SEND_MESSAGE_ERROR": "Dieses Demokonto darf aus Sicherheitsgründen keine Nachrichten an externe E-Mail-Adressen versenden!",
 		"DEMO_ACCOUNT_ERROR": "Aus Sicherheitsgründen ist dieses Konto nicht zu dieser Aktion berechtigt!",
 		"ACCOUNT_ALREADY_EXISTS": "Dieses Konto existiert bereits",
 		"ACCOUNT_DOES_NOT_EXIST": "Dieser Account existiert nicht.",
+		"ACCOUNT_SWITCH_FAILED": "Switch to account \"%EMAIL%\" failed",
 		"MAIL_SERVER_ERROR": "Beim Zugriff auf den E-Mail-Server trat ein Fehler auf.",
 		"INVALID_INPUT_ARGUMENT": "Ungültige Eingabe",
 		"UNKNOWN_ERROR": "Unbekannter Fehler"

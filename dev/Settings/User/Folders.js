@@ -5,7 +5,7 @@ import { ClientSideKeyName, FolderMetadataKeys } from 'Common/EnumsUser';
 import { Settings } from 'Common/Globals';
 import { getNotification } from 'Common/Translator';
 
-import { removeFolderFromCacheList } from 'Common/Cache';
+import { setFolder, removeFolderFromCacheList } from 'Common/Cache';
 import { Capa } from 'Common/Enums';
 import { defaultOptionsAfterRender } from 'Common/Utils';
 import { initOnStartOrLangChange, i18n } from 'Common/Translator';
@@ -26,7 +26,7 @@ const folderForDeletion = ko.observable(null).deleteAccessHelper();
 
 export class FoldersUserSettings /*extends AbstractViewSettings*/ {
 	constructor() {
-		this.showKolab = Settings.capa(Capa.Kolab) && FolderUserStore.metadataSupported();
+		this.showKolab = ko.computed(() => FolderUserStore.hasCapability('METADATA') && Settings.capa(Capa.Kolab));
 		this.defaultOptionsAfterRender = defaultOptionsAfterRender;
 		this.kolabTypeOptions = ko.observableArray();
 		let i18nFilter = key => i18n('SETTINGS_FOLDERS/TYPE_' + key);
@@ -71,15 +71,28 @@ export class FoldersUserSettings /*extends AbstractViewSettings*/ {
 
 		if (nameToEdit && folder.name() !== nameToEdit) {
 			Local.set(ClientSideKeyName.FoldersLashHash, '');
-
-			rl.app.foldersPromisesActionHelper(
-				Remote.folderRename(folder.fullNameRaw, nameToEdit),
-				Notification.CantRenameFolder
-			);
-
-			removeFolderFromCacheList(folder.fullNameRaw);
-
-			folder.name(nameToEdit);
+			Remote
+				.post('FolderRename', FolderUserStore.foldersRenaming, {
+					Folder: folder.fullName,
+					NewFolderName: nameToEdit
+				})
+				.then(data => {
+					folder.name(nameToEdit/*data.Name*/);
+					if (folder.subFolders.length) {
+						Remote.foldersReloadWithTimeout();
+						// rename all subfolders folder.delimiter
+					} else {
+						removeFolderFromCacheList(folder.fullName);
+						data = data.Result;
+						folder.fullName = data.FullName;
+						setFolder(folder);
+					}
+				})
+				.catch(error => {
+					FolderUserStore.folderListError(
+						getNotification(error.code, '', Notification.CantRenameFolder)
+						+ '.\n' + error.message);
+				});
 		}
 
 		folder.edited(false);
@@ -119,12 +132,12 @@ export class FoldersUserSettings /*extends AbstractViewSettings*/ {
 				Local.set(ClientSideKeyName.FoldersLashHash, '');
 
 				// rl.app.foldersPromisesActionHelper
-				Remote.abort('Folders')
-					.folderDelete(folderToRemove.fullNameRaw)
-					.then(
+				Remote.abort('Folders').post('FolderDelete', FolderUserStore.foldersDeleting, {
+						Folder: folderToRemove.fullName
+					}).then(
 						() => {
 							folderToRemove.selectable(false)
-							removeFolderFromCacheList(folderToRemove.fullNameRaw);
+							removeFolderFromCacheList(folderToRemove.fullName);
 							FolderUserStore.folderList(FolderUserStore.folderList.filter(folder => folder !== folderToRemove));
 						},
 						error => {
@@ -143,20 +156,26 @@ export class FoldersUserSettings /*extends AbstractViewSettings*/ {
 	toggleFolderKolabType(folder, event) {
 		let type = event.target.value;
 		// TODO: append '.default' ?
-		Remote.folderSetMetadata(()=>0, folder.fullNameRaw, FolderMetadataKeys.KolabFolderType, type);
+		Remote.folderSetMetadata(null, folder.fullName, FolderMetadataKeys.KolabFolderType, type);
 		folder.kolabType(type);
 	}
 
 	toggleFolderSubscription(folder) {
 		let subscribe = !folder.subscribed();
 		Local.set(ClientSideKeyName.FoldersLashHash, '');
-		Remote.folderSetSubscribe(()=>0, folder.fullNameRaw, subscribe);
+		Remote.request('FolderSubscribe', null, {
+			Folder: folder.fullName,
+			Subscribe: subscribe ? 1 : 0
+		});
 		folder.subscribed(subscribe);
 	}
 
 	toggleFolderCheckable(folder) {
 		let checkable = !folder.checkable();
-		Remote.folderSetCheckable(()=>0, folder.fullNameRaw, checkable);
+		Remote.request('FolderCheckable', null, {
+			Folder: folder.fullName,
+			Checkable: checkable ? 1 : 0
+		});
 		folder.checkable(checkable);
 	}
 }

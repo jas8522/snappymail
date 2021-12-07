@@ -9,7 +9,7 @@ export class AboutAdminSettings /*extends AbstractViewSettings*/ {
 	}
 
 	onBuild() {
-		Remote.phpExtensions((iError, data) => iError || this.phpextensions(data.Result));
+		Remote.request('AdminPHPExtensions', (iError, data) => iError || this.phpextensions(data.Result));
 	}
 
 }

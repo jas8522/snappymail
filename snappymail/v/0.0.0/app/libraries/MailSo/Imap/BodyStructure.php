@@ -172,7 +172,7 @@ class BodyStructure
 	public function IsInline() : bool
 	{
 		return (null === $this->sDisposition) ?
-			(0 < \strlen($this->ContentID())) : ('inline' === strtolower($this->sDisposition));
+			(\strlen($this->ContentID())) : ('inline' === strtolower($this->sDisposition));
 	}
 
 	public function IsImage() : bool
@@ -328,7 +328,7 @@ class BodyStructure
 	public function SearchByCallback($fCallback) : array
 	{
 		$aReturn = array();
-		if (\call_user_func($fCallback, $this))
+		if ($fCallback($this))
 		{
 			$aReturn[] = $this;
 		}
@@ -359,7 +359,7 @@ class BodyStructure
 	public function GetPartByMimeIndex(string $sMimeIndex) : self
 	{
 		$oPart = null;
-		if (0 < \strlen($sMimeIndex))
+		if (\strlen($sMimeIndex))
 		{
 			if ($sMimeIndex === $this->sPartID)
 			{
@@ -419,7 +419,7 @@ class BodyStructure
 					if ($sCharsetIndex < $iIndex && false !== \strpos($sValue, "''"))
 					{
 						$aValueParts = \explode("''", $sValue, 2);
-						if (2 === \count($aValueParts) && 0 < \strlen($aValueParts[0]))
+						if (2 === \count($aValueParts) && \strlen($aValueParts[0]))
 						{
 							$sCharsetIndex = $iIndex;
 							$sCharset = $aValueParts[0];
@@ -431,13 +431,13 @@ class BodyStructure
 				}
 			}
 
-			if (0 < \count($aFileNames))
+			if (\count($aFileNames))
 			{
 				\ksort($aFileNames, SORT_NUMERIC);
 				$sResult = \implode(\array_values($aFileNames));
 				$sResult = \urldecode($sResult);
 
-				if (0 < \strlen($sCharset))
+				if (\strlen($sCharset))
 				{
 					$sResult = \MailSo\Base\Utils::ConvertEncoding($sResult,
 						$sCharset, \MailSo\Base\Enumerations\Charset::UTF_8);
@@ -456,7 +456,7 @@ class BodyStructure
 		}
 
 		$sBodyMainType = null;
-		if (\is_string($aBodyStructure[0]) && 'NIL' !== $aBodyStructure[0])
+		if (\is_string($aBodyStructure[0]))
 		{
 			$sBodyMainType = $aBodyStructure[0];
 		}
@@ -484,13 +484,13 @@ class BodyStructure
 
 			$sBodyMainType = 'multipart';
 			$sSubPartIDPrefix = '';
-			if (0 === \strlen($sPartID) || '.' === $sPartID[\strlen($sPartID) - 1])
+			if (!\strlen($sPartID) || '.' === $sPartID[\strlen($sPartID) - 1])
 			{
 				// This multi-part is root part of message.
 				$sSubPartIDPrefix = $sPartID;
 				$sPartID .= 'TEXT';
 			}
-			else if (0 < \strlen($sPartID))
+			else if (\strlen($sPartID))
 			{
 				// This multi-part is a part of another multi-part.
 				$sSubPartIDPrefix = $sPartID.'.';
@@ -520,7 +520,7 @@ class BodyStructure
 
 			if ($iExtraItemPos < \count($aBodyStructure))
 			{
-				if (!\is_string($aBodyStructure[$iExtraItemPos]) || 'NIL' === $aBodyStructure[$iExtraItemPos])
+				if (!\is_string($aBodyStructure[$iExtraItemPos]))
 				{
 					return null;
 				}
@@ -549,7 +549,7 @@ class BodyStructure
 			}
 
 			$sBodyMainType = \strtolower($sBodyMainType);
-			if (!\is_string($aBodyStructure[1]) || 'NIL' === $aBodyStructure[1])
+			if (!\is_string($aBodyStructure[1]))
 			{
 				return null;
 			}
@@ -568,7 +568,7 @@ class BodyStructure
 				$sName = self::decodeAttrParameter($aBodyParams, 'name', $sContentType);
 			}
 
-			if (null !== $aBodyStructure[3] && 'NIL' !== $aBodyStructure[3])
+			if (null !== $aBodyStructure[3])
 			{
 				if (!\is_string($aBodyStructure[3]))
 				{
@@ -578,7 +578,7 @@ class BodyStructure
 				$sContentID = $aBodyStructure[3];
 			}
 
-			if (null !== $aBodyStructure[4] && 'NIL' !== $aBodyStructure[4])
+			if (null !== $aBodyStructure[4])
 			{
 				if (!\is_string($aBodyStructure[4]))
 				{
@@ -588,7 +588,7 @@ class BodyStructure
 				$sDescription = $aBodyStructure[4];
 			}
 
-			if (null !== $aBodyStructure[5] && 'NIL' !== $aBodyStructure[5])
+			if (null !== $aBodyStructure[5])
 			{
 				if (!\is_string($aBodyStructure[5]))
 				{
@@ -606,7 +606,7 @@ class BodyStructure
 				$iSize = -1;
 			}
 
-			if (0 === \strlen($sPartID) || '.' === $sPartID[\strlen($sPartID) - 1])
+			if (!\strlen($sPartID) || '.' === $sPartID[\strlen($sPartID) - 1])
 			{
 				// This is the only sub-part of the message (otherwise, it would be
 				// one of sub-parts of a multi-part, and partID would already be fully set up).
@@ -671,7 +671,7 @@ class BodyStructure
 			{
 				if (null !== $aDispList[0])
 				{
-					if (\is_string($aDispList[0]) && 'NIL' !== $aDispList[0])
+					if (\is_string($aDispList[0]))
 					{
 						$sDisposition = $aDispList[0];
 					}
@@ -680,22 +680,22 @@ class BodyStructure
 						return null;
 					}
 				}
-			}
 
-			$aDispParamList = $aDispList[1];
-			if (\is_array($aDispParamList))
-			{
-				$aDispositionParams = self::getKeyValueListFromArrayList($aDispParamList);
-				$sFileName = self::decodeAttrParameter($aDispositionParams, 'filename', $sCharset ?: '');
+				$aDispParamList = $aDispList[1];
+				if (\is_array($aDispParamList))
+				{
+					$aDispositionParams = self::getKeyValueListFromArrayList($aDispParamList);
+					$sFileName = self::decodeAttrParameter($aDispositionParams, 'filename', $sCharset ?: '');
+				}
 			}
 		}
 
 		++$iExtraItemPos;
 
 		$sLanguage = null;
-		if ($iExtraItemPos < count($aBodyStructure))
+		if ($iExtraItemPos < \count($aBodyStructure))
 		{
-			if (null !== $aBodyStructure[$iExtraItemPos] && 'NIL' !== $aBodyStructure[$iExtraItemPos])
+			if (null !== $aBodyStructure[$iExtraItemPos])
 			{
 				if (\is_array($aBodyStructure[$iExtraItemPos]))
 				{
@@ -712,7 +712,7 @@ class BodyStructure
 		$sLocation = null;
 		if ($iExtraItemPos < \count($aBodyStructure))
 		{
-			if (null !== $aBodyStructure[$iExtraItemPos] && 'NIL' !== $aBodyStructure[$iExtraItemPos])
+			if (null !== $aBodyStructure[$iExtraItemPos])
 			{
 				if (\is_string($aBodyStructure[$iExtraItemPos]))
 				{
@@ -778,9 +778,10 @@ class BodyStructure
 	private static function getKeyValueListFromArrayList(array $aList) : array
 	{
 		$aDict = array();
-		if (0 === \count($aList) % 2)
+		$iLen = \count($aList);
+		if (0 === ($iLen % 2))
 		{
-			for ($iIndex = 0, $iLen = \count($aList); $iIndex < $iLen; $iIndex += 2)
+			for ($iIndex = 0; $iIndex < $iLen; $iIndex += 2)
 			{
 				if (\is_string($aList[$iIndex]) && isset($aList[$iIndex + 1]) && \is_string($aList[$iIndex + 1]))
 				{

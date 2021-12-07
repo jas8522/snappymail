@@ -2,7 +2,7 @@ import ko from 'ko';
 import { Notification, UploadErrorCode } from 'Common/Enums';
 import { langLink } from 'Common/Links';
 import { doc, createElement } from 'Common/Globals';
-import { getKeyByValue } from 'Common/Utils';
+import { getKeyByValue, forEachObjectEntry } from 'Common/Utils';
 
 let I18N_DATA = {};
 
@@ -66,7 +66,7 @@ export const
 			}
 		}
 		if (valueList) {
-			Object.entries(valueList).forEach(([key, value]) => {
+			forEachObjectEntry(valueList, (key, value) => {
 				result = result.replace('%' + key + '%', value);
 			});
 		}
@@ -133,7 +133,7 @@ export const
 	 * @param {boolean} admin
 	 * @param {string} language
 	 */
-	reload = (admin, language) =>
+	translatorReload = (admin, language) =>
 		new Promise((resolve, reject) => {
 			const script = createElement('script');
 			script.onload = () => {

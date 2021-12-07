@@ -16,6 +16,7 @@ import { FilterPopupView } from 'View/Popup/Filter';
 class SieveScriptPopupView extends AbstractViewPopup {
 	constructor() {
 		super('SieveScript');
+		this.viewNoUserSelect = true;
 
 		addObservablesTo(this, {
 			saveError: false,
@@ -56,7 +57,7 @@ class SieveScriptPopupView extends AbstractViewPopup {
 				script.body(script.filtersToRaw());
 			}
 
-			Remote.filtersScriptSave(
+			Remote.request('FiltersScriptSave',
 				(iError, data) => {
 					self.saving = false;
 
@@ -69,7 +70,7 @@ class SieveScriptPopupView extends AbstractViewPopup {
 						script.hasChanges(false);
 					}
 				},
-				script
+				script.toJson()
 			);
 		}
 

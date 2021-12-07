@@ -11,10 +11,9 @@
 
 namespace MailSo\Imap\Traits;
 
-use \MailSo\Imap\Response;
-use \MailSo\Imap\Enumerations\ResponseStatus;
-use \MailSo\Imap\Enumerations\ResponseType;
-use \MailSo\Imap\Exceptions\ResponseNotFoundException;
+use MailSo\Imap\Response;
+use MailSo\Imap\Enumerations\ResponseType;
+use MailSo\Imap\Exceptions\ResponseNotFoundException;
 
 /**
  * @category MailSo
@@ -34,70 +33,70 @@ trait ResponseParser
 
 	protected function partialParseResponse() : Response
 	{
+		$this->iResponseBufParsedPos = 0;
+		$this->bNeedNext = true;
 		$oResponse = new Response;
-		$this->partialParseResponseBranch($oResponse);
+		$this->partialParseResponseBranch($oResponse, false, '', '', true);
 		if (ResponseType::UNKNOWN === $oResponse->ResponseType) {
 			throw new ResponseNotFoundException;
 		}
 		return $oResponse;
 	}
 
-	private function skipBracketParse(?Response $oImapResponse) : bool
+	/**
+	 * A bug in the parser converts folder names that start with '[' into arrays.
+	 * https://github.com/the-djmaze/snappymail/issues/1
+	 * https://github.com/the-djmaze/snappymail/issues/70
+	 * The fix RainLoop implemented isn't correct either.
+	 * This one should as RFC 3501 only mentions:
+	 *
+	 * 	Status responses are OK, NO, BAD, PREAUTH and BYE.
+	 *
+	 *	Status responses MAY include an OPTIONAL "response code".  A response
+	 *	code consists of data inside square brackets in the form of an atom,
+	 *	possibly followed by a space and arguments.
+	 *
+	 * Like:
+	 *  * OK [HIGHESTMODSEQ 11102]
+	 *  * OK [PERMANENTFLAGS (\Answered $FORWARDED $SENT $SIGNED $TODO \*)]
+	 *  TAG1 OK [READ-WRITE]
+	 */
+	private static function skipSquareBracketParse(Response $oImapResponse) : bool
 	{
-		return $oImapResponse &&
-			$oImapResponse->ResponseType === ResponseType::UNTAGGED &&
-			(
-				($oImapResponse->StatusOrIndex === 'STATUS' && 2 === \count($oImapResponse->ResponseList)) ||
-				($oImapResponse->StatusOrIndex === 'LIST' && 4 === \count($oImapResponse->ResponseList)) ||
-				($oImapResponse->StatusOrIndex === 'LSUB' && 4 === \count($oImapResponse->ResponseList))
-			);
+		return !$oImapResponse->IsStatusResponse || 2 < \count($oImapResponse->ResponseList);
 	}
 
 	/**
 	 * @return array|string
 	 * @throws \MailSo\Net\Exceptions\Exception
 	 */
-	private function partialParseResponseBranch(?Response $oImapResponse,
-		bool $bTreatAsAtom = false, string $sParentToken = '', string $sOpenBracket = '')
+	private function partialParseResponseBranch(Response $oImapResponse,
+		bool $bTreatAsAtom,
+		?string $sParentToken,
+		string $sOpenBracket,
+		bool $bRoot = false)
 	{
-		if ($oImapResponse) {
-			$this->iResponseBufParsedPos = 0;
-			$this->bNeedNext = true;
-		}
-
 		$iPos = $this->iResponseBufParsedPos;
 
 		$sPreviousAtomUpperCase = null;
-		$sClosingBracket = ')';
-		$iLiteralLen = 0;
 		$iBufferEndIndex = 0;
-		$iDebugCount = 0;
 
 		$bIsGotoDefault = false;
-		$bIsGotoLiteral = false;
-		$bIsGotoLiteralEnd = false;
-		$bIsGotoAtomBracket = false;
-		$bIsGotoNotAtomBracket = false;
-
-		$bCountOneInited = false;
-		$bCountTwoInited = false;
 
 		$sAtomBuilder = $bTreatAsAtom ? '' : null;
 		$aList = array();
-		if ($oImapResponse)
+		if ($bRoot)
 		{
 			$aList =& $oImapResponse->ResponseList;
 		}
 
 		while (true)
 		{
-			if (100000 === ++$iDebugCount)
-			{
-				$this->Logger()->Write('PartialParseOver: '.$iDebugCount, \MailSo\Log\Enumerations\Type::ERROR);
-			}
-
 			if ($this->bNeedNext)
 			{
+				/**
+				 * $this->sResponseBuffer is a single fgets() that ends with \r\n
+				 */
 				$iPos = 0;
 				$this->getNextBuffer();
 				$this->iResponseBufParsedPos = $iPos;
@@ -107,117 +106,7 @@ trait ResponseParser
 			$sChar = null;
 			if ($bIsGotoDefault)
 			{
-				$sChar = 'GOTO_DEFAULT';
 				$bIsGotoDefault = false;
-			}
-			else if ($bIsGotoLiteral)
-			{
-				$bIsGotoLiteral = false;
-				$bIsGotoLiteralEnd = true;
-
-				if ($this->partialResponseLiteralCallbackCallable(
-					$sParentToken, null === $sPreviousAtomUpperCase ? '' : \strtoupper($sPreviousAtomUpperCase), $iLiteralLen))
-				{
-					if (!$bTreatAsAtom)
-					{
-						$aList[] = '';
-					}
-				}
-				else
-				{
-					$sLiteral = '';
-					$iRead = $iLiteralLen;
-
-					while (0 < $iRead)
-					{
-						$sAddRead = \fread($this->ConnectionResource(), $iRead);
-						if (false === $sAddRead)
-						{
-							$sLiteral = false;
-							break;
-						}
-
-						$sLiteral .= $sAddRead;
-						$iRead -= \strlen($sAddRead);
-
-						\MailSo\Base\Utils::ResetTimeLimit();
-					}
-
-					if (false !== $sLiteral)
-					{
-						$iLiteralSize = \strlen($sLiteral);
-						if ($iLiteralLen !== $iLiteralSize)
-						{
-							$this->writeLog('Literal stream read warning "read '.$iLiteralSize.' of '.
-								$iLiteralLen.'" bytes', \MailSo\Log\Enumerations\Type::WARNING);
-						}
-
-						if (!$bTreatAsAtom)
-						{
-							$aList[] = $sLiteral;
-
-							if (\MailSo\Config::$LogSimpleLiterals)
-							{
-								$this->writeLog('{'.\strlen($sLiteral).'} '.$sLiteral, \MailSo\Log\Enumerations\Type::INFO);
-							}
-						}
-					}
-					else
-					{
-						$this->writeLog('Can\'t read imap stream', \MailSo\Log\Enumerations\Type::NOTE);
-					}
-
-					unset($sLiteral);
-				}
-
-				continue;
-			}
-			else if ($bIsGotoLiteralEnd)
-			{
-				$sPreviousAtomUpperCase = null;
-				$this->bNeedNext = true;
-				$bIsGotoLiteralEnd = false;
-
-				continue;
-			}
-			else if ($bIsGotoAtomBracket)
-			{
-				if ($bTreatAsAtom)
-				{
-					$sAtomBlock = $this->partialParseResponseBranch(null, true,
-						null === $sPreviousAtomUpperCase ? '' : \strtoupper($sPreviousAtomUpperCase),
-						$sOpenBracket);
-
-					$sAtomBuilder .= $sAtomBlock;
-					$iPos = $this->iResponseBufParsedPos;
-					$sAtomBuilder .= $sClosingBracket;
-				}
-
-				$sPreviousAtomUpperCase = null;
-				$bIsGotoAtomBracket = false;
-
-				continue;
-			}
-			else if ($bIsGotoNotAtomBracket)
-			{
-				$aSubItems = $this->partialParseResponseBranch(null, false,
-					null === $sPreviousAtomUpperCase ? '' : \strtoupper($sPreviousAtomUpperCase),
-					$sOpenBracket);
-
-				$aList[] = $aSubItems;
-				$iPos = $this->iResponseBufParsedPos;
-				$sPreviousAtomUpperCase = null;
-				if ($oImapResponse && $oImapResponse->IsStatusResponse)
-				{
-					$oImapResponse->OptionalResponse = $aSubItems;
-
-					$bIsGotoDefault = true;
-					$bIsGotoNotAtomBracket = false;
-					continue;
-				}
-				$bIsGotoNotAtomBracket = false;
-
-				continue;
 			}
 			else
 			{
@@ -231,179 +120,149 @@ trait ResponseParser
 				$sChar = $this->sResponseBuffer[$iPos];
 			}
 
-			switch (true)
+			switch ($sChar)
 			{
-				case ']' === $sChar:
-				case ')' === $sChar:
-					if ($this->skipBracketParse($oImapResponse))
-					{
+				case ']':
+					if ($bRoot && static::skipSquareBracketParse($oImapResponse)) {
 						$bIsGotoDefault = true;
-						$bIsGotoNotAtomBracket = false;
+						break 2;
 					}
-					else
-					{
-						++$iPos;
-						$sPreviousAtomUpperCase = null;
-					}
+				case ')':
+					++$iPos;
+					$sPreviousAtomUpperCase = null;
 					break 2;
-				case ' ' === $sChar:
+
+				case ' ':
 					if ($bTreatAsAtom)
 					{
 						$sAtomBuilder .= ' ';
 					}
 					++$iPos;
 					break;
-				case '[' === $sChar:
-				case '(' === $sChar:
-					$sOpenBracket = $sChar;
-					$sClosingBracket = '[' === $sChar ? ']' : ')';
-					if ($bTreatAsAtom)
-					{
-						$sAtomBuilder .= $sChar;
-						$bIsGotoAtomBracket = true;
-						$this->iResponseBufParsedPos = ++$iPos;
-					}
-					else if ($this->skipBracketParse($oImapResponse))
-					{
-						$sOpenBracket = '';
-						$sClosingBracket = '';
+
+				case '[':
+					if ($bRoot && static::skipSquareBracketParse($oImapResponse)) {
 						$bIsGotoDefault = true;
-						$bIsGotoNotAtomBracket = false;
+						break;
 					}
-					else
-					{
-						$bIsGotoNotAtomBracket = true;
-						$this->iResponseBufParsedPos = ++$iPos;
-					}
-					break;
-				case '{' === $sChar:
-					$bIsLiteralParsed = false;
-					$mLiteralEndPos = \strpos($this->sResponseBuffer, '}', $iPos);
-					if (false !== $mLiteralEndPos && $mLiteralEndPos > $iPos)
-					{
-						$sLiteralLenAsString = \substr($this->sResponseBuffer, $iPos + 1, $mLiteralEndPos - $iPos - 1);
-						if (\is_numeric($sLiteralLenAsString))
-						{
-							$iLiteralLen = (int) $sLiteralLenAsString;
-							$bIsLiteralParsed = true;
-							$iPos = $mLiteralEndPos + 3;
-							$bIsGotoLiteral = true;
-							break;
+				case '(':
+					$this->iResponseBufParsedPos = ++$iPos;
+					$mResult = $this->partialParseResponseBranch(
+						$oImapResponse, $bTreatAsAtom, $sPreviousAtomUpperCase, $sChar
+					);
+					$sPreviousAtomUpperCase = null;
+					$iPos = $this->iResponseBufParsedPos;
+					if ($bTreatAsAtom) {
+						$sAtomBuilder .= $sChar . $mResult . ('[' === $sChar ? ']' : ')');
+					} else {
+						$aList[] = $mResult;
+						if ($bRoot && $oImapResponse->IsStatusResponse) {
+							$oImapResponse->OptionalResponse = $mResult;
+							$bIsGotoDefault = true;
 						}
 					}
-					if (!$bIsLiteralParsed)
-					{
+					unset($mResult);
+					continue 2;
+
+				case '{':
+					$iLength = \strspn($this->sResponseBuffer, '0123456789', $iPos + 1);
+					if ($iLength && "}\r\n" === \substr($this->sResponseBuffer, $iPos + 1 + $iLength, 3)) {
+						$iLiteralLen = (int) \substr($this->sResponseBuffer, $iPos + 1, $iLength);
+						$iPos += 4 + $iLength;
+
+						if ($this->partialResponseLiteralCallbacks($sParentToken, $sPreviousAtomUpperCase, $iLiteralLen)) {
+							if (!$bTreatAsAtom) {
+								$aList[] = '';
+							}
+						} else {
+							$sLiteral = $this->partialResponseLiteral($iLiteralLen);
+							if (null !== $sLiteral) {
+								if (!$bTreatAsAtom) {
+									$aList[] = $sLiteral;
+									if (\MailSo\Config::$LogSimpleLiterals) {
+										$this->writeLog('{'.$iLiteralSize.'} '.$sLiteral, \MailSo\Log\Enumerations\Type::INFO);
+									}
+								} else {
+									\error_log('Literal treated as atom and skipped');
+								}
+								unset($sLiteral);
+							} else {
+								$this->writeLog('Can\'t read imap stream', \MailSo\Log\Enumerations\Type::NOTE);
+							}
+						}
+
+						$sPreviousAtomUpperCase = null;
+						$this->bNeedNext = true;
+
+						continue 2;
+					} else {
 						$iPos = $iBufferEndIndex;
+						$sPreviousAtomUpperCase = null;
+					}
+					break;
+
+				/**
+				 * A quoted string is a sequence of zero or more 7-bit characters,
+				 * excluding CR and LF, with double quote (<">) characters at each end.
+				 */
+				case '"':
+					$iOffset = $iPos + 1;
+					while (true) {
+						if ($iOffset > $iBufferEndIndex) {
+							// need more data
+							$iPos = $iBufferEndIndex;
+							break;
+						}
+						$iLength = \strcspn($this->sResponseBuffer, "\r\n\\\"", $iOffset);
+						$sSpecial = $this->sResponseBuffer[$iOffset + $iLength];
+						switch ($sSpecial)
+						{
+						case '\\':
+							// Is escaped character \ or "?
+							if (!\in_array($this->sResponseBuffer[$iOffset + $iLength + 1], ['\\','"'])) {
+								// No, not allowed in quoted string
+								break 2;
+							}
+							$iOffset += $iLength + 2;
+							break;
+
+						case '"':
+							if ($bTreatAsAtom) {
+								$sAtomBuilder .= \stripslashes(\substr($this->sResponseBuffer, $iPos, $iOffset + $iLength - $iPos + 1));
+							} else {
+								$aList[] = \stripslashes(\substr($this->sResponseBuffer, $iPos + 1, $iOffset + $iLength - $iPos - 1));
+							}
+							$iPos = $iOffset + $iLength + 1;
+							break 2;
+
+						default:
+						case "\r":
+						case "\n":
+							\error_log('Invalid char in quoted string: "' . \substr($this->sResponseBuffer, $iPos, $iOffset + $iLength - $iPos) . '"');
+							// Not allowed in quoted string
+							break 2;
+						}
 					}
 					$sPreviousAtomUpperCase = null;
 					break;
-				case '"' === $sChar:
-					$bIsQuotedParsed = false;
-					while (true)
-					{
-						$iClosingPos = $iPos + 1;
-						if ($iClosingPos > $iBufferEndIndex)
-						{
-							break;
-						}
 
-						while (true)
-						{
-							$iClosingPos = \strpos($this->sResponseBuffer, '"', $iClosingPos);
-							if (false === $iClosingPos)
-							{
-								break;
-							}
-
-							// TODO
-							$iClosingPosNext = $iClosingPos + 1;
-							if (
-								isset($this->sResponseBuffer[$iClosingPosNext]) &&
-								' ' !== $this->sResponseBuffer[$iClosingPosNext] &&
-								"\r" !== $this->sResponseBuffer[$iClosingPosNext] &&
-								"\n" !== $this->sResponseBuffer[$iClosingPosNext] &&
-								']' !== $this->sResponseBuffer[$iClosingPosNext] &&
-								')' !== $this->sResponseBuffer[$iClosingPosNext]
-								)
-							{
-								++$iClosingPos;
-								continue;
-							}
-
-							$iSlashCount = 0;
-							while ('\\' === $this->sResponseBuffer[$iClosingPos - $iSlashCount - 1])
-							{
-								++$iSlashCount;
-							}
-
-							if ($iSlashCount % 2 == 1)
-							{
-								++$iClosingPos;
-								continue;
-							}
-							else
-							{
-								break;
-							}
-						}
-
-						if (false === $iClosingPos)
-						{
-							break;
-						}
-						else
-						{
-							$bIsQuotedParsed = true;
-							if ($bTreatAsAtom)
-							{
-								$sAtomBuilder .= \strtr(
-									\substr($this->sResponseBuffer, $iPos, $iClosingPos - $iPos + 1),
-									array('\\\\' => '\\', '\\"' => '"')
-								);
-							}
-							else
-							{
-								$aList[] = \strtr(
-									\substr($this->sResponseBuffer, $iPos + 1, $iClosingPos - $iPos - 1),
-									array('\\\\' => '\\', '\\"' => '"')
-								);
-							}
-
-							$iPos = $iClosingPos + 1;
-							break;
-						}
-					}
-
-					if (!$bIsQuotedParsed)
-					{
-						$iPos = $iBufferEndIndex;
-					}
-
-					$sPreviousAtomUpperCase = null;
-					break;
-
-				case 'GOTO_DEFAULT' === $sChar:
 				default:
 					$iCharBlockStartPos = $iPos;
 
-					if ($oImapResponse && $oImapResponse->IsStatusResponse)
+					if ($bRoot && $oImapResponse->IsStatusResponse)
 					{
 						$iPos = $iBufferEndIndex;
-
-						while ($iPos > $iCharBlockStartPos && $this->sResponseBuffer[$iCharBlockStartPos] === ' ')
-						{
-							++$iCharBlockStartPos;
+						if ($iPos > $iCharBlockStartPos) {
+							$iCharBlockStartPos += \strspn($this->sResponseBuffer, ' ', $iCharBlockStartPos, $iPos - $iCharBlockStartPos);
 						}
 					}
 
-					$bIsAtomDone = false;
-					while (!$bIsAtomDone && ($iPos <= $iBufferEndIndex))
+					while ($iPos <= $iBufferEndIndex)
 					{
 						$sCharDef = $this->sResponseBuffer[$iPos];
 						switch (true)
 						{
-							case ('[' === $sCharDef || ']' === $sCharDef || '(' === $sCharDef || ')' === $sCharDef) &&
-								$this->skipBracketParse($oImapResponse):
+							case $bRoot && ('[' === $sCharDef || ']' === $sCharDef) && static::skipSquareBracketParse($oImapResponse):
 								++$iPos;
 								break;
 							case '[' === $sCharDef:
@@ -414,12 +273,11 @@ trait ResponseParser
 
 								$sAtomBuilder .= \substr($this->sResponseBuffer, $iCharBlockStartPos, $iPos - $iCharBlockStartPos + 1);
 
-								++$iPos;
-								$this->iResponseBufParsedPos = $iPos;
+								$this->iResponseBufParsedPos = ++$iPos;
 
-								$sListBlock = $this->partialParseResponseBranch(null, true,
-									null === $sPreviousAtomUpperCase ? '' : \strtoupper($sPreviousAtomUpperCase),
-									'[');
+								$sListBlock = $this->partialParseResponseBranch(
+									$oImapResponse, true, $sPreviousAtomUpperCase, '['
+								);
 
 								if (null !== $sListBlock)
 								{
@@ -432,8 +290,7 @@ trait ResponseParser
 							case ' ' === $sCharDef:
 							case ')' === $sCharDef && '(' === $sOpenBracket:
 							case ']' === $sCharDef && '[' === $sOpenBracket:
-								$bIsAtomDone = true;
-								break;
+								break 2;
 							default:
 								++$iPos;
 								break;
@@ -445,8 +302,8 @@ trait ResponseParser
 						$sLastCharBlock = \substr($this->sResponseBuffer, $iCharBlockStartPos, $iPos - $iCharBlockStartPos);
 						if (null === $sAtomBuilder)
 						{
-							$aList[] = $sLastCharBlock;
-							$sPreviousAtomUpperCase = $sLastCharBlock;
+							$aList[] = 'NIL' === $sLastCharBlock ? null : $sLastCharBlock;
+							$sPreviousAtomUpperCase = \strtoupper($sLastCharBlock);
 						}
 						else
 						{
@@ -455,59 +312,27 @@ trait ResponseParser
 							if (!$bTreatAsAtom)
 							{
 								$aList[] = $sAtomBuilder;
-								$sPreviousAtomUpperCase = $sAtomBuilder;
+								$sPreviousAtomUpperCase = \strtoupper($sAtomBuilder);
 								$sAtomBuilder = null;
 							}
 						}
 
-						if ($oImapResponse)
+						if ($bRoot)
 						{
-//							if (1 === \count($aList))
-							if (!$bCountOneInited && 1 === \count($aList))
-//							if (isset($aList[0]) && !isset($aList[1])) // fast 1 === \count($aList)
+							if (!isset($oImapResponse->Tag) && 1 === \count($aList))
 							{
-								$bCountOneInited = true;
-
-								$oImapResponse->Tag = $aList[0];
-								if ('+' === $oImapResponse->Tag)
-								{
-									$oImapResponse->ResponseType = ResponseType::CONTINUATION;
-								}
-								else if ('*' === $oImapResponse->Tag)
-								{
-									$oImapResponse->ResponseType = ResponseType::UNTAGGED;
-								}
-								else if ($this->getCurrentTag() === $oImapResponse->Tag)
+								$oImapResponse->setTag($aList[0]);
+								if ($this->getCurrentTag() === $oImapResponse->Tag)
 								{
 									$oImapResponse->ResponseType = ResponseType::TAGGED;
 								}
-								else
-								{
-									$oImapResponse->ResponseType = ResponseType::UNKNOWN;
-								}
 							}
-//							else if (2 === \count($aList))
-							else if (!$bCountTwoInited && 2 === \count($aList))
-//							else if (isset($aList[1]) && !isset($aList[2])) // fast 2 === \count($aList)
+							else if (!isset($oImapResponse->StatusOrIndex) && 2 === \count($aList))
 							{
-								$bCountTwoInited = true;
-
-								$oImapResponse->StatusOrIndex = \strtoupper($aList[1]);
-
-								if ($oImapResponse->StatusOrIndex == ResponseStatus::OK ||
-									$oImapResponse->StatusOrIndex == ResponseStatus::NO ||
-									$oImapResponse->StatusOrIndex == ResponseStatus::BAD ||
-									$oImapResponse->StatusOrIndex == ResponseStatus::BYE ||
-									$oImapResponse->StatusOrIndex == ResponseStatus::PREAUTH)
-								{
-									$oImapResponse->IsStatusResponse = true;
-								}
+								$oImapResponse->setStatus($aList[1]);
 							}
-							else if (ResponseType::CONTINUATION === $oImapResponse->ResponseType)
-							{
-								$oImapResponse->HumanReadable = $sLastCharBlock;
-							}
-							else if ($oImapResponse->IsStatusResponse)
+							else if (ResponseType::CONTINUATION === $oImapResponse->ResponseType
+								|| $oImapResponse->IsStatusResponse)
 							{
 								$oImapResponse->HumanReadable = $sLastCharBlock;
 							}
@@ -518,34 +343,51 @@ trait ResponseParser
 
 		$this->iResponseBufParsedPos = $iPos;
 
-		if (100000 < $iDebugCount)
-		{
-			$this->Logger()->Write('PartialParseOverResult: '.$iDebugCount, \MailSo\Log\Enumerations\Type::ERROR);
-		}
-
 		return $bTreatAsAtom ? $sAtomBuilder : $aList;
 	}
 
-	private function partialResponseLiteralCallbackCallable(string $sParent, string $sLiteralAtomUpperCase, int $iLiteralLen) : bool
+	private function partialResponseLiteral($iLiteralLen) : ?string
 	{
-		if (!$this->aFetchCallbacks) {
+		$sLiteral = '';
+		$iRead = $iLiteralLen;
+		while (0 < $iRead) {
+			$sAddRead = \fread($this->ConnectionResource(), $iRead);
+			$iBLen = \strlen($sAddRead);
+			if (!$iBLen) {
+				$this->writeLog('Literal stream read warning "read '.\strlen($sLiteral).' of '.
+					$iLiteralLen.'" bytes', \MailSo\Log\Enumerations\Type::WARNING);
+				return null;
+			}
+			$sLiteral .= $sAddRead;
+			$iRead -= $iBLen;
+			if ($iRead > 16384) {
+//				\set_time_limit(10);
+				\MailSo\Base\Utils::ResetTimeLimit();
+			}
+		}
+
+		$iLiteralSize = \strlen($sLiteral);
+		if ($iLiteralLen !== $iLiteralSize) {
+			$this->writeLog('Literal stream read warning "read '.$iLiteralSize.' of '.
+				$iLiteralLen.'" bytes', \MailSo\Log\Enumerations\Type::WARNING);
+		}
+		return $sLiteral;
+	}
+
+	private function partialResponseLiteralCallbacks(?string $sParent, ?string $sLiteralAtomUpperCase, int $iLiteralLen) : bool
+	{
+		if (!$this->aFetchCallbacks || !$sLiteralAtomUpperCase || 'FETCH' !== $sParent) {
 			return false;
 		}
 
 		$sLiteralAtomUpperCasePeek = '';
-		if (0 === \strpos($sLiteralAtomUpperCase, 'BODY'))
-		{
+		if (0 === \strpos($sLiteralAtomUpperCase, 'BODY')) {
 			$sLiteralAtomUpperCasePeek = \str_replace('BODY', 'BODY.PEEK', $sLiteralAtomUpperCase);
 		}
 
-		$sFetchKey = '';
-		if (\strlen($sLiteralAtomUpperCasePeek) && isset($this->aFetchCallbacks[$sLiteralAtomUpperCasePeek]))
-		{
+		$sFetchKey = $sLiteralAtomUpperCase;
+		if ($sLiteralAtomUpperCasePeek && isset($this->aFetchCallbacks[$sLiteralAtomUpperCasePeek])) {
 			$sFetchKey = $sLiteralAtomUpperCasePeek;
-		}
-		else if (\strlen($sLiteralAtomUpperCase) && isset($this->aFetchCallbacks[$sLiteralAtomUpperCase]))
-		{
-			$sFetchKey = $sLiteralAtomUpperCase;
 		}
 
 		if (empty($this->aFetchCallbacks[$sFetchKey]) || !\is_callable($this->aFetchCallbacks[$sFetchKey])) {
@@ -562,8 +404,7 @@ trait ResponseParser
 
 		try
 		{
-			\call_user_func($this->aFetchCallbacks[$sFetchKey],
-				$sParent, $sLiteralAtomUpperCase, $rImapLiteralStream);
+			$this->aFetchCallbacks[$sFetchKey]($sParent, $sLiteralAtomUpperCase, $rImapLiteralStream);
 		}
 		catch (\Throwable $oException)
 		{
@@ -571,8 +412,7 @@ trait ResponseParser
 			$this->writeLogException($oException);
 		}
 
-		if ($rImapLiteralStream)
-		{
+		if ($rImapLiteralStream) {
 			$iNotReadLiteralLen = 0;
 
 			$bFeof = \feof($rImapLiteralStream);
@@ -580,13 +420,10 @@ trait ResponseParser
 				' - feof = '.($bFeof ? 'good' : 'BAD'), $bFeof ?
 					\MailSo\Log\Enumerations\Type::NOTE : \MailSo\Log\Enumerations\Type::WARNING);
 
-			if (!$bFeof)
-			{
-				while (!\feof($rImapLiteralStream))
-				{
+			if (!$bFeof) {
+				while (!\feof($rImapLiteralStream)) {
 					$sBuf = \fread($rImapLiteralStream, 1024 * 1024);
-					if (false === $sBuf || 0 === \strlen($sBuf) ||  null === $sBuf)
-					{
+					if (!\strlen($sBuf)) {
 						break;
 					}
 
@@ -594,22 +431,18 @@ trait ResponseParser
 					$iNotReadLiteralLen += \strlen($sBuf);
 				}
 
-				if (!\feof($rImapLiteralStream))
-				{
+				if (!\feof($rImapLiteralStream)) {
 					\stream_get_contents($rImapLiteralStream);
 				}
 			}
 
 			\fclose($rImapLiteralStream);
 
-			if ($iNotReadLiteralLen > 0)
-			{
+			if (0 < $iNotReadLiteralLen) {
 				$this->writeLog('Not read literal size is '.$iNotReadLiteralLen.' bytes.',
 					\MailSo\Log\Enumerations\Type::WARNING);
 			}
-		}
-		else
-		{
+		} else {
 			$this->writeLog('Literal stream is not resource after callback.',
 				\MailSo\Log\Enumerations\Type::WARNING);
 		}

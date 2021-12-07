@@ -21,7 +21,13 @@ if (defined('APP_VERSION'))
 		if (!function_exists('str_contains')) {
 			function str_contains(string $haystack, string $needle) : bool
 			{
-				return false !== \strpos($haystack, $needle);
+				return false !== strpos($haystack, $needle);
+			}
+		}
+		if (!function_exists('str_starts_with')) {
+			function str_starts_with(string $haystack, string $needle) : bool
+			{
+				return 0 === strncmp($haystack, $needle, strlen($needle));
 			}
 		}
 
@@ -44,7 +50,7 @@ if (defined('APP_VERSION'))
 		unset($sSite);
 
 		$sPrivateDataFolderInternalName = defined('MULTIDOMAIN') ? APP_SITE : '';
-		define('APP_PRIVATE_DATA_NAME', 0 === strlen($sPrivateDataFolderInternalName) ? '_default_' : $sPrivateDataFolderInternalName);
+		define('APP_PRIVATE_DATA_NAME', $sPrivateDataFolderInternalName ?: '_default_');
 
 		define('APP_DUMMY', '********');
 		define('APP_DEV_VERSION', '0.0.0');
@@ -69,7 +75,7 @@ if (defined('APP_VERSION'))
 
 		define('APP_DATA_FOLDER_PATH_UNIX', str_replace('\\', '/', APP_DATA_FOLDER_PATH));
 
-		$sSalt = is_file(APP_DATA_FOLDER_PATH.'SALT.php') ? file_get_contents(APP_DATA_FOLDER_PATH.'SALT.php') : '';
+		$sSalt = is_file(APP_DATA_FOLDER_PATH.'SALT.php') ? trim(file_get_contents(APP_DATA_FOLDER_PATH.'SALT.php')) : '';
 		$sData = is_file(APP_DATA_FOLDER_PATH.'DATA.php') ? file_get_contents(APP_DATA_FOLDER_PATH.'DATA.php') : '';
 		$sInstalled = is_file(APP_DATA_FOLDER_PATH.'INSTALLED') ? file_get_contents(APP_DATA_FOLDER_PATH.'INSTALLED') : '';
 
@@ -139,6 +145,11 @@ if (defined('APP_VERSION'))
 		define('APP_PRIVATE_DATA', APP_DATA_FOLDER_PATH.'_data_'.($sData ? md5($sData) : '').'/'.APP_PRIVATE_DATA_NAME.'/');
 
 		define('APP_PLUGINS_PATH', APP_PRIVATE_DATA.'plugins/');
+
+		ini_set('default_charset', 'UTF-8');
+		ini_set('internal_encoding', 'UTF-8');
+		mb_internal_encoding('UTF-8');
+		mb_language('uni');
 
 		if (APP_VERSION !== $sInstalled || (!is_dir(APP_PRIVATE_DATA) && strlen($sPrivateDataFolderInternalName) && '_default_' !== APP_PRIVATE_DATA_NAME))
 		{

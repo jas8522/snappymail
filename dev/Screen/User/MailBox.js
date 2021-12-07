@@ -1,8 +1,11 @@
 import { Scope } from 'Common/Enums';
-import { doc, leftPanelDisabled, moveAction, Settings } from 'Common/Globals';
+import { Layout, ClientSideKeyName } from 'Common/EnumsUser';
+import { doc, leftPanelDisabled, moveAction, Settings, elementById } from 'Common/Globals';
 import { pString, pInt } from 'Common/Utils';
-import { getFolderFromCacheList, getFolderFullNameRaw, getFolderInboxName } from 'Common/Cache';
+import { setLayoutResizer } from 'Common/UtilsUser';
+import { getFolderFromCacheList, getFolderFullName, getFolderInboxName } from 'Common/Cache';
 import { i18n } from 'Common/Translator';
+import { SettingsUserStore } from 'Stores/User/Settings';
 
 import { AppUserStore } from 'Stores/User/App';
 import { AccountUserStore } from 'Stores/User/Account';
@@ -61,7 +64,7 @@ export class MailBoxUserScreen extends AbstractScreen {
 	 * @returns {void}
 	 */
 	onRoute(folderHash, page, search, messageUid) {
-		const folder = getFolderFromCacheList(getFolderFullNameRaw(folderHash.replace(/~([\d]+)$/, '')));
+		const folder = getFolderFromCacheList(getFolderFullName(folderHash.replace(/~([\d]+)$/, '')));
 		if (folder) {
 			if (messageUid) {
 //				rl.route.setHash(mailBox(folderHash));
@@ -90,12 +93,12 @@ export class MailBoxUserScreen extends AbstractScreen {
 
 			addEventListener('mailbox.inbox-unread-count', e => {
 				FolderUserStore.foldersInboxUnreadCount(e.detail);
-
+/*				// Disabled in SystemDropDown.html
 				const email = AccountUserStore.email();
 				AccountUserStore.accounts.forEach(item =>
 					item && email === item.email && item.count(e.detail)
 				);
-
+*/
 				this.updateWindowTitle();
 			});
 		}
@@ -105,7 +108,23 @@ export class MailBoxUserScreen extends AbstractScreen {
 	 * @returns {void}
 	 */
 	onBuild() {
-		setTimeout(() => rl.app.initHorizontalLayoutResizer(), 1);
+		setTimeout(() => {
+			// initMailboxLayoutResizer
+			const top = elementById('V-MailMessageList'),
+				bottom = elementById('V-MailMessageView'),
+				fToggle = () => {
+					let layout = SettingsUserStore.layout();
+					setLayoutResizer(top, bottom, ClientSideKeyName.MessageListSize,
+						(ThemeStore.isMobile() || Layout.NoPreview === layout)
+							? 0
+							: (Layout.SidePreview === layout ? 'Width' : 'Height')
+					);
+				};
+			if (top && bottom) {
+				fToggle();
+				addEventListener('rl-layout', fToggle);
+			}
+		}, 1);
 
 		doc.addEventListener('click', event =>
 			event.target.closest('#rl-right') && moveAction(false)
@@ -124,15 +143,15 @@ export class MailBoxUserScreen extends AbstractScreen {
 			// Folder: INBOX | Sent | 422ff435694c0d71cf9712bf43b768f5
 			[/^([^/]*)$/, { normalize_: fNormS }],
 			// Search: {folder}/{string}
-			[/^([a-zA-Z0-9~]+)\/(.+)\/?$/, { normalize_: (request, vals) =>
+			[/^([a-zA-Z0-9.~_-]+)\/(.+)\/?$/, { normalize_: (request, vals) =>
 				[folder(request, vals), 1, decodeURI(pString(vals[1]))]
 			}],
 			// Message: {folder}/m{uid}
-			[/^([a-zA-Z0-9~]+)\/m([1-9][0-9]*)\/?$/, { normalize_: (request, vals) =>
+			[/^([a-zA-Z0-9.~_-]+)\/m([1-9][0-9]*)\/?$/, { normalize_: (request, vals) =>
 				[folder(request, vals), 1, '', pString(vals[1])]
 			}],
 			// Page: {folder}/p{int}(/{search})?
-			[/^([a-zA-Z0-9~]+)\/p([1-9][0-9]*)(?:\/(.+)\/?)?$/, { normalize_: fNormS }]
+			[/^([a-zA-Z0-9.~_-]+)\/p([1-9][0-9]*)(?:\/(.+)\/?)?$/, { normalize_: fNormS }]
 		];
 	}
 }

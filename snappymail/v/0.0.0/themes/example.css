@@ -6,6 +6,7 @@
 	--main-bg-image: none;	// "images/background.png"
 	--main-bg-size: auto;
 	--main-bg-repeat: repeat;
+	--link-color: #369;
 
 // LOADING
 	--loading-color: #000;			// #ddd
@@ -28,7 +29,6 @@
 	--dropdown-menu-hover-bg-color: #444;
 	--dropdown-menu-hover-color: #eee;
 	--dropdown-menu-disabled-color: #999;
-	--dropdown-menu-selected-bg-color: #eee;
 
 // FOLDERS
 	--folders-color: #333;

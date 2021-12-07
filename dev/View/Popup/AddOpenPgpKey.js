@@ -6,6 +6,7 @@ import { AbstractViewPopup } from 'Knoin/AbstractViews';
 class AddOpenPgpKeyPopupView extends AbstractViewPopup {
 	constructor() {
 		super('AddOpenPgpKey');
+		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			key: '',
@@ -82,14 +83,10 @@ class AddOpenPgpKeyPopupView extends AbstractViewPopup {
 		return true;
 	}
 
-	clearPopup() {
+	onShow() {
 		this.key('');
 		this.keyError(false);
 		this.keyErrorMessage('');
-	}
-
-	onShow() {
-		this.clearPopup();
 	}
 }
 

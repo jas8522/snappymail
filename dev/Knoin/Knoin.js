@@ -1,12 +1,14 @@
 import ko from 'ko';
 
-import { doc, $htmlCL } from 'Common/Globals';
-import { isFunction } from 'Common/Utils';
+import { doc, $htmlCL, elementById } from 'Common/Globals';
+import { isFunction, forEachObjectValue, forEachObjectEntry } from 'Common/Utils';
 
-let currentScreen = null,
+let
+	SCREENS = {},
+	currentScreen = null,
 	defaultScreenName = '';
 
-const SCREENS = {},
+const
 	autofocus = dom => {
 		const af = dom.querySelector('[autofocus]');
 		af && af.focus();
@@ -30,31 +32,56 @@ const SCREENS = {},
 			let vmDom = null;
 			const vm = new ViewModelClass(vmScreen),
 				position = vm.viewType || '',
+				dialog = ViewType.Popup === position,
 				vmPlace = position ? doc.getElementById('rl-' + position.toLowerCase()) : null;
 
 			ViewModelClass.__builded = true;
 			ViewModelClass.__vm = vm;
 
 			if (vmPlace) {
-				vmDom = Element.fromHTML('<div class="rl-view-model RL-' + vm.viewModelTemplateID + '" hidden=""></div>');
+				vmDom = dialog
+					? Element.fromHTML('<dialog id="V-'+ vm.viewModelTemplateID + '"></dialog>')
+					: Element.fromHTML('<div id="V-'+ vm.viewModelTemplateID + '" hidden=""></div>');
 				vmPlace.append(vmDom);
 
 				vm.viewModelDom = vmDom;
 				ViewModelClass.__dom = vmDom;
 
+				if (vm.viewNoUserSelect) {
+					vmDom.classList.add('g-ui-user-select-none');
+				}
+
 				if (ViewType.Popup === position) {
-					vm.cancelCommand = vm.closeCommand = createCommand(() => {
-						hideScreenPopup(ViewModelClass);
-					});
+					vm.cancelCommand = vm.closeCommand = createCommand(() => hideScreenPopup(ViewModelClass));
+
+					// Firefox / Safari HTMLDialogElement not defined
+					if (!vmDom.showModal) {
+						vmDom.classList.add('polyfill');
+						vmDom.showModal = () => {
+							if (!vmDom.backdrop) {
+								vmDom.before(vmDom.backdrop = Element.fromHTML('<div class="dialog-backdrop"></div>'));
+							}
+							vmDom.setAttribute('open','');
+							vmDom.open = true;
+							vmDom.returnValue = null;
+							vmDom.backdrop.hidden = false;
+						};
+						vmDom.close = v => {
+							vmDom.backdrop.hidden = true;
+							vmDom.returnValue = v;
+							vmDom.removeAttribute('open', null);
+							vmDom.open = false;
+						};
+					}
 
 					// show/hide popup/modal
 					const endShowHide = e => {
 						if (e.target === vmDom) {
-							if (vmDom.classList.contains('show')) {
+							if (vmDom.classList.contains('animate')) {
 								autofocus(vmDom);
 								vm.onShowWithDelay && vm.onShowWithDelay();
 							} else {
-								vmDom.hidden = true;
+								vmDom.close();
 								vm.onHideWithDelay && vm.onHideWithDelay();
 							}
 						}
@@ -63,22 +90,34 @@ const SCREENS = {},
 					vm.modalVisibility.subscribe(value => {
 						if (value) {
 							visiblePopups.add(vm);
-							vmDom.style.zIndex = 3000 + visiblePopups.size + 10;
-							vmDom.hidden = false;
+							vmDom.style.zIndex = 3000 + (visiblePopups.size * 2);
+							vmDom.showModal();
+							if (vmDom.backdrop) {
+								vmDom.backdrop.style.zIndex = 3000 + visiblePopups.size;
+							}
 							vm.keyScope.set();
-							arePopupsVisible(true);
 							requestAnimationFrame(() => { // wait just before the next paint
 								vmDom.offsetHeight; // force a reflow
-								vmDom.classList.add('show'); // trigger the transitions
+								vmDom.classList.add('animate'); // trigger the transitions
 							});
 						} else {
 							visiblePopups.delete(vm);
 							vm.onHide && vm.onHide();
-							vmDom.classList.remove('show');
 							vm.keyScope.unset();
-							arePopupsVisible(0 < visiblePopups.size);
+							vmDom.classList.remove('animate'); // trigger the transitions
 						}
-						vmDom.setAttribute('aria-hidden', !value);
+						arePopupsVisible(0 < visiblePopups.size);
+/*
+						// the old ko.bindingHandlers.modal
+						const close = vmDom.querySelector('.close'),
+							click = () => vm.modalVisibility(false);
+						if (close) {
+							close.addEventListener('click.koModal', click);
+							ko.utils.domNodeDisposal.addDisposeCallback(vmDom, () =>
+								close.removeEventListener('click.koModal', click)
+							);
+						}
+*/
 					});
 					if ('ontransitionend' in vmDom) {
 						vmDom.addEventListener('transitionend', endShowHide);
@@ -121,6 +160,25 @@ const SCREENS = {},
 				fn(ViewModelClass.__vm, ViewModelClass.__dom);
 			}
 		});
+	},
+
+	hideScreen = (screenToHide, destroy) => {
+		screenToHide.onHide && screenToHide.onHide();
+		forEachViewModel(screenToHide, (vm, dom) => {
+			dom.hidden = true;
+			vm.onHide && vm.onHide();
+			destroy && vm.viewModelDom.remove();
+		});
+	},
+
+	/**
+	 * @param {Function} ViewModelClassToHide
+	 * @returns {void}
+	 */
+	hideScreenPopup = ViewModelClassToHide => {
+		if (ViewModelClassToHide && ViewModelClassToHide.__vm && ViewModelClassToHide.__dom) {
+			ViewModelClassToHide.__vm.modalVisibility(false);
+		}
 	},
 
 	/**
@@ -167,12 +225,7 @@ const SCREENS = {},
 				setTimeout(() => {
 					// hide screen
 					if (currentScreen && !isSameScreen) {
-						currentScreen.onHide && currentScreen.onHide();
-
-						forEachViewModel(currentScreen, (vm, dom) => {
-							dom.hidden = true;
-							vm.onHide && vm.onHide();
-						});
+						hideScreen(currentScreen);
 					}
 					// --
 
@@ -230,16 +283,6 @@ export const
 		return fResult;
 	},
 
-	/**
-	 * @param {Function} ViewModelClassToHide
-	 * @returns {void}
-	 */
-	hideScreenPopup = ViewModelClassToHide => {
-		if (ViewModelClassToHide && ViewModelClassToHide.__vm && ViewModelClassToHide.__dom) {
-			ViewModelClassToHide.__vm.modalVisibility(false);
-		}
-	},
-
 	getScreenPopupViewModel = ViewModelClassToShow =>
 		(buildViewModel(ViewModelClassToShow) && ViewModelClassToShow.__dom) && ViewModelClassToShow.__vm,
 
@@ -275,6 +318,12 @@ export const
 	 * @returns {void}
 	 */
 	startScreens = screensClasses => {
+		hasher.clear();
+		forEachObjectValue(SCREENS, screen => hideScreen(screen, 1));
+		SCREENS = {};
+		currentScreen = null,
+		defaultScreenName = '';
+
 		screensClasses.forEach(CScreen => {
 			if (CScreen) {
 				const vmScreen = new CScreen(),
@@ -284,7 +333,7 @@ export const
 			}
 		});
 
-		Object.values(SCREENS).forEach(vmScreen => vmScreen.onStart());
+		forEachObjectValue(SCREENS, vmScreen => vmScreen.onStart());
 
 		const cross = new Crossroads();
 		cross.addRoute(/^([a-zA-Z0-9-]*)\/?(.*)$/, screenOnRoute);
@@ -293,11 +342,14 @@ export const
 		hasher.init();
 
 		setTimeout(() => $htmlCL.remove('rl-started-trigger'), 100);
-		setTimeout(() => $htmlCL.add('rl-started-delay'), 200);
+
+		const c = elementById('rl-content'), l = elementById('rl-loading');
+		c && (c.hidden = false);
+		l && l.remove();
 	},
 
 	decorateKoCommands = (thisArg, commands) =>
-		Object.entries(commands).forEach(([key, canExecute]) => {
+		forEachObjectEntry(commands, (key, canExecute) => {
 			let command = thisArg[key],
 				fn = (...args) => fn.enabled() && fn.canExecute() && command.apply(thisArg, args);
 

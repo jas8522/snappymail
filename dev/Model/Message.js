@@ -4,7 +4,7 @@ import { MessagePriority } from 'Common/EnumsUser';
 import { i18n } from 'Common/Translator';
 
 import { encodeHtml } from 'Common/Html';
-import { isArray, arrayLength } from 'Common/Utils';
+import { isArray, arrayLength, forEachObjectEntry } from 'Common/Utils';
 
 import { serverRequestRaw } from 'Common/Links';
 
@@ -56,12 +56,6 @@ export class MessageModel extends AbstractModel {
 			senderClearEmailsString: '',
 
 			deleted: false,
-			isDeleted: false,
-			isUnseen: false,
-			isFlagged: false,
-			isAnswered: false,
-			isForwarded: false,
-			isReadReceipt: false,
 
 			focused: false,
 			selected: false,
@@ -86,11 +80,21 @@ export class MessageModel extends AbstractModel {
 		this.attachmentsSpecData = ko.observableArray();
 		this.threads = ko.observableArray();
 		this.unsubsribeLinks = ko.observableArray();
+		this.flags = ko.observableArray();
 
 		this.addComputables({
 			attachmentIconClass: () => FileInfo.getCombinedIconClass(this.hasAttachments() ? this.attachmentsSpecData() : []),
 			threadsLen: () => this.threads().length,
 			isImportant: () => MessagePriority.High === this.priority(),
+
+			isDeleted: () => this.flags().includes('\\deleted'),
+			isUnseen: () => !this.flags().includes('\\seen') /* || this.flags().includes('\\unseen')*/,
+			isFlagged: () => this.flags().includes('\\flagged'),
+			isAnswered: () => this.flags().includes('\\answered'),
+			isForwarded: () => this.flags().includes('$forwarded'),
+			isReadReceipt: () => this.flags().includes('$mdnsent')
+//			isJunk: () => this.flags().includes('$junk') && !this.flags().includes('$nonjunk'),
+//			isPhishing: () => this.flags().includes('$phishing')
 		});
 	}
 
@@ -129,12 +133,6 @@ export class MessageModel extends AbstractModel {
 		this.senderClearEmailsString('');
 
 		this.deleted(false);
-		this.isDeleted(false);
-		this.isUnseen(false);
-		this.isFlagged(false);
-		this.isAnswered(false);
-		this.isForwarded(false);
-		this.isReadReceipt(false);
 
 		this.selected(false);
 		this.checked(false);
@@ -178,7 +176,7 @@ export class MessageModel extends AbstractModel {
 	}
 
 	computeSenderEmail() {
-		const list = [FolderUserStore.sentFolder(), FolderUserStore.draftFolder()].includes(this.folder) ? 'to' : 'from';
+		const list = [FolderUserStore.sentFolder(), FolderUserStore.draftsFolder()].includes(this.folder) ? 'to' : 'from';
 		this.senderEmailsString(this[list].toString(true));
 		this.senderClearEmailsString(this[list].toStringClear());
 	}
@@ -192,8 +190,8 @@ export class MessageModel extends AbstractModel {
 			json.Priority = MessagePriority.Normal;
 		}
 		if (super.revivePropertiesFromJson(json)) {
-//			this.foundedCIDs = isArray(json.FoundedCIDs) ? json.FoundedCIDs : [];
-//			this.attachments(AttachmentCollectionModel.reviveFromJson(json.Attachments, this.foundedCIDs));
+//			this.foundCIDs = isArray(json.FoundCIDs) ? json.FoundCIDs : [];
+//			this.attachments(AttachmentCollectionModel.reviveFromJson(json.Attachments, this.foundCIDs));
 
 			this.computeSenderEmail();
 		}
@@ -275,7 +273,7 @@ export class MessageModel extends AbstractModel {
 	 */
 	lineAsCss() {
 		let classes = [];
-		Object.entries({
+		forEachObjectEntry({
 			deleted: this.deleted(),
 			'deleted-mark': this.isDeleted(),
 			selected: this.selected(),
@@ -291,7 +289,7 @@ export class MessageModel extends AbstractModel {
 			// hasChildrenMessage: 1 < this.threadsLen(),
 			hasUnseenSubMessage: this.hasUnseenSubMessage(),
 			hasFlaggedSubMessage: this.hasFlaggedSubMessage()
-		}).forEach(([key, value]) => value && classes.push(key));
+		}, (key, value) => value && classes.push(key));
 		return classes.join(' ');
 	}
 
@@ -436,12 +434,7 @@ export class MessageModel extends AbstractModel {
 			this.deliveredTo = message.deliveredTo;
 			this.unsubsribeLinks(message.unsubsribeLinks);
 
-			this.isUnseen(message.isUnseen());
-			this.isFlagged(message.isFlagged());
-			this.isAnswered(message.isAnswered());
-			this.isForwarded(message.isForwarded());
-			this.isReadReceipt(message.isReadReceipt());
-			this.isDeleted(message.isDeleted());
+			this.flags(message.flags());
 
 			this.priority(message.priority());
 

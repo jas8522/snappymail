@@ -2,10 +2,9 @@
 
 namespace RainLoop\Model;
 
-use JsonSerializable;
 use MailSo\Base\Utils;
 
-class Identity implements JsonSerializable
+class Identity implements \JsonSerializable
 {
 	/**
 	 * @var string
@@ -44,8 +43,8 @@ class Identity implements JsonSerializable
 
 	function __construct(string $sId = '', string $sEmail = '')
 	{
-		$this->sId = empty($sId) ? '' : $sId;
-		$this->sEmail = empty($sEmail) ? '' : $sEmail;
+		$this->sId = $sId;
+		$this->sEmail = $sEmail;
 		$this->sName = '';
 		$this->sReplyTo = '';
 		$this->sBcc = '';

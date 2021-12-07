@@ -31,7 +31,6 @@ import {
 } from 'Common/Cache';
 
 import { AppUserStore } from 'Stores/User/App';
-import { QuotaUserStore } from 'Stores/User/Quota';
 import { SettingsUserStore } from 'Stores/User/Settings';
 import { FolderUserStore } from 'Stores/User/Folder';
 import { MessageUserStore } from 'Stores/User/Message';
@@ -65,12 +64,15 @@ export class MailMessageList extends AbstractViewRight {
 
 		this.messageList = MessageUserStore.list;
 
-		this.sortSupported = FolderUserStore.sortSupported;
+		this.sortSupported = ko.computed(() =>
+			FolderUserStore.hasCapability('SORT') | FolderUserStore.hasCapability('ESORT')
+		);
 
 		this.composeInEdit = AppUserStore.composeInEdit;
+
+		this.isMobile = ThemeStore.isMobile;
 		this.leftPanelDisabled = leftPanelDisabled;
 
-		this.isMessageSelected = MessageUserStore.isMessageSelected;
 		this.messageListSearch = MessageUserStore.listSearch;
 		this.messageListError = MessageUserStore.listError;
 
@@ -84,7 +86,7 @@ export class MailMessageList extends AbstractViewRight {
 
 		initOnStartOrLangChange(() => this.emptySubjectValue = i18n('MESSAGE_LIST/EMPTY_SUBJECT_TEXT'));
 
-		this.userUsageProc = QuotaUserStore.percentage;
+		this.userUsageProc = FolderUserStore.quotaPercentage;
 
 		this.addObservables({
 			moveDropdownTrigger: false,
@@ -107,7 +109,7 @@ export class MailMessageList extends AbstractViewRight {
 
 			folderMenuForMove: () =>
 				folderListOptionsBuilder(
-					[FolderUserStore.currentFolderFullNameRaw()],
+					[FolderUserStore.currentFolderFullName()],
 					[],
 					item => item ? item.localName() : ''
 				),
@@ -146,7 +148,7 @@ export class MailMessageList extends AbstractViewRight {
 
 			isTrashFolder: () => (FolderUserStore.trashFolder() || 0) === MessageUserStore.listEndFolder(),
 
-			isDraftFolder: () => (FolderUserStore.draftFolder() || 0) === MessageUserStore.listEndFolder(),
+			isDraftFolder: () => (FolderUserStore.draftsFolder() || 0) === MessageUserStore.listEndFolder(),
 
 			isSentFolder: () => (FolderUserStore.sentFolder() || 0) === MessageUserStore.listEndFolder(),
 
@@ -165,8 +167,6 @@ export class MailMessageList extends AbstractViewRight {
 			mobileCheckedStateShow: () => ThemeStore.isMobile() ? 0 < MessageUserStore.listChecked().length : true,
 
 			mobileCheckedStateHide: () => ThemeStore.isMobile() ? !MessageUserStore.listChecked().length : true,
-
-			messageListFocused: () => Scope.MessageList === AppUserStore.focusedState(),
 
 			sortText: () => {
 				let mode = FolderUserStore.sortMode(),
@@ -279,7 +279,7 @@ export class MailMessageList extends AbstractViewRight {
 		if (Settings.capa(Capa.DangerousActions)) {
 			rl.app.deleteMessagesFromFolder(
 				FolderType.Trash,
-				FolderUserStore.currentFolderFullNameRaw(),
+				FolderUserStore.currentFolderFullName(),
 				MessageUserStore.listCheckedOrSelectedUidsWithSubMails(),
 				false
 			);
@@ -289,7 +289,7 @@ export class MailMessageList extends AbstractViewRight {
 	deleteCommand() {
 		rl.app.deleteMessagesFromFolder(
 			FolderType.Trash,
-			FolderUserStore.currentFolderFullNameRaw(),
+			FolderUserStore.currentFolderFullName(),
 			MessageUserStore.listCheckedOrSelectedUidsWithSubMails(),
 			true
 		);
@@ -298,7 +298,7 @@ export class MailMessageList extends AbstractViewRight {
 	archiveCommand() {
 		rl.app.deleteMessagesFromFolder(
 			FolderType.Archive,
-			FolderUserStore.currentFolderFullNameRaw(),
+			FolderUserStore.currentFolderFullName(),
 			MessageUserStore.listCheckedOrSelectedUidsWithSubMails(),
 			true
 		);
@@ -307,7 +307,7 @@ export class MailMessageList extends AbstractViewRight {
 	spamCommand() {
 		rl.app.deleteMessagesFromFolder(
 			FolderType.Spam,
-			FolderUserStore.currentFolderFullNameRaw(),
+			FolderUserStore.currentFolderFullName(),
 			MessageUserStore.listCheckedOrSelectedUidsWithSubMails(),
 			true
 		);
@@ -316,7 +316,7 @@ export class MailMessageList extends AbstractViewRight {
 	notSpamCommand() {
 		rl.app.deleteMessagesFromFolder(
 			FolderType.NotSpam,
-			FolderUserStore.currentFolderFullNameRaw(),
+			FolderUserStore.currentFolderFullName(),
 			MessageUserStore.listCheckedOrSelectedUidsWithSubMails(),
 			true
 		);
@@ -335,20 +335,6 @@ export class MailMessageList extends AbstractViewRight {
 			AppUserStore.focusedState(b ? Scope.MessageList : Scope.FolderList);
 			moveAction(!b);
 		}
-	}
-
-	hideLeft(item, event) {
-		event.preventDefault();
-		event.stopPropagation();
-
-		leftPanelDisabled(true);
-	}
-
-	showLeft(item, event) {
-		event.preventDefault();
-		event.stopPropagation();
-
-		leftPanelDisabled(false);
 	}
 
 	composeClick() {
@@ -427,16 +413,16 @@ export class MailMessageList extends AbstractViewRight {
 	}
 
 	/**
-	 * @param {string} sToFolderFullNameRaw
+	 * @param {string} sToFolderFullName
 	 * @param {boolean} bCopy
 	 * @returns {boolean}
 	 */
-	moveSelectedMessagesToFolder(sToFolderFullNameRaw, bCopy) {
+	moveSelectedMessagesToFolder(sToFolderFullName, bCopy) {
 		if (MessageUserStore.hasCheckedOrSelected()) {
 			rl.app.moveMessagesToFolder(
-				FolderUserStore.currentFolderFullNameRaw(),
+				FolderUserStore.currentFolderFullName(),
 				MessageUserStore.listCheckedOrSelectedUidsWithSubMails(),
-				sToFolderFullNameRaw,
+				sToFolderFullName,
 				bCopy
 			);
 		}
@@ -451,114 +437,66 @@ export class MailMessageList extends AbstractViewRight {
 		item && !uids.includes(item.uid) && uids.push(item.uid);
 		return uids.length ? {
 			copy: event.ctrlKey,
-			folder: FolderUserStore.currentFolderFullNameRaw(),
+			folder: FolderUserStore.currentFolderFullName(),
 			uids: uids
 		} : null;
 	}
 
 	/**
-	 * @param {string} sFolderFullNameRaw
+	 * @param {string} sFolderFullName
 	 * @param {number} iSetAction
 	 * @param {Array=} aMessages = null
 	 * @returns {void}
 	 */
-	setAction(sFolderFullNameRaw, iSetAction, aMessages) {
-		rl.app.messageListAction(sFolderFullNameRaw, iSetAction, aMessages);
-	}
-
-	/**
-	 * @param {string} sFolderFullNameRaw
-	 * @param {number} iSetAction
-	 * @param {number} iThreadUid = ''
-	 * @returns {void}
-	 */
-	setActionForAll(sFolderFullNameRaw, iSetAction, iThreadUid = 0) {
-		if (sFolderFullNameRaw) {
-			let cnt = 0;
-			const uids = [];
-
-			let folder = getFolderFromCacheList(sFolderFullNameRaw);
-			if (folder) {
-				switch (iSetAction) {
-					case MessageSetAction.SetSeen:
-						folder = getFolderFromCacheList(sFolderFullNameRaw);
-						if (folder) {
-							MessageUserStore.list.forEach(message => {
-								if (message.isUnseen()) {
-									++cnt;
-								}
-
-								message.isUnseen(false);
-								uids.push(message.uid);
-							});
-
-							if (iThreadUid) {
-								folder.messageCountUnread(folder.messageCountUnread() - cnt);
-								if (0 > folder.messageCountUnread()) {
-									folder.messageCountUnread(0);
-								}
-							} else {
-								folder.messageCountUnread(0);
-							}
-
-							MessageFlagsCache.clearFolder(sFolderFullNameRaw);
-						}
-
-						Remote.messageSetSeenToAll(()=>0, sFolderFullNameRaw, true, iThreadUid ? uids : null);
-						break;
-					case MessageSetAction.UnsetSeen:
-						folder = getFolderFromCacheList(sFolderFullNameRaw);
-						if (folder) {
-							MessageUserStore.list.forEach(message => {
-								if (!message.isUnseen()) {
-									++cnt;
-								}
-
-								message.isUnseen(true);
-								uids.push(message.uid);
-							});
-
-							if (iThreadUid) {
-								folder.messageCountUnread(folder.messageCountUnread() + cnt);
-								if (folder.messageCountAll() < folder.messageCountUnread()) {
-									folder.messageCountUnread(folder.messageCountAll());
-								}
-							} else {
-								folder.messageCountUnread(folder.messageCountAll());
-							}
-
-							MessageFlagsCache.clearFolder(sFolderFullNameRaw);
-						}
-
-						Remote.messageSetSeenToAll(()=>0, sFolderFullNameRaw, false, iThreadUid ? uids : null);
-						break;
-					// no default
-				}
-
-				rl.app.reloadFlagsCurrentMessageListAndMessageFromCache();
-			}
-		}
+	setAction(sFolderFullName, iSetAction, aMessages) {
+		rl.app.messageListAction(sFolderFullName, iSetAction, aMessages);
 	}
 
 	listSetSeen() {
 		this.setAction(
-			FolderUserStore.currentFolderFullNameRaw(),
+			FolderUserStore.currentFolderFullName(),
 			MessageSetAction.SetSeen,
 			MessageUserStore.listCheckedOrSelected()
 		);
 	}
 
 	listSetAllSeen() {
-		this.setActionForAll(
-			FolderUserStore.currentFolderFullNameRaw(),
-			MessageSetAction.SetSeen,
-			MessageUserStore.listEndThreadUid()
-		);
+		let sFolderFullName = FolderUserStore.currentFolderFullName(),
+			iThreadUid = MessageUserStore.listEndThreadUid();
+		if (sFolderFullName) {
+			let cnt = 0;
+			const uids = [];
+
+			let folder = getFolderFromCacheList(sFolderFullName);
+			if (folder) {
+				MessageUserStore.list.forEach(message => {
+					if (message.isUnseen()) {
+						++cnt;
+					}
+
+					message.flags.push('\\seen');
+//					message.flags.valueHasMutated();
+					uids.push(message.uid);
+				});
+
+				if (iThreadUid) {
+					folder.messageCountUnread(Math.max(0, folder.messageCountUnread() - cnt));
+				} else {
+					folder.messageCountUnread(0);
+				}
+
+				MessageFlagsCache.clearFolder(sFolderFullName);
+
+				Remote.messageSetSeenToAll(sFolderFullName, true, iThreadUid ? uids : null);
+
+				rl.app.reloadFlagsCurrentMessageListAndMessageFromCache();
+			}
+		}
 	}
 
 	listUnsetSeen() {
 		this.setAction(
-			FolderUserStore.currentFolderFullNameRaw(),
+			FolderUserStore.currentFolderFullName(),
 			MessageSetAction.UnsetSeen,
 			MessageUserStore.listCheckedOrSelected()
 		);
@@ -566,7 +504,7 @@ export class MailMessageList extends AbstractViewRight {
 
 	listSetFlags() {
 		this.setAction(
-			FolderUserStore.currentFolderFullNameRaw(),
+			FolderUserStore.currentFolderFullName(),
 			MessageSetAction.SetFlag,
 			MessageUserStore.listCheckedOrSelected()
 		);
@@ -574,7 +512,7 @@ export class MailMessageList extends AbstractViewRight {
 
 	listUnsetFlags() {
 		this.setAction(
-			FolderUserStore.currentFolderFullNameRaw(),
+			FolderUserStore.currentFolderFullName(),
 			MessageSetAction.UnsetFlag,
 			MessageUserStore.listCheckedOrSelected()
 		);
@@ -682,18 +620,18 @@ export class MailMessageList extends AbstractViewRight {
 	}
 
 	onBuild(dom) {
-		const eqs = (ev, s) => ev.target.closestWithin('.messageList '+s, dom);
+		const eqs = (ev, s) => ev.target.closestWithin(s, dom);
 
 		this.selector.init(dom.querySelector('.b-content'), Scope.MessageList);
 
 		dom.addEventListener('click', event => {
-			ThemeStore.isMobile() && leftPanelDisabled(true);
+			ThemeStore.isMobile() && !eqs(event, '.toggleLeft') && leftPanelDisabled(true);
 
-			if (eqs(event, '.b-message-list-wrapper') && Scope.MessageView === AppUserStore.focusedState()) {
+			if (eqs(event, '.messageList') && Scope.MessageView === AppUserStore.focusedState()) {
 				AppUserStore.focusedState(Scope.MessageList);
 			}
 
-			let el = eqs(event, '.e-paginator .e-page');
+			let el = eqs(event, '.e-paginator a');
 			el && this.gotoPage(ko.dataFor(el));
 
 			eqs(event, '.checkboxCheckAll') && this.checkAll(!this.checkAll());
@@ -718,7 +656,7 @@ export class MailMessageList extends AbstractViewRight {
 				name: 'AppendFile',
 				limit: 1,
 				hidden: {
-					Folder: () => FolderUserStore.currentFolderFullNameRaw()
+					Folder: () => FolderUserStore.currentFolderFullName()
 				},
 				dragAndDropElement: this.dragOverArea(),
 				dragAndDropBodyElement: this.dragOverBodyArea()
@@ -908,9 +846,9 @@ export class MailMessageList extends AbstractViewRight {
 
 	quotaTooltip() {
 		return i18n('MESSAGE_LIST/QUOTA_SIZE', {
-			SIZE: FileInfo.friendlySize(QuotaUserStore.usage()),
-			PROC: QuotaUserStore.percentage(),
-			LIMIT: FileInfo.friendlySize(QuotaUserStore.quota())
+			SIZE: FileInfo.friendlySize(FolderUserStore.quotaUsage()),
+			PROC: FolderUserStore.quotaPercentage(),
+			LIMIT: FileInfo.friendlySize(FolderUserStore.quotaLimit())
 		}).replace(/<[^>]+>/g, '');
 	}
 }
