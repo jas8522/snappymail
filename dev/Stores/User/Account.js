@@ -1,8 +1,7 @@
-import ko from 'ko';
-import { addObservablesTo } from 'Common/Utils';
+import { addObservablesTo, koArrayWithDestroy } from 'External/ko';
 
 export const AccountUserStore = {
-	accounts: ko.observableArray(),
+	accounts: koArrayWithDestroy(),
 	loading: ko.observable(false).extend({ debounce: 100 }),
 
 	getEmailAddresses: () => AccountUserStore.accounts.map(item => item.email)

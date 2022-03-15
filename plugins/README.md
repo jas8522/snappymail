@@ -2,7 +2,41 @@ PHP
 ```php
 class Plugin extends \RainLoop\Plugins\AbstractPlugin
 {
+	public function __construct();
+	public function Name() : string;
+	public function Description() : string;
+	public function UseLangs(?bool $bLangs = null) : bool;
+	public function Supported() : string;
+	public function Init() : void;
+	public function FilterAppDataPluginSection(bool $bAdmin, bool $bAuth, array &$aConfig) : void;
+	protected function configMapping() : array;
 }
+```
+
+JavaScript
+```javascript
+class PluginPopupView extends rl.pluginPopupView
+{
+	// Happens when DOM is created
+	onBuild(dom) {}
+
+	// Happens before showModal()
+	beforeShow(...params) {}
+	// Happens after showModal()
+	onShow(...params) {}
+	// Happens after showModal() animation transitionend
+	afterShow() {}
+
+	// Happens when user hits Escape or Close key
+	// return false to prevent closing, use close() manually
+	onClose() {}
+	// Happens before animation transitionend
+	onHide() {}
+	// Happens after animation transitionend
+	afterHide() {}
+}
+
+PluginPopupView.showModal();
 ```
 
 # Hooks
@@ -178,10 +212,6 @@ $Plugin->addHook('hook.name', 'functionName');
 	params:
 		array &$aPaths
 
-### filter.http-query
-	params:
-		string &$sQuery
-
 ### filter.json-response
 	params:
 		string $sAction
@@ -287,6 +317,10 @@ $Plugin->addHook('hook.name', 'functionName');
 		string $sQuery
 		\RainLoop\Model\Account $oAccount
 		int $iLimit
+
+### main.content-security-policy
+	params:
+		\SnappyMail\HTTP\CSP $oCSP
 
 ### main.default-response
 	params:

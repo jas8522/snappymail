@@ -145,7 +145,7 @@ trait Response
 	 * @return mixed
 	 */
 	private $aCheckableFolder = null;
-	private function responseObject($mResponse, string $sParent = '', array $aParameters = array())
+	private function responseObject($mResponse, string $sParent = '')
 	{
 		if (!($mResponse instanceof \JsonSerializable))
 		{
@@ -158,7 +158,7 @@ trait Response
 			{
 				foreach ($mResponse as $iKey => $oItem)
 				{
-					$mResponse[$iKey] = $this->responseObject($oItem, $sParent, $aParameters);
+					$mResponse[$iKey] = $this->responseObject($oItem, $sParent);
 				}
 			}
 
@@ -171,7 +171,7 @@ trait Response
 
 			$oAccount = $this->getAccountFromToken();
 
-			if (!$mResult['DateTimeStampInUTC'] || !!$this->Config()->Get('labs', 'date_from_headers', false)) {
+			if (!$mResult['DateTimeStampInUTC'] || $this->Config()->Get('labs', 'date_from_headers', false)) {
 				$iDateTimeStampInUTC = $mResponse->HeaderTimeStampInUTC();
 				if ($iDateTimeStampInUTC) {
 					$mResult['DateTimeStampInUTC'] = $iDateTimeStampInUTC;
@@ -180,14 +180,14 @@ trait Response
 
 			// \MailSo\Mime\EmailCollection
 			foreach (['ReplyTo','From','To','Cc','Bcc','Sender','DeliveredTo','ReplyTo'] as $prop) {
-				$mResult[$prop] = $this->responseObject($mResult[$prop], $sParent, $aParameters);
+				$mResult[$prop] = $this->responseObject($mResult[$prop], $sParent);
 			}
 
 			$sSubject = $mResult['Subject'];
 			$mResult['Hash'] = \md5($mResult['Folder'].$mResult['Uid']);
 			$mResult['RequestHash'] = Utils::EncodeKeyValuesQ(array(
 				'V' => APP_VERSION,
-				'Account' => $oAccount ? \md5($oAccount->Hash()) : '',
+				'Account' => $oAccount->Hash(),
 				'Folder' => $mResult['Folder'],
 				'Uid' => $mResult['Uid'],
 				'MimeType' => 'message/rfc822',
@@ -202,82 +202,19 @@ trait Response
 
 			if ('Message' === $sParent)
 			{
-				$oAttachments = /* @var \MailSo\Mail\AttachmentCollection */ $mResponse->Attachments();
-
-				$bHasExternals = false;
-				$mFoundCIDs = array();
-				$aContentLocationUrls = array();
-				$mFoundContentLocationUrls = array();
-
-				if ($oAttachments && 0 < $oAttachments->count())
-				{
-					foreach ($oAttachments as /* @var \MailSo\Mail\Attachment */ $oAttachment)
-					{
-						if ($oAttachment)
-						{
-							$sContentLocation = $oAttachment->ContentLocation();
-							if ($sContentLocation && \strlen($sContentLocation))
-							{
-								$aContentLocationUrls[] = $oAttachment->ContentLocation();
-							}
-						}
-					}
-				}
-
-				$sPlain = '';
-				$sHtml = \trim($mResponse->Html());
-
-				if (!\strlen($sHtml))
-				{
-					$sPlain = \trim($mResponse->Plain());
-				}
-
 				$mResult['DraftInfo'] = $mResponse->DraftInfo();
 				$mResult['InReplyTo'] = $mResponse->InReplyTo();
 				$mResult['UnsubsribeLinks'] = $mResponse->UnsubsribeLinks();
 				$mResult['References'] = $mResponse->References();
 
-				$fAdditionalExternalFilter = null;
-				if ($this->Config()->Get('labs', 'use_local_proxy_for_external_images', false))
-				{
-					$fAdditionalExternalFilter = function ($sUrl) {
-						return './?/ProxyExternal/'.Utils::EncodeKeyValuesQ(array(
-							'Rnd' => \md5(\microtime(true)),
-							'Token' => Utils::GetConnectionToken(),
-							'Url' => $sUrl
-						)).'/';
-					};
-				}
+				$mResult['Html'] = $mResponse->Html();
+				$mResult['Plain'] = $mResponse->Plain();
 
-				$sHtml = \preg_replace_callback('/(<pre[^>]*>)([\s\S\r\n\t]*?)(<\/pre>)/mi', function ($aMatches) {
-					return \preg_replace('/[\r\n]+/', '<br />', $aMatches[1].\trim($aMatches[2]).$aMatches[3]);
-				}, $sHtml);
+//				$this->GetCapa(Capa::OPEN_PGP) || $this->GetCapa(Capa::GNUPG)
+				$mResult['PgpSigned'] = $mResponse->PgpSigned();
+				$mResult['PgpEncrypted'] = $mResponse->PgpEncrypted();
 
-				$mResult['Html'] = \strlen($sHtml) ? \MailSo\Base\HtmlUtils::ClearHtml(
-					$sHtml, $bHasExternals, $mFoundCIDs, $aContentLocationUrls, $mFoundContentLocationUrls,
-					$fAdditionalExternalFilter, !!$this->Config()->Get('labs', 'try_to_detect_hidden_images', false)
-				) : '';
-
-				$mResult['ExternalProxy'] = null !== $fAdditionalExternalFilter;
-
-				$mResult['Plain'] = $sPlain;
-//				$mResult['Plain'] = \strlen($sPlain) ? \MailSo\Base\HtmlUtils::ConvertPlainToHtml($sPlain) : '';
-
-				$mResult['isPgpSigned'] = $mResponse->isPgpSigned();
-				$mResult['isPgpEncrypted'] = $mResponse->isPgpEncrypted();
-//				$mResult['PgpSignature'] = $mResponse->PgpSignature();
-//				$mResult['PgpSignatureMicAlg'] = $mResponse->PgpSignatureMicAlg();
-
-				unset($sHtml, $sPlain);
-
-				$mResult['HasExternals'] = $bHasExternals;
-				$mResult['HasInternals'] = (\is_array($mFoundCIDs) && \count($mFoundCIDs)) ||
-					(\is_array($mFoundContentLocationUrls) && \count($mFoundContentLocationUrls));
-//				$mResult['FoundCIDs'] = $mFoundCIDs;
-				$mResult['Attachments'] = $this->responseObject($oAttachments, $sParent, \array_merge($aParameters, array(
-					'FoundCIDs' => $mFoundCIDs,
-					'FoundContentLocationUrls' => $mFoundContentLocationUrls
-				)));
+				$mResult['Attachments'] = $this->responseObject($mResponse->Attachments(), $sParent);
 
 				$mResult['ReadReceipt'] = $mResponse->ReadReceipt();
 
@@ -309,35 +246,11 @@ trait Response
 		if ($mResponse instanceof \MailSo\Mail\Attachment)
 		{
 			$mResult = $mResponse->jsonSerialize();
-
-			$oAccount = $this->getAccountFromToken();
-
-			$mFoundCIDs = isset($aParameters['FoundCIDs']) && \is_array($aParameters['FoundCIDs']) &&
-				\count($aParameters['FoundCIDs']) ?
-					$aParameters['FoundCIDs'] : null;
-
-			$mFoundContentLocationUrls = isset($aParameters['FoundContentLocationUrls']) &&
-				\is_array($aParameters['FoundContentLocationUrls']) &&
-				\count($aParameters['FoundContentLocationUrls']) ?
-					$aParameters['FoundContentLocationUrls'] : null;
-
-			if ($mFoundCIDs || $mFoundContentLocationUrls)
-			{
-				$mFoundCIDs = \array_merge($mFoundCIDs ? $mFoundCIDs : array(),
-					$mFoundContentLocationUrls ? $mFoundContentLocationUrls : array());
-
-				$mFoundCIDs = \count($mFoundCIDs) ? $mFoundCIDs : null;
-			}
-
-			$mResult['IsLinked'] = ($mFoundCIDs && \in_array(\trim(\trim($mResponse->Cid()), '<>'), $mFoundCIDs))
-				|| ($mFoundContentLocationUrls && \in_array(\trim($mResponse->ContentLocation()), $mFoundContentLocationUrls));
-
 			$mResult['Framed'] = $this->isFileHasFramedPreview($mResult['FileName']);
-			$mResult['IsThumbnail'] = $this->GetCapa(false, Capa::ATTACHMENT_THUMBNAILS) && $this->isFileHasThumbnail($mResult['FileName']);
-
+			$mResult['IsThumbnail'] = $this->GetCapa(Capa::ATTACHMENT_THUMBNAILS) && $this->isFileHasThumbnail($mResult['FileName']);
 			$mResult['Download'] = Utils::EncodeKeyValuesQ(array(
 				'V' => APP_VERSION,
-				'Account' => $oAccount ? \md5($oAccount->Hash()) : '',
+				'Account' => $this->getAccountFromToken()->Hash(),
 				'Folder' => $mResult['Folder'],
 				'Uid' => $mResult['Uid'],
 				'MimeIndex' => $mResult['MimeIndex'],
@@ -378,7 +291,6 @@ trait Response
 				array(
 					'Checkable' => \in_array($mResponse->FullName(), $this->aCheckableFolder),
 					'Extended' => $aExtended,
-					'SubFolders' => $this->responseObject($mResponse->SubFolders(), $sParent, $aParameters)
 				)
 			);
 		}
@@ -386,7 +298,7 @@ trait Response
 		if ($mResponse instanceof \MailSo\Base\Collection)
 		{
 			$mResult = $mResponse->jsonSerialize();
-			$mResult['@Collection'] = $this->responseObject($mResult['@Collection'], $sParent, $aParameters);
+			$mResult['@Collection'] = $this->responseObject($mResult['@Collection'], $sParent);
 			if ($mResponse instanceof \MailSo\Mail\EmailCollection) {
 				return \array_slice($mResult['@Collection'], 0, 100);
 			}

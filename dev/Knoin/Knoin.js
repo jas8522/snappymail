@@ -1,7 +1,7 @@
 import ko from 'ko';
-
-import { doc, $htmlCL, elementById } from 'Common/Globals';
-import { isFunction, forEachObjectValue, forEachObjectEntry } from 'Common/Utils';
+import { koComputable } from 'External/ko';
+import { doc, $htmlCL, elementById, fireEvent } from 'Common/Globals';
+import { forEachObjectValue, forEachObjectEntry } from 'Common/Utils';
 
 let
 	SCREENS = {},
@@ -30,37 +30,34 @@ const
 	buildViewModel = (ViewModelClass, vmScreen) => {
 		if (ViewModelClass && !ViewModelClass.__builded) {
 			let vmDom = null;
-			const vm = new ViewModelClass(vmScreen),
+			const
+				vm = new ViewModelClass(vmScreen),
+				id = vm.viewModelTemplateID,
 				position = vm.viewType || '',
-				dialog = ViewType.Popup === position,
+				dialog = ViewTypePopup === position,
 				vmPlace = position ? doc.getElementById('rl-' + position.toLowerCase()) : null;
 
 			ViewModelClass.__builded = true;
 			ViewModelClass.__vm = vm;
 
 			if (vmPlace) {
-				vmDom = dialog
-					? Element.fromHTML('<dialog id="V-'+ vm.viewModelTemplateID + '"></dialog>')
-					: Element.fromHTML('<div id="V-'+ vm.viewModelTemplateID + '" hidden=""></div>');
+				vmDom = Element.fromHTML(dialog
+					? '<dialog id="V-'+ id + '"></dialog>'
+					: '<div id="V-'+ id + '" hidden=""></div>');
 				vmPlace.append(vmDom);
 
 				vm.viewModelDom = vmDom;
 				ViewModelClass.__dom = vmDom;
 
-				if (vm.viewNoUserSelect) {
-					vmDom.classList.add('g-ui-user-select-none');
-				}
-
-				if (ViewType.Popup === position) {
-					vm.cancelCommand = vm.closeCommand = createCommand(() => hideScreenPopup(ViewModelClass));
+				if (ViewTypePopup === position) {
+					vm.close = () => hideScreenPopup(ViewModelClass);
 
 					// Firefox / Safari HTMLDialogElement not defined
 					if (!vmDom.showModal) {
 						vmDom.classList.add('polyfill');
 						vmDom.showModal = () => {
-							if (!vmDom.backdrop) {
+							vmDom.backdrop ||
 								vmDom.before(vmDom.backdrop = Element.fromHTML('<div class="dialog-backdrop"></div>'));
-							}
 							vmDom.setAttribute('open','');
 							vmDom.open = true;
 							vmDom.returnValue = null;
@@ -79,15 +76,15 @@ const
 						if (e.target === vmDom) {
 							if (vmDom.classList.contains('animate')) {
 								autofocus(vmDom);
-								vm.onShowWithDelay && vm.onShowWithDelay();
+								vm.afterShow && vm.afterShow();
 							} else {
 								vmDom.close();
-								vm.onHideWithDelay && vm.onHideWithDelay();
+								vm.afterHide && vm.afterHide();
 							}
 						}
 					};
 
-					vm.modalVisibility.subscribe(value => {
+					vm.modalVisible.subscribe(value => {
 						if (value) {
 							visiblePopups.add(vm);
 							vmDom.style.zIndex = 3000 + (visiblePopups.size * 2);
@@ -107,41 +104,22 @@ const
 							vmDom.classList.remove('animate'); // trigger the transitions
 						}
 						arePopupsVisible(0 < visiblePopups.size);
-/*
-						// the old ko.bindingHandlers.modal
-						const close = vmDom.querySelector('.close'),
-							click = () => vm.modalVisibility(false);
-						if (close) {
-							close.addEventListener('click.koModal', click);
-							ko.utils.domNodeDisposal.addDisposeCallback(vmDom, () =>
-								close.removeEventListener('click.koModal', click)
-							);
-						}
-*/
 					});
-					if ('ontransitionend' in vmDom) {
-						vmDom.addEventListener('transitionend', endShowHide);
-					} else {
-						// For Edge < 79 and mobile browsers
-						vm.modalVisibility.subscribe(() => ()=>setTimeout(endShowHide({target:vmDom}), 500));
-					}
+					vmDom.addEventListener('transitionend', endShowHide);
 				}
 
 				ko.applyBindingAccessorsToNode(
 					vmDom,
 					{
 						i18nInit: true,
-						template: () => ({ name: vm.viewModelTemplateID })
+						template: () => ({ name: id })
 					},
 					vm
 				);
 
 				vm.onBuild && vm.onBuild(vmDom);
-				if (vm && ViewType.Popup === position) {
-					vm.registerPopupKeyDown();
-				}
 
-				dispatchEvent(new CustomEvent('rl-view-model', {detail:vm}));
+				fireEvent('rl-view-model', vm);
 			} else {
 				console.log('Cannot find view model position: ' + position);
 			}
@@ -155,7 +133,7 @@ const
 			if (
 				ViewModelClass.__vm &&
 				ViewModelClass.__dom &&
-				ViewType.Popup !== ViewModelClass.__vm.viewType
+				ViewTypePopup !== ViewModelClass.__vm.viewType
 			) {
 				fn(ViewModelClass.__vm, ViewModelClass.__dom);
 			}
@@ -177,7 +155,7 @@ const
 	 */
 	hideScreenPopup = ViewModelClassToHide => {
 		if (ViewModelClassToHide && ViewModelClassToHide.__vm && ViewModelClassToHide.__dom) {
-			ViewModelClassToHide.__vm.modalVisibility(false);
+			ViewModelClassToHide.__vm.modalVisible(false);
 		}
 	},
 
@@ -196,7 +174,7 @@ const
 
 		// Close all popups
 		for (let vm of visiblePopups) {
-			vm.closeCommand();
+			false === vm.onClose() || vm.close();
 		}
 
 		if (screenName) {
@@ -236,7 +214,7 @@ const
 						vmScreen.onShow && vmScreen.onShow();
 
 						forEachViewModel(vmScreen, (vm, dom) => {
-							vm.onBeforeShow && vm.onBeforeShow();
+							vm.beforeShow && vm.beforeShow();
 							dom.hidden = false;
 							vm.onShow && vm.onShow();
 							autofocus(dom);
@@ -250,41 +228,9 @@ const
 		}
 	};
 
+
 export const
-	ViewType = {
-		Popup: 'Popups',
-		Left: 'Left',
-		Right: 'Right',
-		Content: 'Content'
-	},
-
-	/**
-	 * @param {Function} fExecute
-	 * @param {(Function|boolean|null)=} fCanExecute = true
-	 * @returns {Function}
-	 */
-	createCommand = (fExecute, fCanExecute = true) => {
-		let fResult = fExecute
-			? (...args) => {
-				if (fResult && fResult.canExecute && fResult.canExecute()) {
-					fExecute.apply(null, args);
-				}
-				return false;
-			} : ()=>0;
-		fResult.enabled = ko.observable(true);
-		fResult.isCommand = true;
-
-		if (isFunction(fCanExecute)) {
-			fResult.canExecute = ko.computed(() => fResult && fResult.enabled() && fCanExecute.call(null));
-		} else {
-			fResult.canExecute = ko.computed(() => fResult && fResult.enabled() && !!fCanExecute);
-		}
-
-		return fResult;
-	},
-
-	getScreenPopupViewModel = ViewModelClassToShow =>
-		(buildViewModel(ViewModelClassToShow) && ViewModelClassToShow.__dom) && ViewModelClassToShow.__vm,
+	ViewTypePopup = 'Popups',
 
 	/**
 	 * @param {Function} ViewModelClassToShow
@@ -292,26 +238,20 @@ export const
 	 * @returns {void}
 	 */
 	showScreenPopup = (ViewModelClassToShow, params = []) => {
-		const vm = getScreenPopupViewModel(ViewModelClassToShow);
+		const vm = buildViewModel(ViewModelClassToShow) && ViewModelClassToShow.__dom && ViewModelClassToShow.__vm;
+
 		if (vm) {
 			params = params || [];
 
-			vm.onBeforeShow && vm.onBeforeShow(...params);
+			vm.beforeShow && vm.beforeShow(...params);
 
-			vm.modalVisibility(true);
+			vm.modalVisible(true);
 
 			vm.onShow && vm.onShow(...params);
 		}
 	},
 
 	arePopupsVisible = ko.observable(false),
-
-	/**
-	 * @param {Function} ViewModelClassToShow
-	 * @returns {boolean}
-	 */
-	isPopupVisible = ViewModelClassToShow =>
-		ViewModelClassToShow && ViewModelClassToShow.__vm && ViewModelClassToShow.__vm.modalVisibility(),
 
 	/**
 	 * @param {Array} screensClasses
@@ -333,7 +273,12 @@ export const
 			}
 		});
 
-		forEachObjectValue(SCREENS, vmScreen => vmScreen.onStart());
+		forEachObjectValue(SCREENS, vmScreen => {
+			if (!vmScreen.__started) {
+				vmScreen.onStart();
+				vmScreen.__started = true;
+			}
+		});
 
 		const cross = new Crossroads();
 		cross.addRoute(/^([a-zA-Z0-9-]*)\/?(.*)$/, screenOnRoute);
@@ -348,19 +293,16 @@ export const
 		l && l.remove();
 	},
 
+	/**
+	 * Used by ko.bindingHandlers.command (template data-bind="command: ")
+	 * to enable/disable click/submit action.
+	 */
 	decorateKoCommands = (thisArg, commands) =>
 		forEachObjectEntry(commands, (key, canExecute) => {
 			let command = thisArg[key],
-				fn = (...args) => fn.enabled() && fn.canExecute() && command.apply(thisArg, args);
+				fn = (...args) => fn.canExecute() && command.apply(thisArg, args);
 
-	//		fn.__realCanExecute = canExecute;
-	//		fn.isCommand = true;
-
-			fn.enabled = ko.observable(true);
-
-			fn.canExecute = (typeof canExecute === 'function')
-				? ko.computed(() => fn.enabled() && canExecute.call(thisArg, thisArg))
-				: ko.computed(() => fn.enabled());
+			fn.canExecute = koComputable(() => canExecute.call(thisArg, thisArg));
 
 			thisArg[key] = fn;
 		});

@@ -2,7 +2,7 @@
 
 namespace RainLoop\Providers\Domain;
 
-class DefaultDomain implements \RainLoop\Providers\Domain\DomainAdminInterface
+class DefaultDomain implements DomainInterface
 {
 	/**
 	 * @var string
@@ -22,25 +22,17 @@ class DefaultDomain implements \RainLoop\Providers\Domain\DomainAdminInterface
 
 	public function codeFileName(string $sName, bool $bBack = false) : string
 	{
-		if ($bBack && 'default' === $sName)
-		{
+		if ($bBack && 'default' === $sName) {
 			return '*';
 		}
-		else if (!$bBack && '*' === $sName)
-		{
+
+		if (!$bBack && '*' === $sName) {
 			return 'default';
 		}
 
-		if ($bBack)
-		{
-			$sName = \MailSo\Base\Utils::IdnToUtf8($sName, true);
-		}
-		else
-		{
-			$sName = \MailSo\Base\Utils::IdnToAscii($sName, true);
-		}
-
-		return $bBack ? \str_replace('_wildcard_', '*', $sName) : \str_replace('*', '_wildcard_', $sName);
+		return $bBack
+			? \str_replace('_wildcard_', '*', \MailSo\Base\Utils::IdnToUtf8($sName, true))
+			: \str_replace('*', '_wildcard_', \MailSo\Base\Utils::IdnToAscii($sName, true));
 	}
 
 	private function wildcardDomainsCacheKey() : string
@@ -159,8 +151,9 @@ class DefaultDomain implements \RainLoop\Providers\Domain\DomainAdminInterface
 			$this->oCacher->Delete($this->wildcardDomainsCacheKey());
 		}
 
-		$mResult = \file_put_contents($this->sDomainPath.'/'.$sRealFileName.'.ini', $oDomain->ToIniString());
-		return \is_int($mResult) && 0 < $mResult;
+		\RainLoop\Utils::saveFile($this->sDomainPath.'/'.$sRealFileName.'.ini', $oDomain->ToIniString());
+
+		return true;
 	}
 
 	public function SaveAlias(string $sName, string $sAlias) : bool
@@ -172,8 +165,8 @@ class DefaultDomain implements \RainLoop\Providers\Domain\DomainAdminInterface
 			$this->oCacher->Delete($this->wildcardDomainsCacheKey());
 		}
 
-		$mResult = \file_put_contents($this->sDomainPath.'/'.$sRealFileName.'.alias', $sAlias);
-		return \is_int($mResult) && 0 < $mResult;
+		\RainLoop\Utils::saveFile($this->sDomainPath.'/'.$sRealFileName.'.alias', $sAlias);
+		return true;
 	}
 
 	public function Disable(string $sName, bool $bDisable) : bool
@@ -204,8 +197,8 @@ class DefaultDomain implements \RainLoop\Providers\Domain\DomainAdminInterface
 			}
 		}
 
-		$aResult = \array_unique($aResult);
-		return false !== \file_put_contents($this->sDomainPath.'/disabled', \trim(\implode(',', $aResult), ', '));
+		\RainLoop\Utils::saveFile($this->sDomainPath.'/disabled', \trim(\implode(',', \array_unique($aResult)), ', '));
+		return true;
 	}
 
 	public function Delete(string $sName) : bool
@@ -238,7 +231,7 @@ class DefaultDomain implements \RainLoop\Providers\Domain\DomainAdminInterface
 		return $bResult;
 	}
 
-	public function GetList(int $iOffset = 0, int $iLimit = 20, string $sSearch = '', bool $bIncludeAliases = true) : array
+	public function GetList(bool $bIncludeAliases = true) : array
 	{
 		$aResult = array();
 		$aWildCards = array();
@@ -280,11 +273,6 @@ class DefaultDomain implements \RainLoop\Providers\Domain\DomainAdminInterface
 
 		$aResult = \array_merge($aResult, $aAliases, $aWildCards);
 
-		$iOffset = (0 > $iOffset) ? 0 : $iOffset;
-		$iLimit = (0 > $iLimit) ? 0 : ((999 < $iLimit) ? 999 : $iLimit);
-
-		$aResult = \array_slice($aResult, $iOffset, $iLimit);
-
 		$aDisabledNames = array();
 		if (\count($aResult) && \file_exists($this->sDomainPath.'/disabled'))
 		{
@@ -303,17 +291,13 @@ class DefaultDomain implements \RainLoop\Providers\Domain\DomainAdminInterface
 		$aReturn = array();
 		foreach ($aResult as $sName)
 		{
-			$aReturn[$sName] = array(
-				!\in_array($sName, $aDisabledNames),
-				\in_array($sName, $aAliases)
+			$aReturn[] = array(
+				'name' => $sName,
+				'disabled' => \in_array($sName, $aDisabledNames),
+				'alias' => \in_array($sName, $aAliases)
 			);
 		}
 
 		return $aReturn;
-	}
-
-	public function Count(string $sSearch = '', bool $bIncludeAliases = true) : int
-	{
-		return \count($this->GetList(0, 999, $sSearch, $bIncludeAliases));
 	}
 }

@@ -23,7 +23,6 @@ class THREAD extends Request
 	public
 		$sAlgorithm = '', // ORDEREDSUBJECT or REFERENCES or REFS
 		$sCriterias = 'ALL',
-		$sCharset = '',
 		$bUid = true;
 
 	function __construct(\MailSo\Imap\ImapClient $oImapClient)
@@ -50,29 +49,19 @@ class THREAD extends Request
 				\MailSo\Log\Enumerations\Type::ERROR, true);
 		}
 
-		$aRequest = array(
-			$this->sAlgorithm
-		);
-
-		$sSearchCriterias = (\strlen($this->sCriterias) && '*' !== $this->sCriterias) ? $this->sCriterias : 'ALL';
-
-		if (!$this->sCharset) {
-			$this->sCharset = \MailSo\Base\Utils::IsAscii($sSearchCriterias) ? 'US-ASCII' : 'UTF-8';
-		}
-
-		$aRequest[] = \strtoupper($this->sCharset);
-		$aRequest[] = $sSearchCriterias;
-
-		$oResponseCollection = $this->oImapClient->SendRequestGetResponse(
+		$this->oImapClient->SendRequest(
 			($this->bUid ? 'UID THREAD' : 'THREAD'),
-			$aRequest
+			array(
+				$this->sAlgorithm,
+				'UTF-8', // \strtoupper(\MailSo\Base\Enumerations\Charset::UTF_8)
+				(\strlen($this->sCriterias) && '*' !== $this->sCriterias) ? $this->sCriterias : 'ALL'
+			)
 		);
 
 		$aReturn = array();
-		foreach ($oResponseCollection as $oResponse) {
-			$iOffset = ($bReturnUid && 'UID' === $oResponse->StatusOrIndex && !empty($oResponse->ResponseList[2]) && 'THREAD' === $oResponse->ResponseList[2]) ? 1 : 0;
-			if (\MailSo\Imap\Enumerations\ResponseType::UNTAGGED === $oResponse->ResponseType
-				&& ('THREAD' === $oResponse->StatusOrIndex || $iOffset)
+		foreach ($this->oImapClient->yieldUntaggedResponses() as $oResponse) {
+			$iOffset = ($this->bUid && 'UID' === $oResponse->StatusOrIndex && !empty($oResponse->ResponseList[2]) && 'THREAD' === $oResponse->ResponseList[2]) ? 1 : 0;
+			if (('THREAD' === $oResponse->StatusOrIndex || $iOffset)
 				&& \is_array($oResponse->ResponseList)
 				&& 2 < \count($oResponse->ResponseList))
 			{

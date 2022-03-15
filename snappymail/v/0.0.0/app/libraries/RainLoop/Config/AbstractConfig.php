@@ -2,7 +2,7 @@
 
 namespace RainLoop\Config;
 
-abstract class AbstractConfig
+abstract class AbstractConfig implements \JsonSerializable
 {
 	/**
 	 * @var string
@@ -12,7 +12,7 @@ abstract class AbstractConfig
 	/**
 	 * @var string
 	 */
-	private $sAdditionalFile;
+	private $sAdditionalFile = '';
 
 	/**
 	 * @var array
@@ -34,15 +34,18 @@ abstract class AbstractConfig
 		$this->sFile = \APP_PRIVATE_DATA.'configs/'.\trim($sFileName);
 
 		$sAdditionalFileName = \trim($sAdditionalFileName);
-		$this->sAdditionalFile = \APP_PRIVATE_DATA.'configs/'.$sAdditionalFileName;
-		$this->sAdditionalFile = \strlen($sAdditionalFileName) &&
-			\file_exists($this->sAdditionalFile) ? $this->sAdditionalFile : '';
+		if (\strlen($sAdditionalFileName)) {
+			$sAdditionalFileName = \APP_PRIVATE_DATA.'configs/'.$sAdditionalFileName;
+			if (\file_exists($this->sAdditionalFile)) {
+				$this->sAdditionalFile = $this->sAdditionalFile;
+			}
+		}
 
 		$this->sFileHeader = $sFileHeader;
 		$this->aData = $this->defaultValues();
 
 		$this->bUseApcCache = APP_USE_APCU_CACHE &&
-			\MailSo\Base\Utils::FunctionExistsAndEnabled(array('apcu_fetch', 'apcu_store'));
+			\MailSo\Base\Utils::FunctionsExistAndEnabled(array('apcu_fetch', 'apcu_store'));
 	}
 
 	protected abstract function defaultValues() : array;
@@ -52,6 +55,11 @@ abstract class AbstractConfig
 		return \is_array($this->aData) && \count($this->aData);
 	}
 
+	public function jsonSerialize()
+	{
+		return $this->aData;
+	}
+
 	/**
 	 * @param mixed $mDefault = null
 	 *
@@ -59,12 +67,9 @@ abstract class AbstractConfig
 	 */
 	public function Get(string $sSection, string $sName, $mDefault = null)
 	{
-		$mResult = $mDefault;
-		if (isset($this->aData[$sSection][$sName][0]))
-		{
-			$mResult = $this->aData[$sSection][$sName][0];
-		}
-		return $mResult;
+		return isset($this->aData[$sSection][$sName][0])
+			? $this->aData[$sSection][$sName][0]
+			: $mDefault;
 	}
 
 	/**
@@ -294,8 +299,11 @@ abstract class AbstractConfig
 		}
 
 		$this->clearCache();
-		return false !== \file_put_contents($this->sFile,
+
+		\RainLoop\Utils::saveFile($this->sFile,
 			(\strlen($this->sFileHeader) ? $this->sFileHeader : '').
 			$sNewLine.\implode($sNewLine, $aResultLines));
+
+		return true;
 	}
 }

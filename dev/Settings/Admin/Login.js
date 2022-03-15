@@ -1,46 +1,9 @@
-import { SaveSettingsStep } from 'Common/Enums';
-import { Settings, SettingsGet } from 'Common/Globals';
-import { settingsSaveHelperSimpleFunction, addObservablesTo, addSubscribablesTo } from 'Common/Utils';
+import { AbstractViewSettings } from 'Knoin/AbstractViews';
 
-import Remote from 'Remote/Admin/Fetch';
-
-export class LoginAdminSettings /*extends AbstractViewSettings*/ {
+export class AdminSettingsLogin extends AbstractViewSettings {
 	constructor() {
-		addObservablesTo(this, {
-			determineUserLanguage: !!SettingsGet('DetermineUserLanguage'),
-			determineUserDomain: !!SettingsGet('DetermineUserDomain'),
-			allowLanguagesOnLogin: !!SettingsGet('AllowLanguagesOnLogin'),
-			hideSubmitButton: !!Settings.app('hideSubmitButton'),
-			defaultDomain: SettingsGet('LoginDefaultDomain'),
-			defaultDomainTrigger: SaveSettingsStep.Idle
-		});
-
-		addSubscribablesTo(this, {
-			determineUserLanguage: value =>
-				Remote.saveConfig({
-					DetermineUserLanguage: value ? 1 : 0
-				}),
-
-			determineUserDomain: value =>
-				Remote.saveConfig({
-					DetermineUserDomain: value ? 1 : 0
-				}),
-
-			allowLanguagesOnLogin: value =>
-				Remote.saveConfig({
-					AllowLanguagesOnLogin: value ? 1 : 0
-				}),
-
-			hideSubmitButton: value =>
-				Remote.saveConfig({
-					hideSubmitButton: value ? 1 : 0
-				}),
-
-			defaultDomain: (value =>
-				Remote.saveConfig({
-					LoginDefaultDomain: value.trim()
-				}, settingsSaveHelperSimpleFunction(this.defaultDomainTrigger, this))
-			).debounce(999)
-		});
+		super();
+		this.addSetting('LoginDefaultDomain');
+		this.addSettings(['DetermineUserLanguage','DetermineUserDomain','AllowLanguagesOnLogin','hideSubmitButton']);
 	}
 }

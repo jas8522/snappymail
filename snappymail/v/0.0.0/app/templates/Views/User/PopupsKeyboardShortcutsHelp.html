@@ -1,12 +1,12 @@
 <header>
-	<a href="#" class="close" data-bind="command: cancelCommand">×</a>
+	<a href="#" class="close" data-bind="click: close">×</a>
 	<h3 data-i18n="SHORTCUTS_HELP/LEGEND_SHORTCUTS_HELP"></h3>
 </header>
 <div class="modal-body">
 
 	<div class="tabs">
 
-		<input type="radio" name="helptabs" id="tab-help1" checked />
+		<input type="radio" name="helptabs" id="tab-help1" checked>
 		<label for="tab-help1"
 			role="tab"
 			aria-selected="true"
@@ -14,9 +14,9 @@
 			tabindex="0"
 			data-i18n="SHORTCUTS_HELP/TAB_MAILBOX"></label>
 		<div class="tab-content" role="tabpanel" aria-hidden="false">
-			<table class="table table-striped table-bordered">
+			<table class="table table-striped table-bordered" style="border-radius: 0 4px 4px 4px">
 			<tbody>
-				<tr><td></td><td data-i18n="SHORTCUTS_HELP/LABEL_OPEN_USER_DROPDOWN"></td><td>M, Menu</td></tr>
+				<tr><td></td><td data-i18n="SHORTCUTS_HELP/LABEL_OPEN_USER_DROPDOWN"></td><td>M</td></tr>
 				<tr><td class="fontastic">←</td><td data-i18n="SHORTCUTS_HELP/LABEL_REPLY"></td><td>R, Reply</td></tr>
 				<tr><td class="fontastic">↞</td><td data-i18n="SHORTCUTS_HELP/LABEL_REPLY_ALL"></td><td>A, Shift + Reply</td></tr>
 				<tr><td class="fontastic">→</td><td data-i18n="SHORTCUTS_HELP/LABEL_FORWARD"></td><td>F, Fwd</td></tr>
@@ -26,7 +26,7 @@
 			</table>
 		</div>
 
-		<input type="radio" name="helptabs" id="tab-help2" />
+		<input type="radio" name="helptabs" id="tab-help2">
 		<label for="tab-help2"
 			role="tab"
 			aria-selected="false"
@@ -37,7 +37,7 @@
 			<table class="table table-striped table-bordered">
 			<tbody>
 				<tr><td class="fontastic">☑</td><td data-i18n="SHORTCUTS_HELP/LABEL_CHECK_ALL"></td><td><!-- ko text: metaKey --><!-- /ko --> + A</td></tr>
-				<tr><td class="icon-archive"></td><td data-i18n="GLOBAL/TO_ARCHIVE"></td><td>Z</td></tr>
+				<tr><td class="fontastic">🗄</td><td data-i18n="GLOBAL/TO_ARCHIVE"></td><td>Z</td></tr>
 				<tr><td class="fontastic">🗑</td><td data-i18n="SHORTCUTS_HELP/LABEL_DELETE"></td><td>Delete, Shift + Delete</td></tr>
 				<tr><td></td><td data-i18n="SHORTCUTS_HELP/LABEL_OPEN_THREAD"></td><td>T</td></tr>
 				<tr><td class="fontastic">📁</td><td data-i18n="SHORTCUTS_HELP/LABEL_MOVE"></td><td>Insert</td></tr>
@@ -53,7 +53,7 @@
 			</table>
 		</div>
 
-		<input type="radio" name="helptabs" id="tab-help3" />
+		<input type="radio" name="helptabs" id="tab-help3">
 		<label for="tab-help3"
 			role="tab"
 			aria-selected="false"
@@ -73,7 +73,7 @@
 			</table>
 		</div>
 
-		<input type="radio" name="helptabs" id="tab-help4" />
+		<input type="radio" name="helptabs" id="tab-help4">
 		<label for="tab-help4"
 			role="tab"
 			aria-selected="false"
@@ -84,7 +84,7 @@
 			<table class="table table-striped table-bordered">
 			<tbody>
 				<tr><td data-i18n="SHORTCUTS_HELP/LABEL_OPEN_COMPOSE_POPUP"></td><td>W, C, New</td></tr>
-				<tr><td data-i18n="SHORTCUTS_HELP/LABEL_OPEN_IDENTITIES_DROPDOWN"></td><td>Menu, <!-- ko text: metaKey --><!-- /ko --> + M</td></tr>
+				<tr><td data-i18n="SHORTCUTS_HELP/LABEL_OPEN_IDENTITIES_DROPDOWN"></td><td><!-- ko text: metaKey --><!-- /ko --> + M</td></tr>
 				<tr><td data-i18n="SHORTCUTS_HELP/LABEL_SAVE_MESSAGE"></td><td><!-- ko text: metaKey --><!-- /ko --> + S, Save</td></tr>
 				<tr><td data-i18n="SHORTCUTS_HELP/LABEL_SEND_MESSAGE"></td><td>Send, <!-- ko text: metaKey --><!-- /ko --> + Enter</td></tr>
 				<tr><td data-i18n="SHORTCUTS_HELP/LABEL_MINIMIZE_COMPOSE_POPUP"></td><td>Esc, Close</td></tr>

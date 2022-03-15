@@ -1,11 +1,13 @@
 import ko from 'ko';
+import { koComputable } from 'External/ko';
 
 import { FolderType, FolderSortMode } from 'Common/EnumsUser';
 import { UNUSED_OPTION_VALUE } from 'Common/Consts';
-import { addObservablesTo, addSubscribablesTo, addComputablesTo, forEachObjectEntry } from 'Common/Utils';
+import { forEachObjectEntry } from 'Common/Utils';
+import { addObservablesTo, addSubscribablesTo, addComputablesTo } from 'External/ko';
 import { getFolderInboxName, getFolderFromCacheList } from 'Common/Cache';
 import { Settings } from 'Common/Globals';
-//import Remote from 'Remote/User/Fetch'; Circular dependency
+//import Remote from 'Remote/User/Fetch'; // Circular dependency
 
 export const FolderUserStore = new class {
 	constructor() {
@@ -77,20 +79,22 @@ export const FolderUserStore = new class {
 		});
 
 		const
-			fRemoveSystemFolderType = (observable) => () => {
-				const folder = getFolderFromCacheList(observable());
-				folder && folder.type(FolderType.User);
+			subscribeRemoveSystemFolder = observable => {
+				observable.subscribe(() => {
+					const folder = getFolderFromCacheList(observable());
+					folder && folder.type(FolderType.User);
+				}, self, 'beforeChange');
 			},
 			fSetSystemFolderType = type => value => {
 				const folder = getFolderFromCacheList(value);
 				folder && folder.type(type);
 			};
 
-		self.sentFolder.subscribe(fRemoveSystemFolderType(self.sentFolder), self, 'beforeChange');
-		self.draftsFolder.subscribe(fRemoveSystemFolderType(self.draftsFolder), self, 'beforeChange');
-		self.spamFolder.subscribe(fRemoveSystemFolderType(self.spamFolder), self, 'beforeChange');
-		self.trashFolder.subscribe(fRemoveSystemFolderType(self.trashFolder), self, 'beforeChange');
-		self.archiveFolder.subscribe(fRemoveSystemFolderType(self.archiveFolder), self, 'beforeChange');
+		subscribeRemoveSystemFolder(self.sentFolder);
+		subscribeRemoveSystemFolder(self.draftsFolder);
+		subscribeRemoveSystemFolder(self.spamFolder);
+		subscribeRemoveSystemFolder(self.trashFolder);
+		subscribeRemoveSystemFolder(self.archiveFolder);
 
 		addSubscribablesTo(self, {
 			sentFolder: fSetSystemFolderType(FolderType.Sent),
@@ -100,7 +104,7 @@ export const FolderUserStore = new class {
 			archiveFolder: fSetSystemFolderType(FolderType.Archive)
 		});
 
-		self.quotaPercentage = ko.computed(() => {
+		self.quotaPercentage = koComputable(() => {
 			const quota = self.quotaLimit(), usage = self.quotaUsage();
 			return 0 < quota ? Math.ceil((usage / quota) * 100) : 0;
 		});

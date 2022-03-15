@@ -72,8 +72,7 @@ class ManageSieveClient extends \MailSo\Net\NetClient
 		$this->validateResponse($aResponse);
 		$this->parseStartupResponse($aResponse);
 
-		if (\MailSo\Net\Enumerations\ConnectionSecurityType::UseStartTLS(
-			$this->IsSupported('STARTTLS'), $this->iSecurityType))
+		if ($this->IsSupported('STARTTLS') && \MailSo\Net\Enumerations\ConnectionSecurityType::UseStartTLS($this->iSecurityType))
 		{
 			$this->sendRequestWithCheck('STARTTLS');
 			$this->EnableCrypto();
@@ -109,19 +108,10 @@ class ManageSieveClient extends \MailSo\Net\NetClient
 
 		if ($this->IsSupported('SASL'))
 		{
-//			$encrypted = !empty(\stream_get_meta_data($this->ConnectionResource())['crypto']);
 			$type = '';
-			$types = [
-//				'SCRAM-SHA-256' => 1, // !$encrypted
-//				'SCRAM-SHA-1' => 1, // !$encrypted
-//				'CRAM-MD5' => 1, // $encrypted
-				'OAUTHBEARER' => $aCredentials['UseAuthOAuth2IfSupported'],
-				'XOAUTH2' => $aCredentials['UseAuthOAuth2IfSupported'],
-				'PLAIN' => 1, // $encrypted
-				'LOGIN' => 1 // $encrypted
-			];
-			foreach ($types as $sasl_type => $active) {
-				if ($active && $this->IsAuthSupported($sasl_type) && \SnappyMail\SASL::isSupported($sasl_type)) {
+			\array_push($aCredentials['SASLMechanisms'], 'PLAIN', 'LOGIN');
+			foreach ($aCredentials['SASLMechanisms'] as $sasl_type) {
+				if ($this->IsAuthSupported($sasl_type) && \SnappyMail\SASL::isSupported($sasl_type)) {
 					$type = $sasl_type;
 					break;
 				}
@@ -133,18 +123,32 @@ class ManageSieveClient extends \MailSo\Net\NetClient
 			$bAuth = false;
 			try
 			{
-				if ('PLAIN' === $type || 'OAUTHBEARER' === $type || 'XOAUTH2' === $type)
+				if (0 === \strpos($type, 'SCRAM-'))
+				{
+/*
+					$sAuthzid = $this->getResponseValue($this->SendRequestGetResponse('AUTHENTICATE', array($type)), \MailSo\Imap\Enumerations\ResponseType::CONTINUATION);
+					$this->sendRaw($SASL->authenticate($sLogin, $sPassword/*, $sAuthzid* /), true);
+					$sChallenge = $SASL->challenge($this->getResponseValue($this->getResponse(), \MailSo\Imap\Enumerations\ResponseType::CONTINUATION));
+					if ($this->oLogger) {
+						$this->oLogger->AddSecret($sChallenge);
+					}
+					$this->sendRaw($sChallenge, true, '*******');
+					$oResponse = $this->getResponse();
+					$SASL->verify($this->getResponseValue($oResponse));
+*/
+				}
+				else if ('PLAIN' === $type || 'OAUTHBEARER' === $type || 'XOAUTH2' === $type)
 				{
 					$sAuth = $SASL->authenticate($sLogin, $sPassword, $sLoginAuthKey);
 
 					if ($aCredentials['InitialAuthPlain'])
 					{
-						$this->sendRequest("AUTHENTICATE \"{$type}\" \"{$sAuth}\"");
+						$this->sendRaw("AUTHENTICATE \"{$type}\" \"{$sAuth}\"");
 					}
 					else
 					{
-						$this->sendRequest("AUTHENTICATE \"{$type}\" {".\strlen($sAuth).'+}');
-						$this->sendRequest($sAuth);
+						$this->sendRaw("AUTHENTICATE \"{$type}\" {".\strlen($sAuth).'+}');
+						$this->sendRaw($sAuth);
 					}
 
 					$aResponse = $this->parseResponse();
@@ -157,11 +161,11 @@ class ManageSieveClient extends \MailSo\Net\NetClient
 					$sLogin = $SASL->authenticate($sLogin, $sPassword);
 					$sPassword = $SASL->challenge('');
 
-					$this->sendRequest('AUTHENTICATE "LOGIN"');
-					$this->sendRequest('{'.\strlen($sLogin).'+}');
-					$this->sendRequest($sLogin);
-					$this->sendRequest('{'.\strlen($sPassword).'+}');
-					$this->sendRequest($sPassword);
+					$this->sendRaw('AUTHENTICATE "LOGIN"');
+					$this->sendRaw('{'.\strlen($sLogin).'+}');
+					$this->sendRaw($sLogin);
+					$this->sendRaw('{'.\strlen($sPassword).'+}');
+					$this->sendRaw($sPassword);
 
 					$aResponse = $this->parseResponse();
 					$this->validateResponse($aResponse);

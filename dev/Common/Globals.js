@@ -1,9 +1,9 @@
 import ko from 'ko';
-import { Scope } from 'Common/Enums';
 
-let keyScopeFake = Scope.All;
+let keyScopeFake = 'all';
 
 export const
+	ScopeMenu = 'Menu',
 
 	doc = document,
 
@@ -16,7 +16,9 @@ export const
 
 	Settings = rl.settings,
 	SettingsGet = Settings.get,
+	SettingsCapa = Settings.capa,
 
+	dropdowns = [],
 	dropdownVisibility = ko.observable(false).extend({ rateLimit: 0 }),
 
 	moveAction = ko.observable(false),
@@ -28,27 +30,41 @@ export const
 		return el;
 	},
 
-	// keys
-	keyScopeReal = ko.observable(Scope.All),
+	fireEvent = (name, detail) => dispatchEvent(new CustomEvent(name, {detail:detail})),
+
+	formFieldFocused = () => doc.activeElement && doc.activeElement.matches('input,textarea'),
+
+	addShortcut = (...args) => shortcuts.add(...args),
+
+	registerShortcut = (keys, modifiers, scopes, method) =>
+		addShortcut(keys, modifiers, scopes, event => formFieldFocused() ? true : method(event)),
+
+	addEventsListener = (element, events, fn, options) =>
+		events.forEach(event => element.addEventListener(event, fn, options)),
+
+	addEventsListeners = (element, events) =>
+		Object.entries(events).forEach(([event, fn]) => element.addEventListener(event, fn)),
+
+	// keys / shortcuts
+	keyScopeReal = ko.observable('all'),
 	keyScope = value => {
-		if (value) {
-			if (Scope.Menu !== value) {
-				keyScopeFake = value;
-				if (dropdownVisibility()) {
-					value = Scope.Menu;
-				}
-			}
-			keyScopeReal(value);
-			shortcuts.setScope(value);
-		} else {
+		if (!value) {
 			return keyScopeFake;
 		}
+		if (ScopeMenu !== value) {
+			keyScopeFake = value;
+			if (dropdownVisibility()) {
+				value = ScopeMenu;
+			}
+		}
+		keyScopeReal(value);
+		shortcuts.setScope(value);
 	};
 
 dropdownVisibility.subscribe(value => {
 	if (value) {
-		keyScope(Scope.Menu);
-	} else if (Scope.Menu === shortcuts.getScope()) {
+		keyScope(ScopeMenu);
+	} else if (ScopeMenu === shortcuts.getScope()) {
 		keyScope(keyScopeFake);
 	}
 });

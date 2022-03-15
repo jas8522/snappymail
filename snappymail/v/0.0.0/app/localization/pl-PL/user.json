@@ -87,7 +87,7 @@
 		"BUTTON_RELOAD": "Odśwież listę wiadomości",
 		"BUTTON_EMPTY_FOLDER": "Usuń zawartość folderu",
 		"BUTTON_MULTY_FORWARD": "Przekaż dalej jako załącznik(i)",
-		"BUTTON_DELETE_WITHOUT_MOVE": "Usuń permanentnie",
+		"BUTTON_DELETE_WITHOUT_MOVE": "Usuń trwale",
 		"MENU_SET_SEEN": "Oznacz jako przeczytane",
 		"MENU_SET_ALL_SEEN": "Oznacz wszystkie jako przeczytane",
 		"MENU_UNSET_SEEN": "Oznacz jako nieprzeczytane",
@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Więcej wiadomości",
 		"MENU_HEADERS": "Pokaż nagłówki wiadomości",
 		"MENU_VIEW_ORIGINAL": "Pokaż źródło",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Pobierz jako plik eml",
 		"MENU_FILTER_SIMILAR": "Filtruj podobne wiadomości",
 		"MENU_PRINT": "Drukuj",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Załączniki",
 		"MESSAGE_VIEW_DESC": "Wybierz wiadomość do wyświetlenia.",
 		"MESSAGE_VIEW_MOVE_DESC": "Kliknij nazwę folderu w lewym panelu, aby wybrać folder docelowy.",
-		"PGP_SIGNED_MESSAGE_DESC": "Wiadomość podpisana OpenPGP (kliknij aby zweryfikować)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "Wiadomość zaszyfrowana OpenPGP (kliknij aby odszyfrować)",
 		"LINK_DOWNLOAD_AS_ZIP": "Pobierz jako plik zip",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Jeszcze nie wszystkie załączniki zostały przesłane na serwer.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Żądaj potwierdzenia przeczytania wiadomości",
 		"BUTTON_MARK_AS_IMPORTANT": "Oznacz jako ważną",
-		"BUTTON_OPEN_PGP": "OpenPGP (tylko wiadomości tekstowe)",
 		"BUTTON_REQUEST_DSN": "Żądaj potwierdzenia dostarczenia wiadomości"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Po rozpoczęciu nie będzie możliwe przerwanie lub anulowanie zadania.",
 		"TITLE_CLEARING_PROCESS": "Trwa usuwanie wszystkich wiadomości z folderu..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Importowanie klucza OpenPGP",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Importuj"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Podgląd klucza OpenPGP",
-		"BUTTON_SELECT": "Zaznacz"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Generowanie klucza OpenPGP",
-		"LABEL_KEY_BIT_LENGTH": "Długość klucza",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generuj"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "Podpisywanie\/szyfrowanie OpenPGP",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Importowanie klucza OpenPGP",
+		"POPUP_IMPORT_BUTTON": "Importuj",
+		"POPUP_VIEW_TITLE": "Podgląd klucza OpenPGP",
+		"POPUP_VIEW_BUTTON": "Zaznacz",
+		"POPUP_GENERATE_TITLE": "Generowanie klucza OpenPGP",
+		"POPUP_GENERATE_BUTTON": "Generuj",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Podpisz",
 		"LABEL_ENCRYPT": "Zaszyfruj",
-		"BUTTON_SIGN": "Podpisz",
-		"BUTTON_ENCRYPT": "Zaszyfruj",
-		"BUTTON_SIGN_AND_ENCRYPT": "Podpisz i zaszyfruj"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "Odszyfrowywanie OpenPGP",
-		"LABEL_KEY": "Klucz prywatny",
-		"BUTTON_DECRYPT": "Odszyfruj"
+		"BUTTON_DECRYPT": "Odszyfruj",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "Wiadomość podpisana OpenPGP",
+		"ENCRYPTED_MESSAGE": "Wiadomość zaszyfrowana OpenPGP",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Poprawnie podpisana przez %USER%",
+		"ERROR": "Błąd OpenPGP: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Czy stworzyć filtr?",
@@ -329,8 +321,8 @@
 		"SELECT_UNUSE_NAME": "Nie używaj",
 		"NOTIFICATION_SENT": "Nie wybrano folderu systemowego \"Wysłane\", do którego przenoszone są wysłane wiadomości.\nJeżeli wysyłane wiadomości nie mają być przechowywane, proszę zaznaczyć opcję \"Nie używaj\".\n",
 		"NOTIFICATION_DRAFTS": "Nie wybrano folderu \"Wersje robocze\", do którego są zapisywane wiadomości w trakcie ich tworzenia.",
-		"NOTIFICATION_SPAM": "Nie wybrano folderu \"Spam\", do którego przenoszone są niepożądane wiadomości.\nJeżeli niechciane wiadomości mają być usuwane na stałe, proszę o zaznaczenie opcji \"Nie używaj\".\n",
-		"NOTIFICATION_TRASH": "Nie wybrano folderu \"Kosz\", do którego przenoszone są wszystkie usunięte wiadomości.\nJeżeli wiadomości mają być usuwane na stałe, proszę o zaznaczenie opcji \"Nie używaj\".\n",
+		"NOTIFICATION_SPAM": "Nie wybrano folderu \"Spam\", do którego przenoszone są niepożądane wiadomości.\nJeżeli niechciane wiadomości mają być usuwane trwale, proszę o zaznaczenie opcji \"Nie używaj\".\n",
+		"NOTIFICATION_TRASH": "Nie wybrano folderu \"Kosz\", do którego przenoszone są wszystkie usunięte wiadomości.\nJeżeli wiadomości mają być usuwane trwale, proszę o zaznaczenie opcji \"Nie używaj\".\n",
 		"NOTIFICATION_ARCHIVE": "Nie został wybrany folder \"Archiwum\", zostanie użyty systemowy folder archiwizacji wiadomości."
 	},
 	"TITLES": {
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Kontakty",
 		"LABEL_FOLDERS_NAME": "Foldery",
 		"LABEL_ACCOUNTS_NAME": "Konta",
-		"LABEL_IDENTITIES_NAME": "Tożsamości",
 		"LABEL_FILTERS_NAME": "Filtry",
 		"LABEL_SECURITY_NAME": "Bezpieczeństwo",
 		"LABEL_THEMES_NAME": "Motywy"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Używaj wątków",
 		"LABEL_REPLY_SAME_FOLDER": "Umieść odpowiedzi w folderach, z których pochodzą wiadomości",
 		"LABEL_SHOW_IMAGES": "Zawsze wyświetlaj zewnętrzne obrazy w treści wiadomości",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Wiadomości na stronę",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Trwa aktualizowanie listy kont",
 		"DEFAULT_IDENTITY_LABEL": "domyślna"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Importuj klucz OpenPGP",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generuj klucz OpenPGP",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Importuj klucz",
+		"BUTTON_GENERATE_KEY_PAIR": "Generuj klucz",
 		"TITLE_PRIVATE": "Prywatny",
 		"TITLE_PUBLIC": "Publiczny",
-		"GENERATE_ONLY_HTTPS": "Tylko HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatycznie zapisuj szkic"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatycznie zapisuj szkic",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Pomoc dotycząca skrótów klawiaturowych",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Zapisz wiadomość",
 		"LABEL_SEND_MESSAGE": "Wyślij wiadomość",
 		"LABEL_CLOSE_COMPOSE": "Zamknij okno tworzenia wiadomości"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Nie znaleziono klucza publicznego",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Nie znaleziono klucza publicznego dla adresu \"%EMAIL%\"",
-		"NO_PRIVATE_KEY_FOUND": "Nie znaleziono klucza prywatnego",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Nie znaleziono klucza prywatnego dla adresu \"%EMAIL%\"",
-		"ADD_A_PUBLICK_KEY": "Dodaj klucz publiczny",
-		"SELECT_A_PRIVATE_KEY": "Wybierz klucz prywatny",
-		"UNVERIFIRED_SIGNATURE": "Podpis niezweryfikowany",
-		"DECRYPTION_ERROR": "Błąd odszyfrowywania OpenPGP",
-		"GOOD_SIGNATURE": "Poprawnie podpisana przez %USER%",
-		"PGP_ERROR": "Błąd OpenPGP: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Podaj adres e-mail w polu OD",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Podaj przynajmniej jednego odbiorcę"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Nieprawidłowy token",

@@ -9,20 +9,34 @@ use RainLoop\Model\MainAccount;
 use RainLoop\Model\AdditionalAccount;
 use RainLoop\Model\Identity;
 use RainLoop\Notifications;
+use RainLoop\Providers\Identities;
 use RainLoop\Providers\Storage\Enumerations\StorageType;
 use RainLoop\Utils;
 
 trait Accounts
 {
+	/**
+	 * @var RainLoop\Providers\Identities
+	 */
+	private $oIdentitiesProvider;
 
 	protected function GetMainEmail(Account $oAccount)
 	{
 		return ($oAccount instanceof AdditionalAccount ? $this->getMainAccountFromToken() : $oAccount)->Email();
 	}
 
+	public function IdentitiesProvider(): Identities
+	{
+		if (null === $this->oIdentitiesProvider) {
+			$this->oIdentitiesProvider = new Identities($this->fabrica('identities'));
+		}
+
+		return $this->oIdentitiesProvider;
+	}
+
 	public function GetAccounts(MainAccount $oAccount): array
 	{
-		if ($this->GetCapa(false, Capa::ADDITIONAL_ACCOUNTS, $oAccount)) {
+		if ($this->GetCapa(Capa::ADDITIONAL_ACCOUNTS)) {
 			$sAccounts = $this->StorageProvider()->Get($oAccount,
 				StorageType::CONFIG,
 				'additionalaccounts'
@@ -62,7 +76,7 @@ trait Accounts
 	{
 		$oMainAccount = $this->getMainAccountFromToken();
 
-		if (!$this->GetCapa(false, Capa::ADDITIONAL_ACCOUNTS, $oMainAccount)) {
+		if (!$this->GetCapa(Capa::ADDITIONAL_ACCOUNTS)) {
 			return $this->FalseResponse(__FUNCTION__);
 		}
 
@@ -79,7 +93,7 @@ trait Accounts
 			throw new ClientException(Notifications::AccountDoesNotExist);
 		}
 
-		$oNewAccount = $this->LoginProcess($sEmail, $sPassword, false, $oMainAccount);
+		$oNewAccount = $this->LoginProcess($sEmail, $sPassword, false, false);
 
 		$aAccounts[$oNewAccount->Email()] = $oNewAccount->asTokenArray($oMainAccount);
 		$this->SetAccounts($oMainAccount, $aAccounts);
@@ -94,7 +108,7 @@ trait Accounts
 	{
 		$oMainAccount = $this->getMainAccountFromToken();
 
-		if (!$this->GetCapa(false, Capa::ADDITIONAL_ACCOUNTS, $oMainAccount)) {
+		if (!$this->GetCapa(Capa::ADDITIONAL_ACCOUNTS)) {
 			return $this->FalseResponse(__FUNCTION__);
 		}
 
@@ -142,7 +156,7 @@ trait Accounts
 				$aResult['SpamFolder'] = (string) $oSettingsLocal->GetConf('SpamFolder', '');
 				$aResult['TrashFolder'] = (string) $oSettingsLocal->GetConf('TrashFolder', '');
 				$aResult['ArchiveFolder'] = (string) $oSettingsLocal->GetConf('ArchiveFolder', '');
-				$aResult['HideUnsubscribed'] = (bool) $oSettingsLocal->GetConf('HideUnsubscribed', $oConfig->Get('labs', 'use_imap_list_subscribe', true));
+				$aResult['HideUnsubscribed'] = (bool) $oSettingsLocal->GetConf('HideUnsubscribed', false);
 				$aResult['UseThreads'] = (bool) $oSettingsLocal->GetConf('UseThreads', $oConfig->Get('defaults', 'mail_use_threads', false));
 				$aResult['ReplySameFolder'] = (bool) $oSettingsLocal->GetConf('ReplySameFolder', $oConfig->Get('defaults', 'mail_reply_same_folder', false));
 			}
@@ -176,7 +190,7 @@ trait Accounts
 	{
 		$oAccount = $this->getAccountFromToken();
 
-		if (!$this->GetCapa(false, Capa::IDENTITIES, $oAccount)) {
+		if (!$this->GetCapa(Capa::IDENTITIES)) {
 			return $this->FalseResponse(__FUNCTION__);
 		}
 
@@ -240,7 +254,7 @@ trait Accounts
 	public function GetIdentities(Account $oAccount): array
 	{
 		// A custom name for a single identity is also stored in this system
-		$allowMultipleIdentities = $this->GetCapa(false, Capa::IDENTITIES, $oAccount);
+		$allowMultipleIdentities = $this->GetCapa(Capa::IDENTITIES);
 
 		// Get all identities
 		$identities = $this->IdentitiesProvider()->GetIdentities($oAccount, $allowMultipleIdentities);

@@ -1,4 +1,7 @@
 {
+	"GLOBAL": {
+		"SAVE": "ذخیره"
+	},
 	"LOGIN": {
 		"LABEL_LOGIN": "ورود",
 		"LABEL_PASSWORD": "گذرواژه",
@@ -8,7 +11,7 @@
 	"TOP_PANEL": {
 		"LABEL_ADMIN_PANEL": "صفحه مدیریت"
 	},
-	"TABS_LABELS": {
+	"SETTINGS_LABELS": {
 		"LABEL_GENERAL_NAME": "عمومی",
 		"LABEL_LOGIN_NAME": "ورود",
 		"LABEL_BRANDING_NAME": "برندسازی",
@@ -16,6 +19,7 @@
 		"LABEL_DOMAINS_NAME": "دامنه‌ها",
 		"LABEL_SECURITY_NAME": "امنیت",
 		"LABEL_PACKAGES_NAME": "بسته‌ها",
+		"LABEL_CONFIG_NAME": "Config",
 		"LABEL_ABOUT_NAME": "درباره"
 	},
 	"TAB_GENERAL": {
@@ -34,7 +38,7 @@
 		"LABEL_ALLOW_IDENTITIES": "اجازه استفاده از چندین شناسه",
 		"ALERT_DATA_ACCESS": "شاخه data قابل دسترس هست. تنظیمات وب‌سرور را طوری انجام دهید این شاخه از بیرون قابل دسترس نباشد. اطلاعات بیشتر اینجا هست:",
 		"ALERT_WARNING": "اخطار!",
-		"HTML_ALERT_WEAK_PASSWORD": "شما در حال استفاده از گذرواژه پیش‌فرض کاربر مدیر هستید.\n<br \/>\nبدلیل رعایت مسائل امنیتی\n<strong><a href=\"#\/security\">گذرواژه<\/a><\/strong>\nرا به کلمه دیگری تغییر دهید.\n\n"
+		"HTML_ALERT_WEAK_PASSWORD": "شما در حال استفاده از گذرواژه پیش‌فرض کاربر مدیر هستید.\n<br>\nبدلیل رعایت مسائل امنیتی\n<strong><a href=\"#\/security\">گذرواژه<\/a><\/strong>\nرا به کلمه دیگری تغییر دهید.\n\n"
 	},
 	"TAB_LOGIN": {
 		"LEGEND_LOGIN_SCREEN": "صفحه ورود",
@@ -62,14 +66,14 @@
 		"BUTTON_TEST": "تست",
 		"ALERT_NOTICE": "توجه!",
 		"HTML_ALERT_DO_NOT_USE_THIS_DATABASE": "از این پایگاه داده برای کاربران زیاد استفاده نکنید.",
-		"HTML_ALERT_DOES_NOT_SUPPORTED": "سیستم از تماس‌ها پشتیبانی نمی‌کند\n<br \/>\nشما باید افزونه <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong> را نصب کنید یا اینکه فعال کنید.\n"
+		"HTML_ALERT_DOES_NOT_SUPPORTED": "سیستم از تماس‌ها پشتیبانی نمی‌کند\n<br>\nشما باید افزونه <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong> را نصب کنید یا اینکه فعال کنید.\n"
 	},
 	"TAB_DOMAINS": {
 		"LEGEND_DOMAINS": "دامنه‌ها",
 		"BUTTON_ADD_DOMAIN": "اضافه‌کردن دامنه",
 		"BUTTON_ADD_ALIAS": "اضافه‌کردن نام مستعار",
 		"DELETE_ARE_YOU_SURE": "آیا مطمئن هستید؟",
-		"HTML_DOMAINS_HELPER": "لیستی از دامنه‌هایی که وب‌میل اجازه دسترسی به آنها را دارد.\n<br \/>\nروی دامنه دامنه جهت پیکربندی کلیک کنید.\n"
+		"HTML_DOMAINS_HELPER": "لیستی از دامنه‌هایی که وب‌میل اجازه دسترسی به آنها را دارد.\n<br>\nروی دامنه دامنه جهت پیکربندی کلیک کنید.\n"
 	},
 	"TAB_SECURITY": {
 		"LEGEND_SECURITY": "امنیت",
@@ -134,14 +138,13 @@
 		"BUTTON_CLOSE": "بستن",
 		"BUTTON_ADD": "اضافه‌کردن",
 		"BUTTON_UPDATE": "بروزرسانی",
-		"NEW_DOMAIN_DESC": "این تنظیمات دامنه به شما اجازه کار کردن <br \/>با پست الکترونیک <i>%NAME%<\/i> را می‌دهد.",
+		"NEW_DOMAIN_DESC": "این تنظیمات دامنه به شما اجازه کار کردن <br>با پست الکترونیک <i>%NAME%<\/i> را می‌دهد.",
 		"WHITE_LIST_ALERT": "لیستی از دامنه‌ها که کاربران وب‌میل می‌توانند به آنها دسترسی داشته باشند.\nاز فاصله جهت جدا کردن استفاده کنید.\n"
 	},
 	"POPUPS_PLUGIN": {
 		"TITLE_PLUGIN": "افزونه",
 		"DESC_NOTHING_TO_CONFIGURE": "چیزی برای پیکربندی نیست",
-		"BUTTON_CLOSE": "بستن",
-		"BUTTON_SAVE": "ذخیره"
+		"BUTTON_CLOSE": "بستن"
 	},
 	"POPUPS_ASK": {
 		"BUTTON_YES": "Yes",

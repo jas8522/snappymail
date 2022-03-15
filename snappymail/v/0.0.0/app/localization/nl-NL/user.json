@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Meer berichten",
 		"MENU_HEADERS": "Toon berichtkoppen",
 		"MENU_VIEW_ORIGINAL": "Toon origineel",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Download als .eml bestand",
 		"MENU_FILTER_SIMILAR": "Filter gelijksoortige berichten",
 		"MENU_PRINT": "Afdrukken",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Bijlagen",
 		"MESSAGE_VIEW_DESC": "Selecteer een bericht in de lijst om hier te bekijken",
 		"MESSAGE_VIEW_MOVE_DESC": "Klik op de doel map in het linker paneel.",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP ondertekend bericht (klik om te verifiëren)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP versleuteld bericht (klik om te ontsleutelen)",
 		"LINK_DOWNLOAD_AS_ZIP": "Download als zip",
 		"SPAM_SCORE": "Spamscore",
 		"HAS_VIRUS_WARNING": "WAARSCHUWING: virus gedetecteerd"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Toevoegen van bijlage(n) is nog niet gereed",
 		"BUTTON_REQUEST_READ_RECEIPT": "Leesbevestiging vragen",
 		"BUTTON_MARK_AS_IMPORTANT": "Markeer als belangrijk",
-		"BUTTON_OPEN_PGP": "OpenPGP (alleen bij Platte Tekst)",
 		"BUTTON_REQUEST_DSN": "Ontvangstbevestiging vragen"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Eens in gang gezet kan het proces niet geannuleerd worden!",
 		"TITLE_CLEARING_PROCESS": "Folder aan het leegmaken..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Importeer OpenPGP sleutel",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Importeer"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Bekijk OpenPGP sleutel",
-		"BUTTON_SELECT": "Selecteer"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Genereer OpenPGP sleutels",
-		"LABEL_KEY_BIT_LENGTH": "Sleutel lengte",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Genereer"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP ondertekenen\/versleutelen",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Importeer OpenPGP sleutel",
+		"POPUP_IMPORT_BUTTON": "Importeer",
+		"POPUP_VIEW_TITLE": "Bekijk OpenPGP sleutel",
+		"POPUP_VIEW_BUTTON": "Selecteer",
+		"POPUP_GENERATE_TITLE": "Genereer OpenPGP sleutels",
+		"POPUP_GENERATE_BUTTON": "Genereer",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Ondertekenen",
 		"LABEL_ENCRYPT": "Versleutelen",
-		"BUTTON_SIGN": "Ondertekenen",
-		"BUTTON_ENCRYPT": "Versleutelen",
-		"BUTTON_SIGN_AND_ENCRYPT": "Ondertekenen en versleutelen"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP Decrypt",
-		"LABEL_KEY": "Privé sleutel",
-		"BUTTON_DECRYPT": "Decrypt"
+		"BUTTON_DECRYPT": "Decrypt",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP ondertekend bericht",
+		"ENCRYPTED_MESSAGE": "OpenPGP versleuteld bericht",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Juiste handtekening van %USER%",
+		"ERROR": "OpenPGP foutmelding: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Filter toevoegen",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Contactpersonen",
 		"LABEL_FOLDERS_NAME": "Mappen",
 		"LABEL_ACCOUNTS_NAME": "Accounts",
-		"LABEL_IDENTITIES_NAME": "Identiteiten",
 		"LABEL_FILTERS_NAME": "Filters",
 		"LABEL_SECURITY_NAME": "Beveiliging",
 		"LABEL_THEMES_NAME": "Thema's"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Groepeer berichten",
 		"LABEL_REPLY_SAME_FOLDER": "Plaats antwoorden in de map van het originele bericht",
 		"LABEL_SHOW_IMAGES": "Afbeeldingen altijd weergeven in het bericht",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Verwijder achtergrond- en tekstkleuren uit het bericht",
 		"LABEL_MESSAGE_PER_PAGE": "Berichten op pagina",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Bericht markeren als gelezen na",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Account lijst aan het bijwerken",
 		"DEFAULT_IDENTITY_LABEL": "standaard"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Importeer OpenPGP sleutel",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Genereer OpenPGP sleutels",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Importeer sleutel",
+		"BUTTON_GENERATE_KEY_PAIR": "Genereer sleutels",
 		"TITLE_PRIVATE": "Privé sleutel",
 		"TITLE_PUBLIC": "Publieke sleutel",
-		"GENERATE_ONLY_HTTPS": "Alleen HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Hulp bij toetsenbord sneltoetsen",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Concept opslaan",
 		"LABEL_SEND_MESSAGE": "Bericht versturen",
 		"LABEL_CLOSE_COMPOSE": "Nieuw bericht venster sluiten"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Geen publieke sleutels gevonden",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Geen publieke sleutels gevonden voor e-mail adres \"%EMAIL%\"",
-		"NO_PRIVATE_KEY_FOUND": "Geen privé sleutel gevonden",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Geen privé sleutel gevonden voor e-mail adres \"%EMAIL%\"",
-		"ADD_A_PUBLICK_KEY": "Voeg een publieke sleutel toe",
-		"SELECT_A_PRIVATE_KEY": "Selecteer een privé sleutel",
-		"UNVERIFIRED_SIGNATURE": "Ongeverifieerde handtekening",
-		"DECRYPTION_ERROR": "OpenPGP decryptie fout",
-		"GOOD_SIGNATURE": "Juiste handtekening van %USER%",
-		"PGP_ERROR": "OpenPGP foutmelding: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Geef a.u.b. een VAN e-mail adres op",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Geef a.u.b. minimaal één ontvanger op"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Ongeldige token",

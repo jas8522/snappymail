@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Περισσότερα μηνύματα",
 		"MENU_HEADERS": "Εμφάνιση των επικεφαλίδων του μηνύματος",
 		"MENU_VIEW_ORIGINAL": "Εμφάνιση πηγαίου μηνύματος",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Μεταφόρτωση σαν αρχείο .eml",
 		"MENU_FILTER_SIMILAR": "Φιλτράρισμα μηνυμάτων όπως αυτό",
 		"MENU_PRINT": "Εκτύπωση",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Συνημμένα",
 		"MESSAGE_VIEW_DESC": "Επιλέξτε ένα μήνυμα από τη λίστα για να εμφανιστεί εδώ.",
 		"MESSAGE_VIEW_MOVE_DESC": "Click folder name in the left panel to select the destination.",
-		"PGP_SIGNED_MESSAGE_DESC": "Μήνυμα υπογεγραμμένο με OpenPGP (κάντε κλικ για έλεγχο)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "Μήνυμα κωδικοποιημένο με OpenPGP (κάντε κλίκ για αποκωδικοποίηση)",
 		"LINK_DOWNLOAD_AS_ZIP": "Μεταφόρτωση σαν zip",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Δεν έχουν μεταφορτωθεί ακόμη όλα τα συνημμένα.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Ζητήστε αποδεικτικό ανάγνωσης",
 		"BUTTON_MARK_AS_IMPORTANT": "Σημειώστε το σαν σημαντικό",
-		"BUTTON_OPEN_PGP": "OpenPGP (Απλό κείμενο μόνο)",
 		"BUTTON_REQUEST_DSN": "Ζητήστε αποδεικτικό παράδοσης"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Αφού ξεκινήσει, η διαδικασία δεν σταματά ή ακυρώνεται.",
 		"TITLE_CLEARING_PROCESS": "Διαγραφή όλων των μηνυμάτων στο φάκελο..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Εισαγωγή κλειδιού OpenPGP",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Εισαγωγή"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Προβολή κλειδιού OpenPGP",
-		"BUTTON_SELECT": "Επιλογή"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Δημιουργία κλειδιών OpenPGP",
-		"LABEL_KEY_BIT_LENGTH": "Μήκος κλειδιού",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Δημιουργία"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP Υπογραφή\/Κρυπρογράφηση",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Εισαγωγή κλειδιού OpenPGP",
+		"POPUP_IMPORT_BUTTON": "Εισαγωγή",
+		"POPUP_VIEW_TITLE": "Προβολή κλειδιού OpenPGP",
+		"POPUP_VIEW_BUTTON": "Επιλογή",
+		"POPUP_GENERATE_TITLE": "Δημιουργία κλειδιών OpenPGP",
+		"POPUP_GENERATE_BUTTON": "Δημιουργία",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Υπογραφή",
 		"LABEL_ENCRYPT": "Κρυπτογράφηση",
-		"BUTTON_SIGN": "Υπογραφή",
-		"BUTTON_ENCRYPT": "Κρυπτογράφηση",
-		"BUTTON_SIGN_AND_ENCRYPT": "Υπογραφή και κρυπτογράφηση"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "Αποκρυπτογράφηση OpenPGP",
-		"LABEL_KEY": "Προσωπικό κλειδί",
-		"BUTTON_DECRYPT": "Αποκρυπτογράφηση"
+		"BUTTON_DECRYPT": "Αποκρυπτογράφηση",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "Μήνυμα υπογεγραμμένο με OpenPGP",
+		"ENCRYPTED_MESSAGE": "Μήνυμα κωδικοποιημένο με OpenPGP",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Good signature from %USER%",
+		"ERROR": "OpenPGP error: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Δημιουργία φίλτρου;",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Επαφές",
 		"LABEL_FOLDERS_NAME": "Φάκελοι",
 		"LABEL_ACCOUNTS_NAME": "Λογαρισμοί",
-		"LABEL_IDENTITIES_NAME": "Ταυτότητες",
 		"LABEL_FILTERS_NAME": "Φίλτρα",
 		"LABEL_SECURITY_NAME": "Ασφάλεια",
 		"LABEL_THEMES_NAME": "Θέματα"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Χρήση νημάτων",
 		"LABEL_REPLY_SAME_FOLDER": "Τοποθέτηση απαντήσεων στο φάκελο που ανήκει το μήνυμα που απαντάται",
 		"LABEL_SHOW_IMAGES": "Να εμφανίζονται πάντα οι εξωτερικές εικόνες στο σώμα του μηνύματος",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Μηνύματα στη σελίδα",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Updating...",
 		"DEFAULT_IDENTITY_LABEL": "default"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Import OpenPGP Key",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generate OpenPGP Keys",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Import Key",
+		"BUTTON_GENERATE_KEY_PAIR": "Generate Keys",
 		"TITLE_PRIVATE": "Private",
 		"TITLE_PUBLIC": "Public",
-		"GENERATE_ONLY_HTTPS": "HTTPS only",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Keyboard shortcuts help",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Save message",
 		"LABEL_SEND_MESSAGE": "Send message",
 		"LABEL_CLOSE_COMPOSE": "Close compose"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "No public keys found",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "No public keys found for \"%EMAIL%\" email",
-		"NO_PRIVATE_KEY_FOUND": "No private key found",
-		"NO_PRIVATE_KEY_FOUND_FOR": "No private key found for \"%EMAIL%\" email",
-		"ADD_A_PUBLICK_KEY": "Add a public key",
-		"SELECT_A_PRIVATE_KEY": "Select a private key",
-		"UNVERIFIRED_SIGNATURE": "Unverified signature",
-		"DECRYPTION_ERROR": "OpenPGP decryption error",
-		"GOOD_SIGNATURE": "Good signature from %USER%",
-		"PGP_ERROR": "OpenPGP error: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Please specify FROM email address",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Παρακαλώ ορίστε τουλάχιστον ένα παραλήπτη"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Invalid token",

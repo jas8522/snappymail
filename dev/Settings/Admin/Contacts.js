@@ -1,35 +1,30 @@
 import ko from 'ko';
 
-import { SaveSettingsStep } from 'Common/Enums';
 import { SettingsGet } from 'Common/Globals';
-import {
-	settingsSaveHelperSimpleFunction,
-	defaultOptionsAfterRender,
-	addObservablesTo,
-	addSubscribablesTo
-} from 'Common/Utils';
+import { defaultOptionsAfterRender } from 'Common/Utils';
+import { addObservablesTo } from 'External/ko';
 
 import Remote from 'Remote/Admin/Fetch';
 import { decorateKoCommands } from 'Knoin/Knoin';
+import { AbstractViewSettings } from 'Knoin/AbstractViews';
 
-export class ContactsAdminSettings /*extends AbstractViewSettings*/ {
+export class AdminSettingsContacts extends AbstractViewSettings {
 	constructor() {
+		super();
 		this.defaultOptionsAfterRender = defaultOptionsAfterRender;
 
+		this.addSetting('ContactsPdoDsn');
+		this.addSetting('ContactsPdoUser');
+		this.addSetting('ContactsPdoPassword');
+		this.addSetting('ContactsPdoType', () => {
+			this.testContactsSuccess(false);
+			this.testContactsError(false);
+			this.testContactsErrorMessage('');
+		});
+
+		this.addSettings(['ContactsEnable','ContactsSync']);
+
 		addObservablesTo(this, {
-			enableContacts: !!SettingsGet('ContactsEnable'),
-			contactsSync: !!SettingsGet('ContactsSync'),
-			contactsType: SettingsGet('ContactsPdoType'),
-
-			pdoDsn: SettingsGet('ContactsPdoDsn'),
-			pdoUser: SettingsGet('ContactsPdoUser'),
-			pdoPassword: SettingsGet('ContactsPdoPassword'),
-
-			pdoDsnTrigger: SaveSettingsStep.Idle,
-			pdoUserTrigger: SaveSettingsStep.Idle,
-			pdoPasswordTrigger: SaveSettingsStep.Idle,
-			contactsTypeTrigger: SaveSettingsStep.Idle,
-
 			testing: false,
 			testContactsSuccess: false,
 			testContactsError: false,
@@ -54,59 +49,23 @@ export class ContactsAdminSettings /*extends AbstractViewSettings*/ {
 
 		this.mainContactsType = ko
 			.computed({
-				read: this.contactsType,
+				read: this.contactsPdoType,
 				write: value => {
-					if (value !== this.contactsType()) {
+					if (value !== this.contactsPdoType()) {
 						if (supportedTypes.includes(value)) {
-							this.contactsType(value);
+							this.contactsPdoType(value);
 						} else if (types.length) {
-							this.contactsType('');
+							this.contactsPdoType('');
 						}
 					} else {
-						this.contactsType.valueHasMutated();
+						this.contactsPdoType.valueHasMutated();
 					}
 				}
 			})
 			.extend({ notify: 'always' });
 
-		addSubscribablesTo(this, {
-			enableContacts: value =>
-				Remote.saveConfig({
-					ContactsEnable: value ? 1 : 0
-				}),
-
-			contactsSync: value =>
-				Remote.saveConfig({
-					ContactsSync: value ? 1 : 0
-				}),
-
-			contactsType: value => {
-				this.testContactsSuccess(false);
-				this.testContactsError(false);
-				this.testContactsErrorMessage('');
-				Remote.saveConfig({
-					ContactsPdoType: value.trim()
-				}, settingsSaveHelperSimpleFunction(this.contactsTypeTrigger, this))
-			},
-
-			pdoDsn: value =>
-				Remote.saveConfig({
-					ContactsPdoDsn: value.trim()
-				}, settingsSaveHelperSimpleFunction(this.pdoDsnTrigger, this)),
-
-			pdoUser: value =>
-				Remote.saveConfig({
-					ContactsPdoUser: value.trim()
-				}, settingsSaveHelperSimpleFunction(this.pdoUserTrigger, this)),
-
-			pdoPassword: value =>
-				Remote.saveConfig({
-					ContactsPdoPassword: value.trim()
-				}, settingsSaveHelperSimpleFunction(this.pdoPasswordTrigger, this))
-		})
-
 		decorateKoCommands(this, {
-			testContactsCommand: self => self.pdoDsn() && self.pdoUser()
+			testContactsCommand: self => self.contactsPdoDsn() && self.contactsPdoUser()
 		});
 	}
 
@@ -135,10 +94,10 @@ export class ContactsAdminSettings /*extends AbstractViewSettings*/ {
 
 				this.testing(false);
 			}, {
-				ContactsPdoType: this.contactsType(),
-				ContactsPdoDsn: this.pdoDsn(),
-				ContactsPdoUser: this.pdoUser(),
-				ContactsPdoPassword: this.pdoPassword()
+				ContactsPdoType: this.contactsPdoType(),
+				ContactsPdoDsn: this.contactsPdoDsn(),
+				ContactsPdoUser: this.contactsPdoUser(),
+				ContactsPdoPassword: this.contactsPdoPassword()
 			}
 		);
 	}

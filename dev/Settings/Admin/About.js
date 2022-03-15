@@ -2,9 +2,9 @@ import ko from 'ko';
 import { Settings } from 'Common/Globals';
 import Remote from 'Remote/Admin/Fetch';
 
-export class AboutAdminSettings /*extends AbstractViewSettings*/ {
+export class AdminSettingsAbout /*extends AbstractViewSettings*/ {
 	constructor() {
-		this.version = ko.observable(Settings.app('version'));
+		this.version = Settings.app('version');
 		this.phpextensions = ko.observableArray();
 	}
 

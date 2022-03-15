@@ -63,10 +63,18 @@ class ESEARCH extends Request
 		parent::__construct($oImapClient);
 	}
 
-	public function SendRequestGetResponse() : \MailSo\Imap\ResponseCollection
+	public function SendRequest() : string
 	{
 		$sCmd = 'SEARCH';
 		$aRequest = array();
+
+/*		// RFC 6203
+		if (false !== \stripos($this->sCriterias, 'FUZZY') && !$this->oImapClient->IsSupported('SEARCH=FUZZY')) {
+			$this->oImapClient->writeLogException(
+				new RuntimeException('SEARCH=FUZZY is not supported'),
+				Type::ERROR, true);
+		}
+*/
 
 		$aFolders = [];
 		if ($this->aMailboxes) {
@@ -120,7 +128,7 @@ class ESEARCH extends Request
 			$aRequest[] = $this->sLimit;
 		}
 
-		return $this->oImapClient->SendRequestGetResponse(
+		return $this->oImapClient->SendRequest(
 			($this->bUid ? 'UID ' : '') . $sCmd,
 			$aRequest
 		);

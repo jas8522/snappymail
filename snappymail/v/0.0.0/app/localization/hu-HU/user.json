@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "További üzenetek",
 		"MENU_HEADERS": "Üzenet fejléc megjelenítése",
 		"MENU_VIEW_ORIGINAL": "Eredeti megjelenítése",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": ".eml fájl letöltés",
 		"MENU_FILTER_SIMILAR": "Hasonló üzenetek szűrése",
 		"MENU_PRINT": "Nyomtatás",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Mellékletek",
 		"MESSAGE_VIEW_DESC": "Válassz egy üzenetet a listából, hogy megjelenjen itt.",
 		"MESSAGE_VIEW_MOVE_DESC": "A cél kiválasztásához a bal oldali panelen kattints a mappa nevére.",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP aláírt üzenet (kattints az ellenőrzéshez)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP kódolt üzenet (kattints a visszafejtéshez)",
 		"LINK_DOWNLOAD_AS_ZIP": "Letöltés zip fájlként",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "FIGYELEM: vírust észleltünk"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Még nem lett feltöltve minden melléklet.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Olvasási visszaigazolás kérése",
 		"BUTTON_MARK_AS_IMPORTANT": "Megjelölés fontosként",
-		"BUTTON_OPEN_PGP": "OpenPGP (csak egyszerű szöveg)",
 		"BUTTON_REQUEST_DSN": "Továbbítási visszaigazolás kérés"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Ha egyszer elindult, a folyamatot nem lehet megszakítani.",
 		"TITLE_CLEARING_PROCESS": "Mappa ürítés..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "OpenPGP kulcs importálás",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Importálás"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "OpenPGP kulcs megtekintés",
-		"BUTTON_SELECT": "Kiválasztás"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "OpenPGP kulcs generálás",
-		"LABEL_KEY_BIT_LENGTH": "Kulcs hossz",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generálás"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP aláírás\/titkosítás",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "OpenPGP kulcs importálás",
+		"POPUP_IMPORT_BUTTON": "Importálás",
+		"POPUP_VIEW_TITLE": "OpenPGP kulcs megtekintés",
+		"POPUP_VIEW_BUTTON": "Kiválasztás",
+		"POPUP_GENERATE_TITLE": "OpenPGP kulcs generálás",
+		"POPUP_GENERATE_BUTTON": "Generálás",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Aláírás",
 		"LABEL_ENCRYPT": "Titkosítás",
-		"BUTTON_SIGN": "Aláírás",
-		"BUTTON_ENCRYPT": "Titkosítás",
-		"BUTTON_SIGN_AND_ENCRYPT": "Aláírás és titkosítás"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP visszafejtés",
-		"LABEL_KEY": "Privát kulcs",
-		"BUTTON_DECRYPT": "Visszafejtés"
+		"BUTTON_DECRYPT": "Visszafejtés",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP aláírt üzenet",
+		"ENCRYPTED_MESSAGE": "OpenPGP kódolt üzenet",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Jó aláírás tőle: %USER%",
+		"ERROR": "OpenPGP hiba: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Szűrő létrehozás?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Névjegyek",
 		"LABEL_FOLDERS_NAME": "Mappák",
 		"LABEL_ACCOUNTS_NAME": "Fiókok",
-		"LABEL_IDENTITIES_NAME": "Identitások",
 		"LABEL_FILTERS_NAME": "Szűrők",
 		"LABEL_SECURITY_NAME": "Biztonság",
 		"LABEL_THEMES_NAME": "Témák"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Szálak használata",
 		"LABEL_REPLY_SAME_FOLDER": "Válaszüzenetek elhelyezése az eredeti üzenet mappájában",
 		"LABEL_SHOW_IMAGES": "Mindig jelenítse meg a külső képeket az üzenet törzsében",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Üzenetek egy oldalon",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Jelölje meg az üzenetet olvasottként",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Fiók lista frissítés",
 		"DEFAULT_IDENTITY_LABEL": "default"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "OpenPGP kulcs importálás",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "OpenPGP kulcs generálás",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Kulcs importálás",
+		"BUTTON_GENERATE_KEY_PAIR": "Kulcs generálás",
 		"TITLE_PRIVATE": "Privát",
 		"TITLE_PUBLIC": "Publikus",
-		"GENERATE_ONLY_HTTPS": "csak HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Piszkozat automatikus mentése"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Piszkozat automatikus mentése",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Billentyű kombináció súgó",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Üzenet mentés",
 		"LABEL_SEND_MESSAGE": "Üzenet küldés",
 		"LABEL_CLOSE_COMPOSE": "Levélírás bezárása"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Nem találtam publikus kulcsokat",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Nem találtam publikus kulcsokat ehhez az e-mailhez: \"%EMAIL%\"",
-		"NO_PRIVATE_KEY_FOUND": "Nem találtam privát kulcsot",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Nem találtam privát kulcsot ehhez az e-mailhez: \"%EMAIL%\"",
-		"ADD_A_PUBLICK_KEY": "Publikus kulcs hozzáadás",
-		"SELECT_A_PRIVATE_KEY": "Privát kulcs választás",
-		"UNVERIFIRED_SIGNATURE": "Nem ellenőrzött aláírás",
-		"DECRYPTION_ERROR": "OpenPGP visszafejtési hiba",
-		"GOOD_SIGNATURE": "Jó aláírás tőle: %USER%",
-		"PGP_ERROR": "OpenPGP hiba: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Kérlek add meg a Feladó e-mail címét",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Legalább egy címzettet meg kell adni"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Érvénytelen kulcs",

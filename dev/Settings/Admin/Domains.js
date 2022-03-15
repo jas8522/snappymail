@@ -8,11 +8,11 @@ import Remote from 'Remote/Admin/Fetch';
 import { DomainPopupView } from 'View/Popup/Domain';
 import { DomainAliasPopupView } from 'View/Popup/DomainAlias';
 
-export class DomainsAdminSettings /*extends AbstractViewSettings*/ {
+export class AdminSettingsDomains /*extends AbstractViewSettings*/ {
 	constructor() {
 		this.domains = DomainAdminStore;
 
-		this.domainForDeletion = ko.observable(null).deleteAccessHelper();
+		this.domainForDeletion = ko.observable(null).askDeleteHelper();
 	}
 
 	createDomain() {

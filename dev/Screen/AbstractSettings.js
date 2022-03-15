@@ -2,7 +2,7 @@ import ko from 'ko';
 
 import { pString } from 'Common/Utils';
 import { settings } from 'Common/Links';
-import { elementById } from 'Common/Globals';
+import { createElement, elementById } from 'Common/Globals';
 
 import { AbstractScreen } from 'Knoin/AbstractScreen';
 
@@ -28,21 +28,21 @@ export class AbstractSettingsScreen extends AbstractScreen {
 			);
 
 		if (RoutedSettingsViewModel) {
-			if (RoutedSettingsViewModel.__builded && RoutedSettingsViewModel.__vm) {
+			if (RoutedSettingsViewModel.__vm) {
 				settingsScreen = RoutedSettingsViewModel.__vm;
 			} else {
 				const vmPlace = elementById('rl-settings-subscreen');
 				if (vmPlace) {
-					viewModelDom = Element.fromHTML('<div id="V-Settings-'
-						+ (RoutedSettingsViewModel.name.replace(/(User|Admin)Settings/,''))
-						+ '" class="g-ui-user-select-none" hidden=""></div>');
+					viewModelDom = createElement('div',{
+						id: 'V-Settings-' + RoutedSettingsViewModel.name.replace(/(User|Admin)Settings/,''),
+						hidden: ''
+					})
 					vmPlace.append(viewModelDom);
 
 					settingsScreen = new RoutedSettingsViewModel();
 					settingsScreen.viewModelDom = viewModelDom;
 
 					RoutedSettingsViewModel.__dom = viewModelDom;
-					RoutedSettingsViewModel.__builded = true;
 					RoutedSettingsViewModel.__vm = settingsScreen;
 
 					ko.applyBindingAccessorsToNode(
@@ -69,7 +69,7 @@ export class AbstractSettingsScreen extends AbstractScreen {
 					this.oCurrentSubScreen = settingsScreen;
 
 					// show
-					settingsScreen.onBeforeShow && settingsScreen.onBeforeShow();
+					settingsScreen.beforeShow && settingsScreen.beforeShow();
 					settingsScreen.viewModelDom.hidden = false;
 					settingsScreen.onShow && settingsScreen.onShow();
 
@@ -79,12 +79,12 @@ export class AbstractSettingsScreen extends AbstractScreen {
 						);
 					});
 
-					elementById('rl-settings-subscreen').scrollTop = 0;
+					(elementById('rl-settings-subscreen') || {}).scrollTop = 0;
 					// --
 				}, 1);
 			}
 		} else {
-			rl.route.setHash(settings(), false, true);
+			hasher.replaceHash(settings());
 		}
 	}
 
@@ -131,11 +131,12 @@ export class AbstractSettingsScreen extends AbstractScreen {
  * @returns {void}
  */
 export function settingsAddViewModel(SettingsViewModelClass, template, labelName, route, isDefault = false) {
+	let name = SettingsViewModelClass.name.replace(/(User|Admin)Settings/, '');
 	SettingsViewModelClass.__rlSettingsData = {
-		label: labelName,
-		route: route,
+		label: labelName || 'SETTINGS_LABELS/LABEL_' + name.toUpperCase() + '_NAME',
+		route: route || name.toLowerCase(),
 		selected: ko.observable(false),
-		template: template,
+		template: template || SettingsViewModelClass.name,
 		isDefault: !!isDefault
 	};
 

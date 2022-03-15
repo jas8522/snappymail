@@ -90,7 +90,7 @@
 		"BUTTON_DELETE_WITHOUT_MOVE": "Navždy odstranit",
 		"MENU_SET_SEEN": "Označit jako přečtené",
 		"MENU_SET_ALL_SEEN": "Označit vše jako přečtené",
-		"MENU_UNSET_SEEN": "Označit jako neprečtené",
+		"MENU_UNSET_SEEN": "Označit jako nepřečtené",
 		"MENU_SET_FLAG": "Označit hvězdičkou",
 		"MENU_UNSET_FLAG": "Zrušit označení hvězdičkou",
 		"MENU_SELECT_ALL": "Vše",
@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Více zpráv",
 		"MENU_HEADERS": "Zobrazit hlavičku zprávy",
 		"MENU_VIEW_ORIGINAL": "Zobrazit zdroj",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Stáhnout jako soubor .eml",
 		"MENU_FILTER_SIMILAR": "Filtrovat zprávy jako tato",
 		"MENU_PRINT": "Tisknout",
@@ -146,15 +148,13 @@
 		"PRINT_LABEL_ATTACHMENTS": "Přílohy",
 		"MESSAGE_VIEW_DESC": "Vyberte zprávu ze seznamu pro její zobrazení zde.",
 		"MESSAGE_VIEW_MOVE_DESC": "Vyberte cílovou složku v levém panelu.",
-		"PGP_SIGNED_MESSAGE_DESC": "Zpráva podepsaná OpenPGP (klikněte pro ověření)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "Zpráva šifrovaná OpenPGP (klikněte pro dešifraci)",
 		"LINK_DOWNLOAD_AS_ZIP": "Stáhnout jako zip",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
 	},
 	"READ_RECEIPT": {
 		"SUBJECT": "Potvrzení o zobrazení zprávy - %SUBJECT%",
-		"BODY": "Toto je potrvzení o zaslání emailu na adresu %READ-RECEIPT%.\n\nPoznámka: Toto potvrzení zajišťuje, že zpráva byla zobrazena v poštovní schránce příjemce. Nezajišťuje, že ji příjemce četl a rozuměl jí.\n"
+		"BODY": "Toto je potvrzení o zaslání emailu na adresu %READ-RECEIPT%.\n\nPoznámka: Toto potvrzení zajišťuje, že zpráva byla zobrazena v poštovní schránce příjemce. Nezajišťuje, že ji příjemce četl a rozuměl jí.\n"
 	},
 	"SUGGESTIONS": {
 		"SEARCHING_DESC": "Hledám..."
@@ -166,7 +166,7 @@
 		"BUTTON_IMPORT": "Importovat (csv, vcf, vCard)",
 		"BUTTON_EXPORT_VCARD": "Exportovat (vcf, vCard)",
 		"BUTTON_EXPORT_CSV": "Exportovat (csv)",
-		"ERROR_IMPORT_FILE": "Chyba importu (nesprávny formát souboru)",
+		"ERROR_IMPORT_FILE": "Chyba importu (nesprávný formát souboru)",
 		"EMPTY_LIST": "Nemáte žádné kontakty",
 		"EMPTY_SEARCH": "Nebyly nalezeny žádné kontakty",
 		"CLEAR_SEARCH": "Smazat vyhledávání",
@@ -181,7 +181,7 @@
 		"PLACEHOLDER_ENTER_LAST_NAME": "Zadejte příjmení",
 		"PLACEHOLDER_ENTER_FIRST_NAME": "Zadejte jméno",
 		"PLACEHOLDER_ENTER_NICK_NAME": "Zadejte přezdívku",
-		"LABEL_READ_ONLY": "Jen pro čtění",
+		"LABEL_READ_ONLY": "Jen pro čtení",
 		"LABEL_SHARE": "Sdílet",
 		"ADD_MENU_LABEL": "Přidat",
 		"ADD_MENU_NICKNAME": "Přezdívka",
@@ -199,7 +199,7 @@
 		"BUTTON_SEND": "Odeslat",
 		"BUTTON_MINIMIZE": "Minimalizovat",
 		"SAVED_TIME": "Uložené v %TIME%",
-		"SAVED_ERROR_ON_SEND": "Zpráva byla odesláná, ale nebyla uložená do složky odeslaných zpráv.",
+		"SAVED_ERROR_ON_SEND": "Zpráva byla odeslána, ale nebyla uložená do složky odeslaných zpráv.",
 		"DISCARD_UNSAVED_DATA": "Neuložit změny?",
 		"ATTACH_FILES": "Připojit soubory",
 		"ATTACH_DROP_FILES_DESC": "Soubory přetáhněte sem",
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Některé přílohy ještě nebyly nahrány",
 		"BUTTON_REQUEST_READ_RECEIPT": "Vyžádat si potvrzení o přečtení",
 		"BUTTON_MARK_AS_IMPORTANT": "Označit jako důležité",
-		"BUTTON_OPEN_PGP": "OpenPGP (jen Plain Text)",
 		"BUTTON_REQUEST_DSN": "Vyžádat si potvrzení o přijetí"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Tento proces není možné přerušit.",
 		"TITLE_CLEARING_PROCESS": "Odstraňuje se složka..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Import OpenPGP klíče",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Import"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Zobrazit OpenPGP klíč",
-		"BUTTON_SELECT": "Vybart"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Generovat OpenPGP klíče",
-		"LABEL_KEY_BIT_LENGTH": "Délka klíče",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generovat"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP Podpis\/Šifrování",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Import OpenPGP klíče",
+		"POPUP_IMPORT_BUTTON": "Import",
+		"POPUP_VIEW_TITLE": "Zobrazit OpenPGP klíč",
+		"POPUP_VIEW_BUTTON": "Vybrat",
+		"POPUP_GENERATE_TITLE": "Generovat OpenPGP klíče",
+		"POPUP_GENERATE_BUTTON": "Generovat",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Podpis",
 		"LABEL_ENCRYPT": "Šifrování",
-		"BUTTON_SIGN": "Podepsat",
-		"BUTTON_ENCRYPT": "Šifrovat",
-		"BUTTON_SIGN_AND_ENCRYPT": "Podepsat a šifrovat"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP Dešifrování",
-		"LABEL_KEY": "Soukromý klíč",
-		"BUTTON_DECRYPT": "Dešifrovat"
+		"BUTTON_DECRYPT": "Dešifrovat",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "Zpráva podepsaná OpenPGP",
+		"ENCRYPTED_MESSAGE": "Zpráva šifrovaná OpenPGP",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Ověřený podpis od %USER%",
+		"ERROR": "OpenPGP chyba: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Vytvořit filtr?",
@@ -287,7 +279,7 @@
 		"SELECT_ACTION_REJECT": "Odmítnout",
 		"SELECT_ACTION_VACATION_MESSAGE": "Odpověď v nepřítomnosti",
 		"SELECT_ACTION_DISCARD": "Zahodit",
-		"SELECT_FIELD_RECIPIENTS": "Přijemci (Komu nebo Kopie)",
+		"SELECT_FIELD_RECIPIENTS": "Příjemci (Komu nebo Kopie)",
 		"SELECT_FIELD_HEADER": "Hlavička",
 		"SELECT_FIELD_BODY": "Body",
 		"SELECT_FIELD_SIZE": "Velikost",
@@ -295,12 +287,12 @@
 		"SELECT_TYPE_NOT_CONTAINS": "Neobsahuje",
 		"SELECT_TYPE_MATCHES": "Odpovídá (můžete použit * a ? )",
 		"SELECT_TYPE_NOT_MATCHES": "Neodpovídá (můžete použit * a ? )",
-		"SELECT_TYPE_REGEXP": "Regexp",
-		"SELECT_TYPE_NOT_REGEXP": "Not Regexp",
+		"SELECT_TYPE_REGEXP": "egulární výraz",
+		"SELECT_TYPE_NOT_REGEXP": "Není regulární výraz",
 		"SELECT_TYPE_EQUAL_TO": "Rovná se",
 		"SELECT_TYPE_NOT_EQUAL_TO": "Nerovná se",
-		"SELECT_TYPE_OVER": "Over",
-		"SELECT_TYPE_UNDER": "Under",
+		"SELECT_TYPE_OVER": "Více než",
+		"SELECT_TYPE_UNDER": "Méně než",
 		"SELECT_TYPE_TEXT": "Text",
 		"SELECT_TYPE_RAW": "Raw",
 		"SELECT_MATCH_ANY": "Vyhovuje alespoň jednomu pravidlu",
@@ -320,7 +312,7 @@
 		"TITLE_EDIT": "Edit Script",
 		"BUTTON_ADD_FILTER": "Add a Filter",
 		"BUTTON_RAW_SCRIPT": "Use Custom User Script",
-		"CAPABILITY_LABEL": "Capabilities",
+		"CAPABILITY_LABEL": "Schopnost",
 		"CHANGES_NEED_TO_BE_SAVED_DESC": "These changes need to be saved to the server."
 	},
 	"POPUPS_SYSTEM_FOLDERS": {
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Kontakty",
 		"LABEL_FOLDERS_NAME": "Složky",
 		"LABEL_ACCOUNTS_NAME": "Účty",
-		"LABEL_IDENTITIES_NAME": "Aliasy",
 		"LABEL_FILTERS_NAME": "Filtry",
 		"LABEL_SECURITY_NAME": "Zabezpečení",
 		"LABEL_THEMES_NAME": "Motivy"
@@ -371,7 +362,7 @@
 		"LOADING_PROCESS": "Aktualizovat seznam filtrů"
 	},
 	"SETTINGS_SECURITY": {
-		"LEGEND_SECURITY": "Zapezpečení",
+		"LEGEND_SECURITY": "Zabezpečení",
 		"LABEL_AUTOLOGOUT": "Automatické odhlášení",
 		"AUTOLOGIN_NEVER_OPTION_NAME": "Nikdy",
 		"AUTOLOGIN_MINUTES_OPTION_NAME": "%MINUTES% minut",
@@ -384,18 +375,20 @@
 		"LABEL_LAYOUT": "Rozložení",
 		"LABEL_LAYOUT_NO_SPLIT": "Nerozdělovat",
 		"LABEL_LAYOUT_VERTICAL_SPLIT": "Vertikální rozdělení",
-		"LABEL_LAYOUT_HORIZONTAL_SPLIT": "Horizontální rozdělění",
+		"LABEL_LAYOUT_HORIZONTAL_SPLIT": "Horizontální rozdělení",
 		"LABEL_EDITOR": "Přednastavený editor zpráv",
 		"LABEL_EDITOR_HTML": "Html",
 		"LABEL_EDITOR_PLAIN": "Text",
 		"LABEL_EDITOR_HTML_FORCED": "Html (vynucený)",
 		"LABEL_EDITOR_PLAIN_FORCED": "Text (vynucený)",
 		"LABEL_VIEW_OPTIONS": "Možnosti zobrazení",
-		"LABEL_USE_PREVIEW_PANE": "Používate panel rychlého zobrazení",
+		"LABEL_USE_PREVIEW_PANE": "Používáte panel rychlého zobrazení",
 		"LABEL_USE_CHECKBOXES_IN_LIST": "Zobrazení zaškrtávacích políček v seznamu",
 		"LABEL_USE_THREADS": "Zobrazit jako konverzace",
 		"LABEL_REPLY_SAME_FOLDER": "Ukládat odpovědi do složky se zprávou, které se týkají",
-		"LABEL_SHOW_IMAGES": "Vždy zobrazovat obrázky v těle správy",
+		"LABEL_SHOW_IMAGES": "Vždy zobrazovat obrázky v těle zprávy",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Zpráv na stranu",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Aktualizace seznamu účtů",
 		"DEFAULT_IDENTITY_LABEL": "výchozí"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Importovat OpenPGP klíč",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generovat OpenPGP klíče",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Importovat klíč",
+		"BUTTON_GENERATE_KEY_PAIR": "Generovat klíče",
 		"TITLE_PRIVATE": "Soukromý",
 		"TITLE_PUBLIC": "Veřejný",
-		"GENERATE_ONLY_HTTPS": "Pouze HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automaticky uložit koncept"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automaticky uložit koncept",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Klávesové zkratky",
@@ -472,7 +465,7 @@
 		"TAB_MESSAGE_LIST": "Seznam zpráv",
 		"TAB_MESSAGE_VIEW": "Detail zprávy",
 		"TAB_COMPOSE": "Napsat",
-		"LABEL_OPEN_USER_DROPDOWN": "Open user dropdown",
+		"LABEL_OPEN_USER_DROPDOWN": "Otevřít nabídku uživatele",
 		"LABEL_REPLY": "Odpovědět",
 		"LABEL_REPLY_ALL": "Odpovědět všem",
 		"LABEL_FORWARD": "Přeposlat",
@@ -505,25 +498,11 @@
 		"LABEL_SEND_MESSAGE": "Odeslat zprávu",
 		"LABEL_CLOSE_COMPOSE": "Zavřít okno se zprávou"
 	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Nenalezen žádný veřejný klíč",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Žádný veřejný klíč pro \"%EMAIL%\" nenalezen",
-		"NO_PRIVATE_KEY_FOUND": "Nenalezen žádný soukromý klíč",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Žádný soukromý klíč pro \"%EMAIL%\" nenalezen",
-		"ADD_A_PUBLICK_KEY": "Přidat veřejný klíč",
-		"SELECT_A_PRIVATE_KEY": "Vyberte soukromý klíč",
-		"UNVERIFIRED_SIGNATURE": "Neověřený podpis",
-		"DECRYPTION_ERROR": "OpenPGP chyba dešifrování",
-		"GOOD_SIGNATURE": "Ověřený podpis od %USER%",
-		"PGP_ERROR": "OpenPGP chyba: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Zadejte emailovou adresu odesílatele",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Zadejte prosím alespoň jednoho příjemce"
-	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Neplatný token",
 		"AUTH_ERROR": "Ověření selhalo",
 		"CONNECTION_ERROR": "Nepodařilo se připojit k serveru",
-		"DOMAIN_ALREADY_EXISTS": "Táto doména již existuje",
+		"DOMAIN_ALREADY_EXISTS": "Tato doména již existuje",
 		"DOMAIN_NOT_ALLOWED": "Doména není povolená",
 		"ACCOUNT_NOT_ALLOWED": "Účet není povolený",
 		"CONTACTS_SYNC_ERROR": "Chyba při synchronizaci kontaktů",

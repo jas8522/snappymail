@@ -14,7 +14,6 @@ form {
 // Identify controls by their labels
 label {
   display: block;
-  font-size: @baseFontSize;
   font-weight: normal;
   line-height: @baseLineHeight;
   margin-bottom: 5px;
@@ -128,15 +127,9 @@ input[readonly],
 select[readonly],
 textarea[readonly] {
   cursor: not-allowed;
-  background-color: @inputDisabledBackground;
+  opacity: 0.7;
 }
-// Explicitly reset the colors here
-input[type="radio"][disabled],
-input[type="checkbox"][disabled],
-input[type="radio"][readonly],
-input[type="checkbox"][readonly] {
-  background-color: transparent;
-}
+
 
 
 

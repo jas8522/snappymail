@@ -12,16 +12,14 @@ DomainAdminStore.fetch = () => {
 			DomainAdminStore.loading(false);
 			if (!iError) {
 				DomainAdminStore(
-					Object.entries(data.Result).map(([name, [enabled, alias]]) => ({
-						name: name,
-						disabled: ko.observable(!enabled),
-						alias: alias,
-						deleteAccess: ko.observable(false)
-					}))
+					data.Result.map(item => {
+						item.disabled = ko.observable(item.disabled);
+						item.askDelete = ko.observable(false);
+						return item;
+					})
 				);
 			}
 		}, {
 			IncludeAliases: 1
 		});
-	Remote.domainList();
 };

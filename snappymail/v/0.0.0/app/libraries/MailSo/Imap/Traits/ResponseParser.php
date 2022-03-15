@@ -164,6 +164,10 @@ trait ResponseParser
 					unset($mResult);
 					continue 2;
 
+				case '~': // literal8
+					if ('{' !== $this->sResponseBuffer[++$iPos]) {
+						break;
+					}
 				case '{':
 					$iLength = \strspn($this->sResponseBuffer, '0123456789', $iPos + 1);
 					if ($iLength && "}\r\n" === \substr($this->sResponseBuffer, $iPos + 1 + $iLength, 3)) {
@@ -180,10 +184,10 @@ trait ResponseParser
 								if (!$bTreatAsAtom) {
 									$aList[] = $sLiteral;
 									if (\MailSo\Config::$LogSimpleLiterals) {
-										$this->writeLog('{'.$iLiteralSize.'} '.$sLiteral, \MailSo\Log\Enumerations\Type::INFO);
+										$this->writeLog('{'.$iLiteralLen.'} '.$sLiteral, \MailSo\Log\Enumerations\Type::INFO);
 									}
 								} else {
-									\error_log('Literal treated as atom and skipped');
+									\SnappyMail\Log::notice('IMAP', 'Literal treated as atom and skipped');
 								}
 								unset($sLiteral);
 							} else {
@@ -238,7 +242,7 @@ trait ResponseParser
 						default:
 						case "\r":
 						case "\n":
-							\error_log('Invalid char in quoted string: "' . \substr($this->sResponseBuffer, $iPos, $iOffset + $iLength - $iPos) . '"');
+							\SnappyMail\Log::notice('IMAP', 'Invalid char in quoted string: "' . \substr($this->sResponseBuffer, $iPos, $iOffset + $iLength - $iPos) . '"');
 							// Not allowed in quoted string
 							break 2;
 						}
@@ -383,13 +387,14 @@ trait ResponseParser
 		$sLiteralAtomUpperCasePeek = '';
 		if (0 === \strpos($sLiteralAtomUpperCase, 'BODY')) {
 			$sLiteralAtomUpperCasePeek = \str_replace('BODY', 'BODY.PEEK', $sLiteralAtomUpperCase);
+		} else if (0 === \strpos($sLiteralAtomUpperCase, 'BINARY')) {
+			$sLiteralAtomUpperCasePeek = \str_replace('BINARY', 'BINARY.PEEK', $sLiteralAtomUpperCase);
 		}
 
 		$sFetchKey = $sLiteralAtomUpperCase;
 		if ($sLiteralAtomUpperCasePeek && isset($this->aFetchCallbacks[$sLiteralAtomUpperCasePeek])) {
 			$sFetchKey = $sLiteralAtomUpperCasePeek;
 		}
-
 		if (empty($this->aFetchCallbacks[$sFetchKey]) || !\is_callable($this->aFetchCallbacks[$sFetchKey])) {
 			return false;
 		}

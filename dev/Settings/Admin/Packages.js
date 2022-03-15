@@ -8,31 +8,28 @@ import Remote from 'Remote/Admin/Fetch';
 
 import { showScreenPopup } from 'Knoin/Knoin';
 import { PluginPopupView } from 'View/Popup/Plugin';
-import { SettingsGet } from 'Common/Globals';
-import { addObservablesTo, addComputablesTo } from 'Common/Utils';
+import { addObservablesTo, addComputablesTo } from 'External/ko';
+import { AbstractViewSettings } from 'Knoin/AbstractViews';
 
-export class PackagesAdminSettings /*extends AbstractViewSettings*/ {
+export class AdminSettingsPackages extends AbstractViewSettings {
 	constructor() {
+		super();
+
+		this.addSettings(['EnabledPlugins']);
+
 		addObservablesTo(this, {
-			packagesError: '',
-			enabledPlugins: !!SettingsGet('EnabledPlugins')
+			packagesError: ''
 		});
 
 		this.packages = PackageAdminStore;
 
 		addComputablesTo(this, {
-			packagesCurrent: () => PackageAdminStore.filter(item => item && item.installed && !item.canBeUpdated),
-			packagesAvailableForUpdate: () => PackageAdminStore.filter(item => item && item.installed && !!item.canBeUpdated),
-			packagesAvailableForInstallation: () => PackageAdminStore.filter(item => item && !item.installed),
+			packagesCurrent: () => PackageAdminStore().filter(item => item && item.installed && !item.canBeUpdated),
+			packagesUpdate: () => PackageAdminStore().filter(item => item && item.installed && item.canBeUpdated),
+			packagesAvailable: () => PackageAdminStore().filter(item => item && !item.installed),
 
 			visibility: () => (PackageAdminStore.loading() ? 'visible' : 'hidden')
 		});
-
-		this.enabledPlugins.subscribe(value =>
-			Remote.saveConfig({
-				EnabledPlugins: value ? 1 : 0
-			})
-		);
 	}
 
 	onShow() {

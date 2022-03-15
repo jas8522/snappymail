@@ -3,12 +3,12 @@ import { getFolderInboxName } from 'Common/Cache';
 
 import { AbstractViewLeft } from 'Knoin/AbstractViews';
 
-export class MenuSettingsUserView extends AbstractViewLeft {
+export class SettingsMenuUserView extends AbstractViewLeft {
 	/**
 	 * @param {Object} screen
 	 */
 	constructor(screen) {
-		super('SettingsMenu');
+		super();
 
 		this.menu = screen.menu;
 	}
@@ -18,6 +18,6 @@ export class MenuSettingsUserView extends AbstractViewLeft {
 	}
 
 	backToMailBoxClick() {
-		rl.route.setHash(mailbox(getFolderInboxName()));
+		hasher.setHash(mailbox(getFolderInboxName()));
 	}
 }

@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Rohkem kirju",
 		"MENU_HEADERS": "Näita kirja päised",
 		"MENU_VIEW_ORIGINAL": "Näita lähteteksti",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Laadi alla .eml failina",
 		"MENU_FILTER_SIMILAR": "Filtreeri sarnased kirjad",
 		"MENU_PRINT": "Prindi",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Manused",
 		"MESSAGE_VIEW_DESC": "Vali nimekirjast kiri, mida siin näidata",
 		"MESSAGE_VIEW_MOVE_DESC": "Click folder name in the left panel to select the destination.",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP abil signeeritud kiri (kliki verifitseerimiseks)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP abil krüpteeritud kiri (kliki dekrüpteerimiseks)",
 		"LINK_DOWNLOAD_AS_ZIP": "Laadi alla .zip failina",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Kõiki manuseid ei ole veel üles laetud.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Palu lugemise kohta kinnitust",
 		"BUTTON_MARK_AS_IMPORTANT": "Tähista olulisena",
-		"BUTTON_OPEN_PGP": "OpenPGP (Vaid lihttekstina)",
 		"BUTTON_REQUEST_DSN": "Palu kättesaamise kohta kinnitust"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Juba alustatud protsessi ei saa tühistada või katkestada.",
 		"TITLE_CLEARING_PROCESS": "Tühjendan kausta..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Impordi OpenPGP võti",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Impordi"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Vaata OpenPGP võtit",
-		"BUTTON_SELECT": "Vali"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Genereeri OpenPGP võtmed",
-		"LABEL_KEY_BIT_LENGTH": "Võtme pikkus",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Genereeri"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP allkirjastamine\/krüpteerimine",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Impordi OpenPGP võti",
+		"POPUP_IMPORT_BUTTON": "Impordi",
+		"POPUP_VIEW_TITLE": "Vaata OpenPGP võtit",
+		"POPUP_VIEW_BUTTON": "Vali",
+		"POPUP_GENERATE_TITLE": "Genereeri OpenPGP võtmed",
+		"POPUP_GENERATE_BUTTON": "Genereeri",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Allkirjasta",
 		"LABEL_ENCRYPT": "Krüpteeri",
-		"BUTTON_SIGN": "Allkirjasta",
-		"BUTTON_ENCRYPT": "Krüpteeri",
-		"BUTTON_SIGN_AND_ENCRYPT": "Allkirjasta ja krüpteeri"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP dekrüpteerimine",
-		"LABEL_KEY": "Privaatne võti ",
-		"BUTTON_DECRYPT": "Dekrüpteeri"
+		"BUTTON_DECRYPT": "Dekrüpteeri",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP abil signeeritud kiri",
+		"ENCRYPTED_MESSAGE": "OpenPGP abil krüpteeritud kiri",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Korralik signatuur kasutajalt %USER%",
+		"ERROR": "OpenPGP viga: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Filtri loomine",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Kontaktid",
 		"LABEL_FOLDERS_NAME": "Kaustad",
 		"LABEL_ACCOUNTS_NAME": "Kontod",
-		"LABEL_IDENTITIES_NAME": "Identiteedid",
 		"LABEL_FILTERS_NAME": "Filtrid",
 		"LABEL_SECURITY_NAME": "Turvalisus",
 		"LABEL_THEMES_NAME": "Teemad"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Kasuta vestluse lõimesid",
 		"LABEL_REPLY_SAME_FOLDER": "Pane vastused samasse kausta, kus asub vastatud kiri",
 		"LABEL_SHOW_IMAGES": "Näita alati kirja sisus viidatud väliseid pilte",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Lehel kuvatavate kirjade arv",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Värskendan...",
 		"DEFAULT_IDENTITY_LABEL": "vaikimisi"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Impordi OpenPGP võti",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Genereeri OpenPGP võti",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Impordi võti",
+		"BUTTON_GENERATE_KEY_PAIR": "Genereeri võti",
 		"TITLE_PRIVATE": "Privaatne",
 		"TITLE_PUBLIC": "Avalik",
-		"GENERATE_ONLY_HTTPS": "Ainult HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Klaviatuuri kombinatsioonide abi",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Salvesta kiri",
 		"LABEL_SEND_MESSAGE": "Saada kiri",
 		"LABEL_CLOSE_COMPOSE": "Sulge kirja koostamise aken"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Avalikke võtmeid ei leitud",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Avalikke võtmeid aadressile \"%EMAIL%\" ei leitud",
-		"NO_PRIVATE_KEY_FOUND": "Salajasi võtmeid ei leitud",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Salajast võtit aadressile \"%EMAIL%\" ei leitud",
-		"ADD_A_PUBLICK_KEY": "Lisa avalik võti",
-		"SELECT_A_PRIVATE_KEY": "Lisa privaatne võti",
-		"UNVERIFIRED_SIGNATURE": "Verifitseerimata allkiri",
-		"DECRYPTION_ERROR": "OpenPGP dekrüpteerimise viga",
-		"GOOD_SIGNATURE": "Korralik signatuur kasutajalt %USER%",
-		"PGP_ERROR": "OpenPGP viga: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Palun määra KELLELT e-posti aadress",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Palun määra vähemalt üks saaja"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Puudulik tõend",

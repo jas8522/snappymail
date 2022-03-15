@@ -50,7 +50,7 @@ abstract class Crypt
 
 	public static function Decrypt(array $data, string $key = null) /* : mixed */
 	{
-		if (3 === \count($data) && isset($data[0], $data[1], $data[2])) {
+		if (3 === \count($data) && isset($data[0], $data[1], $data[2]) && \strlen($data[0])) {
 			try {
 				$fn = "{$data[0]}Decrypt";
 				if (\method_exists(__CLASS__, $fn)) {
@@ -61,7 +61,7 @@ abstract class Crypt
 				\trigger_error(__CLASS__ . "::{$fn}(): " . $e->getMessage());
 			}
 		} else {
-			\trigger_error(__CLASS__ . '::Decrypt() invalid $data');
+//			\trigger_error(__CLASS__ . '::Decrypt() invalid $data');
 		}
 	}
 
@@ -69,7 +69,7 @@ abstract class Crypt
 	{
 		$data = \json_decode($data, true);
 		if (!\is_array($data)) {
-			\trigger_error(__CLASS__ . '::DecryptFromJSON() invalid $data');
+//			\trigger_error(__CLASS__ . '::DecryptFromJSON() invalid $data');
 			return null;
 		}
 		return static::Decrypt(\array_map('base64_decode', $data), $key);
@@ -79,7 +79,7 @@ abstract class Crypt
 	{
 		$data = \explode('.', $data);
 		if (!\is_array($data)) {
-			\trigger_error(__CLASS__ . '::DecryptUrlSafe() invalid $data');
+//			\trigger_error(__CLASS__ . '::DecryptUrlSafe() invalid $data');
 			return null;
 		}
 		return static::Decrypt(\array_map('MailSo\\Base\\Utils::UrlSafeBase64Decode', $data), $key);

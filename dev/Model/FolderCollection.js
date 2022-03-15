@@ -2,39 +2,111 @@ import { AbstractCollectionModel } from 'Model/AbstractCollection';
 
 import { UNUSED_OPTION_VALUE } from 'Common/Consts';
 import { isArray, getKeyByValue, forEachObjectEntry, b64EncodeJSONSafe } from 'Common/Utils';
-import { ClientSideKeyName, FolderType, FolderMetadataKeys } from 'Common/EnumsUser';
-import * as Cache from 'Common/Cache';
-import { Settings, SettingsGet } from 'Common/Globals';
+import { ClientSideKeyNameExpandedFolders, FolderType, FolderMetadataKeys } from 'Common/EnumsUser';
+import { getFolderFromCacheList, setFolder, setFolderInboxName, setFolderHash } from 'Common/Cache';
+import { Settings, SettingsGet, fireEvent } from 'Common/Globals';
 
 import * as Local from 'Storage/Client';
 
 import { AppUserStore } from 'Stores/User/App';
 import { FolderUserStore } from 'Stores/User/Folder';
-import { MessageUserStore } from 'Stores/User/Message';
+import { MessagelistUserStore } from 'Stores/User/Messagelist';
 import { SettingsUserStore } from 'Stores/User/Settings';
 
 import ko from 'ko';
 
-import { isPosNumeric } from 'Common/UtilsUser';
+import { sortFolders } from 'Common/Folders';
 import { i18n, trigger as translatorTrigger } from 'Common/Translator';
 
 import { AbstractModel } from 'Knoin/AbstractModel';
 
-const
-normalizeFolder = sFolderFullName => ('' === sFolderFullName
-	|| UNUSED_OPTION_VALUE === sFolderFullName
-	|| null !== Cache.getFolderFromCacheList(sFolderFullName))
-		? sFolderFullName
-		: '';
+import { koComputable } from 'External/ko';
 
-const SystemFolders = {
-	Inbox:   0,
-	Sent:    0,
-	Drafts:  0,
-	Spam:    0,
-	Trash:   0,
-	Archive: 0
-};
+//import { mailBox } from 'Common/Links';
+
+import Remote from 'Remote/User/Fetch';
+
+const
+	isPosNumeric = value => null != value && /^[0-9]*$/.test(value.toString()),
+
+	normalizeFolder = sFolderFullName => ('' === sFolderFullName
+		|| UNUSED_OPTION_VALUE === sFolderFullName
+		|| null !== getFolderFromCacheList(sFolderFullName))
+			? sFolderFullName
+			: '',
+
+	SystemFolders = {
+		Inbox:   0,
+		Sent:    0,
+		Drafts:  0,
+		Spam:    0,
+		Trash:   0,
+		Archive: 0
+	},
+
+	kolabTypes = {
+		configuration: 'CONFIGURATION',
+		event: 'CALENDAR',
+		contact: 'CONTACTS',
+		task: 'TASKS',
+		note: 'NOTES',
+		file: 'FILES',
+		journal: 'JOURNAL'
+	},
+
+	getKolabFolderName = type => kolabTypes[type] ? 'Kolab ' + i18n('SETTINGS_FOLDERS/TYPE_' + kolabTypes[type]) : '',
+
+	getSystemFolderName = (type, def) => {
+		switch (type) {
+			case FolderType.Inbox:
+			case FolderType.Sent:
+			case FolderType.Drafts:
+			case FolderType.Trash:
+			case FolderType.Archive:
+				return i18n('FOLDER_LIST/' + getKeyByValue(FolderType, type).toUpperCase() + '_NAME');
+			case FolderType.Spam:
+				return i18n('GLOBAL/SPAM');
+			// no default
+		}
+		return def;
+	};
+
+export const
+	/**
+	 * @param {string} sFullName
+	 * @param {boolean} bExpanded
+	 */
+	setExpandedFolder = (sFullName, bExpanded) => {
+		let aExpandedList = Local.get(ClientSideKeyNameExpandedFolders);
+		if (!isArray(aExpandedList)) {
+			aExpandedList = [];
+		}
+
+		if (bExpanded) {
+			aExpandedList.includes(sFullName) || aExpandedList.push(sFullName);
+		} else {
+			aExpandedList = aExpandedList.filter(value => value !== sFullName);
+		}
+
+		Local.set(ClientSideKeyNameExpandedFolders, aExpandedList);
+	},
+
+	/**
+	 * @param {?Function} fCallback
+	 */
+	loadFolders = fCallback => {
+//		clearTimeout(this.foldersTimeout);
+		Remote.abort('Folders')
+			.post('Folders', FolderUserStore.foldersLoading)
+			.then(data => {
+				data = FolderCollectionModel.reviveFromJson(data.Result);
+				data && data.storeIt();
+				fCallback && fCallback(true);
+				// Repeat every 15 minutes?
+//				this.foldersTimeout = setTimeout(loadFolders, 900000);
+			})
+			.catch(() => fCallback && setTimeout(fCallback, 1, false));
+	};
 
 export class FolderCollectionModel extends AbstractCollectionModel
 {
@@ -42,7 +114,6 @@ export class FolderCollectionModel extends AbstractCollectionModel
 	constructor() {
 		super();
 		this.CountRec
-		this.FoldersHash
 		this.IsThreadsSupported
 		this.Namespace;
 		this.Optimized
@@ -56,30 +127,27 @@ export class FolderCollectionModel extends AbstractCollectionModel
 	 * @returns {FolderCollectionModel}
 	 */
 	static reviveFromJson(object) {
-		const expandedFolders = Local.get(ClientSideKeyName.ExpandedFolders);
+		const expandedFolders = Local.get(ClientSideKeyNameExpandedFolders);
 		if (object && object.SystemFolders) {
 			forEachObjectEntry(SystemFolders, key =>
 				SystemFolders[key] = SettingsGet(key+'Folder') || object.SystemFolders[FolderType[key]]
 			);
 		}
 
-		return super.reviveFromJson(object, oFolder => {
-			let oCacheFolder = Cache.getFolderFromCacheList(oFolder.FullName),
+		const result = super.reviveFromJson(object, oFolder => {
+			let oCacheFolder = getFolderFromCacheList(oFolder.FullName),
 				type = FolderType[getKeyByValue(SystemFolders, oFolder.FullName)];
 
-			if (oCacheFolder) {
-				oFolder.SubFolders = FolderCollectionModel.reviveFromJson(oFolder.SubFolders);
-				oFolder.SubFolders && oCacheFolder.subFolders(oFolder.SubFolders);
-			} else {
+			if (!oCacheFolder) {
 				oCacheFolder = FolderModel.reviveFromJson(oFolder);
 				if (!oCacheFolder)
 					return null;
 
 				if (1 == type) {
 					oCacheFolder.type(FolderType.Inbox);
-					Cache.setFolderInboxName(oFolder.FullName);
+					setFolderInboxName(oFolder.FullName);
 				}
-				Cache.setFolder(oCacheFolder);
+				setFolder(oCacheFolder);
 			}
 
 			if (1 < type) {
@@ -92,7 +160,7 @@ export class FolderCollectionModel extends AbstractCollectionModel
 
 			if (oFolder.Extended) {
 				if (oFolder.Extended.Hash) {
-					Cache.setFolderHash(oCacheFolder.fullName, oFolder.Extended.Hash);
+					setFolderHash(oCacheFolder.fullName, oFolder.Extended.Hash);
 				}
 
 				if (null != oFolder.Extended.MessageCount) {
@@ -105,6 +173,24 @@ export class FolderCollectionModel extends AbstractCollectionModel
 			}
 			return oCacheFolder;
 		});
+
+		let i = result.length;
+		if (i) {
+			sortFolders(result);
+			try {
+				while (i--) {
+					let folder = result[i], parent = getFolderFromCacheList(folder.parentName);
+					if (parent) {
+						parent.subFolders.unshift(folder);
+						result.splice(i,1);
+					}
+				}
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		return result;
 	}
 
 	storeIt() {
@@ -139,40 +225,8 @@ export class FolderCollectionModel extends AbstractCollectionModel
 		FolderUserStore.archiveFolder(normalizeFolder(SystemFolders.Archive));
 
 //		FolderUserStore.folderList.valueHasMutated();
-
-		Local.set(ClientSideKeyName.FoldersLashHash, this.FoldersHash);
 	}
 
-}
-
-function getKolabFolderName(type)
-{
-	const types = {
-		configuration: 'CONFIGURATION',
-		event: 'CALENDAR',
-		contact: 'CONTACTS',
-		task: 'TASKS',
-		note: 'NOTES',
-		file: 'FILES',
-		journal: 'JOURNAL'
-	};
-	return types[type] ? 'Kolab ' + i18n('SETTINGS_FOLDERS/TYPE_' + types[type]) : '';
-}
-
-function getSystemFolderName(type, def)
-{
-	switch (type) {
-		case FolderType.Inbox:
-		case FolderType.Sent:
-		case FolderType.Drafts:
-		case FolderType.Trash:
-		case FolderType.Archive:
-			return i18n('FOLDER_LIST/' + getKeyByValue(FolderType, type).toUpperCase() + '_NAME');
-		case FolderType.Spam:
-			return i18n('GLOBAL/SPAM');
-		// no default
-	}
-	return def;
 }
 
 export class FolderModel extends AbstractModel {
@@ -200,9 +254,10 @@ export class FolderModel extends AbstractModel {
 			edited: false,
 			subscribed: true,
 			checkable: false, // Check for new messages
-			deleteAccess: false,
+			askDelete: false,
 
 			nameForEdit: '',
+			errorMsg: '',
 
 			privateMessageCountAll: 0,
 			privateMessageCountUnread: 0,
@@ -236,15 +291,19 @@ export class FolderModel extends AbstractModel {
 	static reviveFromJson(json) {
 		const folder = super.reviveFromJson(json);
 		if (folder) {
-			folder.deep = json.FullName.split(folder.delimiter).length - 1;
+			const path = folder.fullName.split(folder.delimiter),
+				type = (folder.metadata[FolderMetadataKeys.KolabFolderType]
+					|| folder.metadata[FolderMetadataKeys.KolabFolderTypeShared]
+					|| ''
+				).split('.')[0];
 
-			let type = (folder.metadata[FolderMetadataKeys.KolabFolderType]
-				|| folder.metadata[FolderMetadataKeys.KolabFolderTypeShared]
-				|| ''
-			).split('.')[0];
+			folder.deep = path.length - 1;
+			path.pop();
+			folder.parentName = path.join(folder.delimiter);
+
 			type && 'mail' != type && folder.kolabType(type);
 
-			folder.messageCountAll = ko.computed({
+			folder.messageCountAll = koComputable({
 					read: folder.privateMessageCountAll,
 					write: (iValue) => {
 						if (isPosNumeric(iValue)) {
@@ -256,7 +315,7 @@ export class FolderModel extends AbstractModel {
 				})
 				.extend({ notify: 'always' });
 
-			folder.messageCountUnread = ko.computed({
+			folder.messageCountUnread = koComputable({
 					read: folder.privateMessageCountUnread,
 					write: (value) => {
 						if (isPosNumeric(value)) {
@@ -273,7 +332,7 @@ export class FolderModel extends AbstractModel {
 				isInbox: () => FolderType.Inbox === folder.type(),
 
 				isFlagged: () => FolderUserStore.currentFolder() === folder
-					&& MessageUserStore.listSearch().includes('flagged'),
+					&& MessagelistUserStore.listSearch().includes('flagged'),
 
 				hasVisibleSubfolders: () => !!folder.subFolders().find(folder => folder.visible()),
 
@@ -360,6 +419,8 @@ export class FolderModel extends AbstractModel {
 					!!folder.subFolders().find(
 						folder => folder.hasUnreadMessages() | folder.hasSubscribedUnreadMessagesSubfolders()
 					)
+
+//				,href: () => folder.canBeSelected() && mailBox(folder.fullNameHash)
 			});
 
 			folder.addSubscribables({
@@ -369,7 +430,7 @@ export class FolderModel extends AbstractModel {
 
 				messageCountUnread: unread => {
 					if (FolderType.Inbox === folder.type()) {
-						dispatchEvent(new CustomEvent('mailbox.inbox-unread-count', {detail:unread}));
+						fireEvent('mailbox.inbox-unread-count', unread);
 					}
 				}
 			});
@@ -385,12 +446,5 @@ export class FolderModel extends AbstractModel {
 			? (this.collapsed() ? 'icon-right-mini' : 'icon-down-mini')
 			: 'icon-none'
 		);
-	}
-
-	/**
-	 * @returns {string}
-	 */
-	printableFullName() {
-		return this.fullName.replace(this.delimiter, ' / ');
 	}
 }

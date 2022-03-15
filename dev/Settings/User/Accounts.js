@@ -1,7 +1,6 @@
 import ko from 'ko';
 
-import { Capa } from 'Common/Enums';
-import { Settings, SettingsGet } from 'Common/Globals';
+import { SettingsCapa, SettingsGet } from 'Common/Globals';
 
 import { AccountUserStore } from 'Stores/User/Account';
 import { IdentityUserStore } from 'Stores/User/Identity';
@@ -12,18 +11,18 @@ import { showScreenPopup } from 'Knoin/Knoin';
 import { AccountPopupView } from 'View/Popup/Account';
 import { IdentityPopupView } from 'View/Popup/Identity';
 
-export class AccountsUserSettings /*extends AbstractViewSettings*/ {
+export class UserSettingsAccounts /*extends AbstractViewSettings*/ {
 	constructor() {
-		this.allowAdditionalAccount = Settings.capa(Capa.AdditionalAccounts);
-		this.allowIdentities = Settings.capa(Capa.Identities);
+		this.allowAdditionalAccount = SettingsCapa('AdditionalAccounts');
+		this.allowIdentities = SettingsCapa('Identities');
 
 		this.accounts = AccountUserStore.accounts;
 		this.loading = AccountUserStore.loading;
 		this.identities = IdentityUserStore;
 		this.mainEmail = SettingsGet('MainEmail');
 
-		this.accountForDeletion = ko.observable(null).deleteAccessHelper();
-		this.identityForDeletion = ko.observable(null).deleteAccessHelper();
+		this.accountForDeletion = ko.observable(null).askDeleteHelper();
+		this.identityForDeletion = ko.observable(null).askDeleteHelper();
 	}
 
 	addNewAccount() {
@@ -49,7 +48,7 @@ export class AccountsUserSettings /*extends AbstractViewSettings*/ {
 	 * @returns {void}
 	 */
 	deleteAccount(accountToRemove) {
-		if (accountToRemove && accountToRemove.deleteAccess()) {
+		if (accountToRemove && accountToRemove.askDelete()) {
 			this.accountForDeletion(null);
 			if (accountToRemove) {
 				this.accounts.remove((account) => accountToRemove === account);
@@ -73,7 +72,7 @@ export class AccountsUserSettings /*extends AbstractViewSettings*/ {
 	 * @returns {void}
 	 */
 	deleteIdentity(identityToRemove) {
-		if (identityToRemove && identityToRemove.deleteAccess()) {
+		if (identityToRemove && identityToRemove.askDelete()) {
 			this.identityForDeletion(null);
 
 			if (identityToRemove) {

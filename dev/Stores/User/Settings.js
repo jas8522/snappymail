@@ -1,8 +1,10 @@
 import ko from 'ko';
+import { koComputable } from 'External/ko';
 
 import { Layout, EditorDefaultType } from 'Common/EnumsUser';
-import { pInt, addObservablesTo } from 'Common/Utils';
-import { $htmlCL, Settings, SettingsGet } from 'Common/Globals';
+import { pInt } from 'Common/Utils';
+import { addObservablesTo } from 'External/ko';
+import { $htmlCL, SettingsGet, fireEvent } from 'Common/Globals';
 import { ThemeStore } from 'Stores/Theme';
 
 export const SettingsUserStore = new class {
@@ -27,26 +29,27 @@ export const SettingsUserStore = new class {
 		self.messageReadDelay = ko.observable(5).extend({ debounce: 999 });
 
 		addObservablesTo(self, {
+			viewHTML: 1,
 			showImages: 0,
 			removeColors: 0,
 			useCheckboxesInList: 1,
 			allowDraftAutosave: 1,
 			useThreads: 0,
 			replySameFolder: 0,
-			hideUnsubscribed: 1,
+			hideUnsubscribed: 0,
 			autoLogout: 0
 		});
 
 		self.init();
 
-		self.usePreviewPane = ko.computed(() => Layout.NoPreview !== self.layout() && !ThemeStore.isMobile());
+		self.usePreviewPane = koComputable(() => Layout.NoPreview !== self.layout() && !ThemeStore.isMobile());
 
 		const toggleLayout = () => {
 			const value = ThemeStore.isMobile() ? Layout.NoPreview : self.layout();
 			$htmlCL.toggle('rl-no-preview-pane', Layout.NoPreview === value);
 			$htmlCL.toggle('rl-side-preview-pane', Layout.SidePreview === value);
 			$htmlCL.toggle('rl-bottom-preview-pane', Layout.BottomPreview === value);
-			dispatchEvent(new CustomEvent('rl-layout', {detail:value}));
+			fireEvent('rl-layout', value);
 		};
 		self.layout.subscribe(toggleLayout);
 		ThemeStore.isMobile.subscribe(toggleLayout);
@@ -73,13 +76,14 @@ export const SettingsUserStore = new class {
 		self.messageReadDelay(pInt(SettingsGet('MessageReadDelay')));
 		self.autoLogout(pInt(SettingsGet('AutoLogout')));
 
-		self.showImages(!!SettingsGet('ShowImages'));
-		self.removeColors(!!SettingsGet('RemoveColors'));
-		self.useCheckboxesInList(!!SettingsGet('UseCheckboxesInList'));
-		self.allowDraftAutosave(!!SettingsGet('AllowDraftAutosave'));
-		self.useThreads(!!SettingsGet('UseThreads'));
-		self.replySameFolder(!!SettingsGet('ReplySameFolder'));
+		self.viewHTML(SettingsGet('ViewHTML'));
+		self.showImages(SettingsGet('ShowImages'));
+		self.removeColors(SettingsGet('RemoveColors'));
+		self.useCheckboxesInList(SettingsGet('UseCheckboxesInList'));
+		self.allowDraftAutosave(SettingsGet('AllowDraftAutosave'));
+		self.useThreads(SettingsGet('UseThreads'));
+		self.replySameFolder(SettingsGet('ReplySameFolder'));
 
-		self.hideUnsubscribed(Settings.app('useImapSubscribe') && SettingsGet('HideUnsubscribed'));
+		self.hideUnsubscribed(SettingsGet('HideUnsubscribed'));
 	}
 };

@@ -1,75 +1,45 @@
 /* eslint quote-props: 0 */
 
-/**
- * @enum {string}
- */
-export const Capa = {
-	OpenPGP: 'OPEN_PGP',
-	Prefetch: 'PREFETCH',
-	Contacts: 'CONTACTS',
-	Search: 'SEARCH',
-	SearchAdv: 'SEARCH_ADV',
-	MessageActions: 'MESSAGE_ACTIONS',
-	AttachmentsActions: 'ATTACHMENTS_ACTIONS',
-	DangerousActions: 'DANGEROUS_ACTIONS',
-	Themes: 'THEMES',
-	UserBackground: 'USER_BACKGROUND',
-	Sieve: 'SIEVE',
-	AttachmentThumbnails: 'ATTACHMENT_THUMBNAILS',
-	AutoLogout: 'AUTOLOGOUT',
-	Kolab: 'KOLAB',
-	AdditionalAccounts: 'ADDITIONAL_ACCOUNTS',
-	Identities: 'IDENTITIES'
-};
+export const
 
 /**
  * @enum {string}
  */
-export const Scope = {
-	All: 'all',
-	None: 'none',
-	Contacts: 'Contacts',
+Scope = {
 	MessageList: 'MessageList',
 	FolderList: 'FolderList',
 	MessageView: 'MessageView',
-	Compose: 'Compose',
-	Settings: 'Settings',
-	Menu: 'Menu',
-	ComposeOpenPgp: 'ComposeOpenPgp',
-	MessageOpenPgp: 'MessageOpenPgp',
-	ViewOpenPgpKey: 'ViewOpenPgpKey',
-	KeyboardShortcutsHelp: 'KeyboardShortcutsHelp',
-	Ask: 'Ask'
-};
+	Settings: 'Settings'
+},
 
 /**
  * @enum {number}
  */
-export const UploadErrorCode = {
+UploadErrorCode = {
 	Normal: 0,
 	FileIsTooBig: 1,
-	FilePartiallyUploaded: 2,
-	NoFileUploaded: 3,
-	MissingTempFolder: 4,
-	OnSavingFile: 5,
+	FilePartiallyUploaded: 3,
+	NoFileUploaded: 4,
+	MissingTempFolder: 6,
+	OnSavingFile: 7,
 	FileType: 98,
 	Unknown: 99
-};
+},
 
 /**
  * @enum {number}
  */
-export const SaveSettingsStep = {
+SaveSettingsStep = {
 	Animate: -2,
 	Idle: -1,
 	TrueResult: 1,
 	FalseResult: 0
-};
+},
 
 /**
  * @enum {number}
  */
-export const Notification = {
+Notification = {
 	RequestError: 1,
 	RequestAborted: 2,
 

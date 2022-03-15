@@ -2,29 +2,29 @@ import ko from 'ko';
 
 import {
 	isArray,
-	pInt,
-	settingsSaveHelperSimpleFunction,
 	changeTheme,
-	convertThemeName,
-	addObservablesTo,
-	addSubscribablesTo,
-	addComputablesTo
+	convertThemeName
 } from 'Common/Utils';
 
-import { Capa, SaveSettingsStep } from 'Common/Enums';
-import { Settings, SettingsGet } from 'Common/Globals';
+import { addObservablesTo, addSubscribablesTo, addComputablesTo } from 'External/ko';
+
+import { SaveSettingsStep } from 'Common/Enums';
+import { Settings, SettingsGet, SettingsCapa } from 'Common/Globals';
 import { translatorReload, convertLangName } from 'Common/Translator';
 
+import { AbstractViewSettings } from 'Knoin/AbstractViews';
 import { showScreenPopup } from 'Knoin/Knoin';
 
 import Remote from 'Remote/Admin/Fetch';
 
 import { ThemeStore } from 'Stores/Theme';
 import { LanguageStore } from 'Stores/Language';
-import LanguagesPopupView from 'View/Popup/Languages';
+import { LanguagesPopupView } from 'View/Popup/Languages';
 
-export class GeneralAdminSettings /*extends AbstractViewSettings*/ {
+export class AdminSettingsGeneral extends AbstractViewSettings {
 	constructor() {
+		super();
+
 		this.language = LanguageStore.language;
 		this.languages = LanguageStore.languages;
 
@@ -37,17 +37,16 @@ export class GeneralAdminSettings /*extends AbstractViewSettings*/ {
 		this.theme = ThemeStore.theme;
 		this.themes = ThemeStore.themes;
 
+		this.addSettings(['AllowLanguagesOnSettings','NewMoveToFolder']);
+
 		addObservablesTo(this, {
-			allowLanguagesOnSettings: !!SettingsGet('AllowLanguagesOnSettings'),
-			newMoveToFolder: !!SettingsGet('NewMoveToFolder'),
 			attachmentLimitTrigger: SaveSettingsStep.Idle,
-			languageTrigger: SaveSettingsStep.Idle,
 			themeTrigger: SaveSettingsStep.Idle,
-			capaThemes: Settings.capa(Capa.Themes),
-			capaUserBackground: Settings.capa(Capa.UserBackground),
-			capaAdditionalAccounts: Settings.capa(Capa.AdditionalAccounts),
-			capaIdentities: Settings.capa(Capa.Identities),
-			capaAttachmentThumbnails: Settings.capa(Capa.AttachmentThumbnails),
+			capaThemes: SettingsCapa('Themes'),
+			capaUserBackground: SettingsCapa('UserBackground'),
+			capaAdditionalAccounts: SettingsCapa('AdditionalAccounts'),
+			capaIdentities: SettingsCapa('Identities'),
+			capaAttachmentThumbnails: SettingsCapa('AttachmentThumbnails'),
 			dataFolderAccess: false
 		});
 
@@ -59,9 +58,13 @@ export class GeneralAdminSettings /*extends AbstractViewSettings*/ {
 		}
 		*/
 
-		this.mainAttachmentLimit = ko
-			.observable(pInt(SettingsGet('AttachmentLimit')) / (1024 * 1024))
+		this.attachmentLimit = ko
+			.observable(SettingsGet('AttachmentLimit') / (1024 * 1024))
 			.extend({ debounce: 500 });
+
+		this.addSetting('Language');
+		this.addSetting('AttachmentLimit');
+		this.addSetting('Theme', value => changeTheme(value, this.themeTrigger));
 
 		this.uploadData = SettingsGet('PhpUploadSizes');
 		this.uploadDataDesc =
@@ -87,49 +90,25 @@ export class GeneralAdminSettings /*extends AbstractViewSettings*/ {
 				this.languageAdminTrigger(saveSettingsStep);
 				setTimeout(() => this.languageAdminTrigger(SaveSettingsStep.Idle), 1000);
 			},
-			fSaveBoolHelper = key =>
-				value => Remote.saveConfig({[key]: value ? 1 : 0});
+			fSaveHelper = key => value => Remote.saveSetting(key, value);
 
 		addSubscribablesTo(this, {
-			mainAttachmentLimit: value =>
-				Remote.saveConfig({
-					AttachmentLimit: pInt(value)
-				}, settingsSaveHelperSimpleFunction(this.attachmentLimitTrigger, this)),
-
-			language: value =>
-				Remote.saveConfig({
-					Language: value.trim()
-				}, settingsSaveHelperSimpleFunction(this.languageTrigger, this)),
-
 			languageAdmin: value => {
 				this.languageAdminTrigger(SaveSettingsStep.Animate);
 				translatorReload(true, value)
 					.then(fReloadLanguageHelper(SaveSettingsStep.TrueResult), fReloadLanguageHelper(SaveSettingsStep.FalseResult))
-					.then(() => Remote.saveConfig({
-						LanguageAdmin: value.trim()
-					}));
+					.then(() => Remote.saveSetting('LanguageAdmin', value));
 			},
 
-			theme: value => {
-				changeTheme(value, this.themeTrigger);
-				Remote.saveConfig({
-					Theme: value.trim()
-				}, settingsSaveHelperSimpleFunction(this.themeTrigger, this));
-			},
+			capaAdditionalAccounts: fSaveHelper('CapaAdditionalAccounts'),
 
-			capaAdditionalAccounts: fSaveBoolHelper('CapaAdditionalAccounts'),
+			capaIdentities: fSaveHelper('CapaIdentities'),
 
-			capaIdentities: fSaveBoolHelper('CapaIdentities'),
+			capaAttachmentThumbnails: fSaveHelper('CapaAttachmentThumbnails'),
 
-			capaAttachmentThumbnails: fSaveBoolHelper('CapaAttachmentThumbnails'),
+			capaThemes: fSaveHelper('CapaThemes'),
 
-			capaThemes: fSaveBoolHelper('CapaThemes'),
-
-			capaUserBackground: fSaveBoolHelper('CapaUserBackground'),
-
-			allowLanguagesOnSettings: fSaveBoolHelper('AllowLanguagesOnSettings'),
-
-			newMoveToFolder: fSaveBoolHelper('NewMoveToFolder')
+			capaUserBackground: fSaveHelper('CapaUserBackground')
 		});
 	}
 

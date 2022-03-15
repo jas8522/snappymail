@@ -30,7 +30,7 @@ class SORT extends Request
 		$bUid = true,
 		$aSortTypes = [],
 		$sLimit = '',
-		// rfc5267
+		// RFC 5267
 		$aReturn = [
 		/**
 		   ALL
@@ -64,7 +64,7 @@ class SORT extends Request
 		parent::__construct($oImapClient);
 	}
 
-	public function SendRequestGetResponse() : \MailSo\Imap\ResponseCollection
+	public function SendRequest() : string
 	{
 		if (!$this->aSortTypes) {
 			$this->oImapClient->writeLogException(
@@ -96,20 +96,15 @@ class SORT extends Request
 
 		$aRequest[] = $this->aSortTypes;
 
-		$sSearchCriterias = (\strlen($this->sCriterias) && '*' !== $this->sCriterias) ? $this->sCriterias : 'ALL';
+		$aRequest[] = 'UTF-8'; // \strtoupper(\MailSo\Base\Enumerations\Charset::UTF_8)
 
-		if (!$this->sCharset) {
-			$this->sCharset = \MailSo\Base\Utils::IsAscii($sSearchCriterias) ? 'US-ASCII' : 'UTF-8';
-		}
-
-		$aRequest[] = \strtoupper($this->sCharset);
-		$aRequest[] = $sSearchCriterias;
+		$aRequest[] = (\strlen($this->sCriterias) && '*' !== $this->sCriterias) ? $this->sCriterias : 'ALL';
 
 		if (\strlen($this->sLimit)) {
 			$aRequest[] = $this->sLimit;
 		}
 
-		return $this->oImapClient->SendRequestGetResponse(
+		return $this->oImapClient->SendRequest(
 			($this->bUid ? 'UID SORT' : 'SORT'),
 			$aRequest
 		);

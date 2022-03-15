@@ -1,4 +1,7 @@
 {
+	"GLOBAL": {
+		"SAVE": "Enregistrer"
+	},
 	"LOGIN": {
 		"LABEL_LOGIN": "Identifiant",
 		"LABEL_PASSWORD": "Mot de passe",
@@ -8,7 +11,7 @@
 	"TOP_PANEL": {
 		"LABEL_ADMIN_PANEL": "Panneau d'Administration"
 	},
-	"TABS_LABELS": {
+	"SETTINGS_LABELS": {
 		"LABEL_GENERAL_NAME": "Général",
 		"LABEL_LOGIN_NAME": "Identifiant",
 		"LABEL_BRANDING_NAME": "Logo & Marque",
@@ -16,6 +19,7 @@
 		"LABEL_DOMAINS_NAME": "Domaines",
 		"LABEL_SECURITY_NAME": "Sécurité",
 		"LABEL_PACKAGES_NAME": "Extensions",
+		"LABEL_CONFIG_NAME": "Config",
 		"LABEL_ABOUT_NAME": "A propos"
 	},
 	"TAB_GENERAL": {
@@ -34,7 +38,7 @@
 		"LABEL_ALLOW_IDENTITIES": "Autoriser les identités multiples",
 		"ALERT_DATA_ACCESS": "Data folder is accessible. Please configure your web server to hide the data folder from external access. Read more here:",
 		"ALERT_WARNING": "ATTENTION !",
-		"HTML_ALERT_WEAK_PASSWORD": "Vous utilisez le mot de passe administrateur par défaut.\n<br \/>\nPour des raisons de sécurité, veuillez\n<strong><a href=\"#\/security\">changer le mot de passe <\/a><\/strong>\ndès maintenant.\n"
+		"HTML_ALERT_WEAK_PASSWORD": "Vous utilisez le mot de passe administrateur par défaut.\n<br>\nPour des raisons de sécurité, veuillez\n<strong><a href=\"#\/security\">changer le mot de passe <\/a><\/strong>\ndès maintenant.\n"
 	},
 	"TAB_LOGIN": {
 		"LEGEND_LOGIN_SCREEN": "Ecran de connexion",
@@ -62,14 +66,14 @@
 		"BUTTON_TEST": "Test",
 		"ALERT_NOTICE": "Avis !",
 		"HTML_ALERT_DO_NOT_USE_THIS_DATABASE": "N'utilisez pas ce type de base de données avec un grand nombre d'utilisateurs actifs.",
-		"HTML_ALERT_DOES_NOT_SUPPORTED": "Votre système ne supporte pas les contacts.\n<br \/>\nVous devez installer ou autoriser l'extension <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong> sur votre serveur.\n"
+		"HTML_ALERT_DOES_NOT_SUPPORTED": "Votre système ne supporte pas les contacts.\n<br>\nVous devez installer ou autoriser l'extension <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong> sur votre serveur.\n"
 	},
 	"TAB_DOMAINS": {
 		"LEGEND_DOMAINS": "Domaines",
 		"BUTTON_ADD_DOMAIN": "Ajouter un domaine",
 		"BUTTON_ADD_ALIAS": "Ajouter un alias",
 		"DELETE_ARE_YOU_SURE": "Êtes-vous sûr ?",
-		"HTML_DOMAINS_HELPER": "Liste des domaines autorisés.\n<br \/>\nCliquez sur le nom pour configurer le domaine.\n"
+		"HTML_DOMAINS_HELPER": "Liste des domaines autorisés.\n<br>\nCliquez sur le nom pour configurer le domaine.\n"
 	},
 	"TAB_SECURITY": {
 		"LEGEND_SECURITY": "Sécurité",
@@ -140,8 +144,7 @@
 	"POPUPS_PLUGIN": {
 		"TITLE_PLUGIN": "Extension",
 		"DESC_NOTHING_TO_CONFIGURE": "Rien à configurer",
-		"BUTTON_CLOSE": "Fermer",
-		"BUTTON_SAVE": "Enregistrer"
+		"BUTTON_CLOSE": "Fermer"
 	},
 	"POPUPS_ASK": {
 		"BUTTON_YES": "Oui",

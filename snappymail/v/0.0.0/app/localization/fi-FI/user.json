@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Lisää viestejä",
 		"MENU_HEADERS": "Näytä viestin tiedot",
 		"MENU_VIEW_ORIGINAL": "Näytä lähdekoodi",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Lataa .eml tiedostona",
 		"MENU_FILTER_SIMILAR": "Suodata samankaltaiset",
 		"MENU_PRINT": "Tulosta",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Liite",
 		"MESSAGE_VIEW_DESC": "Valitse viesti listasta nähdäksesi sen tässä",
 		"MESSAGE_VIEW_MOVE_DESC": "Click folder name in the left panel to select the destination.",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP allekirjoitettu viesti (klikkaa verifioidaksesi)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP salattu visti (klikkaa avataksesi salaus)",
 		"LINK_DOWNLOAD_AS_ZIP": "Lataa zip-tiedostona",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Kaikkia liitetiedostoja ei ole vielä ladattu.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Pyydä kuittaus",
 		"BUTTON_MARK_AS_IMPORTANT": "Merkitse tärkeäksi",
-		"BUTTON_OPEN_PGP": "OpenPGP (pelkkä teksti)",
 		"BUTTON_REQUEST_DSN": "Pyydä toimituskuittaus"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Tätä toimintoa ei voi peruuttaa.",
 		"TITLE_CLEARING_PROCESS": "Tyhjennetään kansiota..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Tuo OpenPGP avain",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Tuo"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Näytä OpenPGP avain",
-		"BUTTON_SELECT": "Valitse"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Luo OpenPGP avain",
-		"LABEL_KEY_BIT_LENGTH": "Avaimen pituus",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generoi"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP Allekirjoitus\/Salaus",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Tuo OpenPGP avain",
+		"POPUP_IMPORT_BUTTON": "Tuo",
+		"POPUP_VIEW_TITLE": "Näytä OpenPGP avain",
+		"POPUP_VIEW_BUTTON": "Valitse",
+		"POPUP_GENERATE_TITLE": "Luo OpenPGP avain",
+		"POPUP_GENERATE_BUTTON": "Generoi",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Allekirjoita",
 		"LABEL_ENCRYPT": "Salaa",
-		"BUTTON_SIGN": "Allekirjoita",
-		"BUTTON_ENCRYPT": "Salaa",
-		"BUTTON_SIGN_AND_ENCRYPT": "Allekirjoita ja salaa"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "Pura OpenPGP",
-		"LABEL_KEY": "Yksityinen avain",
-		"BUTTON_DECRYPT": "Pura"
+		"BUTTON_DECRYPT": "Pura",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP allekirjoitettu viesti",
+		"ENCRYPTED_MESSAGE": "OpenPGP salattu visti",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Oikea allekirjoitus %USER% lle",
+		"ERROR": "OpenPGP virhe: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Luo suodatin?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Yhteystiedot",
 		"LABEL_FOLDERS_NAME": "kansiot",
 		"LABEL_ACCOUNTS_NAME": "Tilit",
-		"LABEL_IDENTITIES_NAME": "Identiteetit",
 		"LABEL_FILTERS_NAME": "Suodattimet",
 		"LABEL_SECURITY_NAME": "Turvallisuus",
 		"LABEL_THEMES_NAME": "Teemat"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Käytä keskustelunäkymää",
 		"LABEL_REPLY_SAME_FOLDER": "Siirrä vastaukset samaan kansioon vastattavien kanssa",
 		"LABEL_SHOW_IMAGES": "Näytä aina ulkopuoliset kuvat viestissä",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Viestiä sivulla",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Päivitetään...",
 		"DEFAULT_IDENTITY_LABEL": "oletus"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Tuo OpenPGP avain",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Luo OpenPGP avain",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Tuo avain",
+		"BUTTON_GENERATE_KEY_PAIR": "Luo avain",
 		"TITLE_PRIVATE": "Yksityinen",
 		"TITLE_PUBLIC": "Julkinen",
-		"GENERATE_ONLY_HTTPS": "Vain HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Näppäimistö oikotie apu",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Tallenna viesti",
 		"LABEL_SEND_MESSAGE": "Lähetä viesti",
 		"LABEL_CLOSE_COMPOSE": "Sule luo viesti"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Julkisia avaimia ei löytynyt",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "%EMAIL% lle ei löytynyt julkisia avaimia",
-		"NO_PRIVATE_KEY_FOUND": "Ykrityistä avainta ei löytynyt",
-		"NO_PRIVATE_KEY_FOUND_FOR": "%EMAIL% lle ei löytynyt yksityistä avainta",
-		"ADD_A_PUBLICK_KEY": "Lisää julkinen avain",
-		"SELECT_A_PRIVATE_KEY": "Valitse yksityinen avain",
-		"UNVERIFIRED_SIGNATURE": "Tarkistamaton allekirjoitus",
-		"DECRYPTION_ERROR": "OpenPGP avausvierhe",
-		"GOOD_SIGNATURE": "Oikea allekirjoitus %USER% lle",
-		"PGP_ERROR": "OpenPGP virhe: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Aseta lähettäjän osoite",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Aseta vähintään yksi vastaanottaja"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Väärä suojaustunnus",

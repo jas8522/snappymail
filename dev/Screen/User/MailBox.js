@@ -1,5 +1,5 @@
 import { Scope } from 'Common/Enums';
-import { Layout, ClientSideKeyName } from 'Common/EnumsUser';
+import { Layout, ClientSideKeyNameMessageListSize } from 'Common/EnumsUser';
 import { doc, leftPanelDisabled, moveAction, Settings, elementById } from 'Common/Globals';
 import { pString, pInt } from 'Common/Utils';
 import { setLayoutResizer } from 'Common/UtilsUser';
@@ -10,7 +10,7 @@ import { SettingsUserStore } from 'Stores/User/Settings';
 import { AppUserStore } from 'Stores/User/App';
 import { AccountUserStore } from 'Stores/User/Account';
 import { FolderUserStore } from 'Stores/User/Folder';
-import { MessageUserStore } from 'Stores/User/Message';
+import { MessagelistUserStore } from 'Stores/User/Messagelist';
 import { ThemeStore } from 'Stores/Theme';
 
 import { SystemDropDownUserView } from 'View/User/SystemDropDown';
@@ -51,7 +51,7 @@ export class MailBoxUserScreen extends AbstractScreen {
 	onShow() {
 		this.updateWindowTitle();
 
-		AppUserStore.focusedState(Scope.None);
+		AppUserStore.focusedState('none');
 		AppUserStore.focusedState(Scope.MessageList);
 
 		ThemeStore.isMobile() && leftPanelDisabled(true);
@@ -75,11 +75,11 @@ export class MailBoxUserScreen extends AbstractScreen {
 
 				FolderUserStore.currentFolder(folder);
 
-				MessageUserStore.listPage(1 > page ? 1 : page);
-				MessageUserStore.listSearch(search);
-				MessageUserStore.listThreadUid((folderHash === threadUid) ? 0 : pInt(threadUid));
+				MessagelistUserStore.page(1 > page ? 1 : page);
+				MessagelistUserStore.listSearch(search);
+				MessagelistUserStore.threadUid((folderHash === threadUid) ? 0 : pInt(threadUid));
 
-				rl.app.reloadMessageList();
+				MessagelistUserStore.reload();
 			}
 		}
 	}
@@ -88,20 +88,18 @@ export class MailBoxUserScreen extends AbstractScreen {
 	 * @returns {void}
 	 */
 	onStart() {
-		if (!this.__started) {
-			super.onStart();
+		super.onStart();
 
-			addEventListener('mailbox.inbox-unread-count', e => {
-				FolderUserStore.foldersInboxUnreadCount(e.detail);
-/*				// Disabled in SystemDropDown.html
-				const email = AccountUserStore.email();
-				AccountUserStore.accounts.forEach(item =>
-					item && email === item.email && item.count(e.detail)
-				);
+		addEventListener('mailbox.inbox-unread-count', e => {
+			FolderUserStore.foldersInboxUnreadCount(e.detail);
+/*			// Disabled in SystemDropDown.html
+			const email = AccountUserStore.email();
+			AccountUserStore.accounts.forEach(item =>
+				item && email === item.email && item.count(e.detail)
+			);
 */
-				this.updateWindowTitle();
-			});
-		}
+			this.updateWindowTitle();
+		});
 	}
 
 	/**
@@ -114,7 +112,7 @@ export class MailBoxUserScreen extends AbstractScreen {
 				bottom = elementById('V-MailMessageView'),
 				fToggle = () => {
 					let layout = SettingsUserStore.layout();
-					setLayoutResizer(top, bottom, ClientSideKeyName.MessageListSize,
+					setLayoutResizer(top, bottom, ClientSideKeyNameMessageListSize,
 						(ThemeStore.isMobile() || Layout.NoPreview === layout)
 							? 0
 							: (Layout.SidePreview === layout ? 'Width' : 'Height')

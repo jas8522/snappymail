@@ -1,4 +1,7 @@
 {
+	"GLOBAL": {
+		"SAVE": "Zapisz"
+	},
 	"LOGIN": {
 		"LABEL_LOGIN": "Login",
 		"LABEL_PASSWORD": "Hasło",
@@ -8,7 +11,7 @@
 	"TOP_PANEL": {
 		"LABEL_ADMIN_PANEL": "Panel administracyjny"
 	},
-	"TABS_LABELS": {
+	"SETTINGS_LABELS": {
 		"LABEL_GENERAL_NAME": "Ogólne",
 		"LABEL_LOGIN_NAME": "Login",
 		"LABEL_BRANDING_NAME": "Personalizacja",
@@ -16,6 +19,7 @@
 		"LABEL_DOMAINS_NAME": "Domeny",
 		"LABEL_SECURITY_NAME": "Bezpieczeństwo",
 		"LABEL_PACKAGES_NAME": "Pakiety",
+		"LABEL_CONFIG_NAME": "Config",
 		"LABEL_ABOUT_NAME": "O programie"
 	},
 	"TAB_GENERAL": {
@@ -32,9 +36,9 @@
 		"LABEL_ATTACHMENT_SIZE_LIMIT": "Maksymalny rozmiar załącznika",
 		"LABEL_ALLOW_ADDITIONAL_ACCOUNTS": "Zezwól na dodatkowe konta",
 		"LABEL_ALLOW_IDENTITIES": "Zezwól na posiadanie wielu tożsamości",
-		"ALERT_DATA_ACCESS": "Folder data jest osiągalny z poziomu przeglądarki WWW. Zmień konfigurację serwera www, aby ukryć ten folder z zewnątrz. Więcej informacji tutaj: ",
+		"ALERT_DATA_ACCESS": "Katalog „data” jest osiągalny z poziomu przeglądarki WWW. Zmień konfigurację serwera www, aby ukryć ten folder z zewnątrz. Więcej informacji tutaj: ",
 		"ALERT_WARNING": "Ostrzeżenie!",
-		"HTML_ALERT_WEAK_PASSWORD": "Korzystasz z domyślnego hasła administratora.\n<br \/>\nZe względów bezpieczeństwa\n<strong><a href=\"#\/security\">zmień hasło<\/a><\/strong>\nna inne.\n"
+		"HTML_ALERT_WEAK_PASSWORD": "Korzystasz z domyślnego hasła administratora.\n<br>\nZe względów bezpieczeństwa\n<strong><a href=\"#\/security\">zmień hasło<\/a><\/strong>\nna inne.\n"
 	},
 	"TAB_LOGIN": {
 		"LEGEND_LOGIN_SCREEN": "Ekran logowania",
@@ -60,31 +64,31 @@
 		"LABEL_STORAGE_USER": "Użytkownik",
 		"LABEL_STORAGE_PASSWORD": "Hasło",
 		"BUTTON_TEST": "Testuj",
-		"ALERT_NOTICE": "Powiadomienie!",
+		"ALERT_NOTICE": "Ostrzeżenie!",
 		"HTML_ALERT_DO_NOT_USE_THIS_DATABASE": "Nie używaj tej bazy danych z dużą ilością aktywnych użytkowników.",
-		"HTML_ALERT_DOES_NOT_SUPPORTED": "Twój system nie zawiera wsparcia dla obsługi kontaktów.\n<br \/>\nMusisz zainstalować lub uruchomić na serwerze jedno z rozszerzeń <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong>.\n"
+		"HTML_ALERT_DOES_NOT_SUPPORTED": "Twój system nie zawiera wsparcia dla obsługi kontaktów.\n<br>\nMusisz zainstalować lub uruchomić na serwerze jedno z rozszerzeń <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong>.\n"
 	},
 	"TAB_DOMAINS": {
 		"LEGEND_DOMAINS": "Domeny",
 		"BUTTON_ADD_DOMAIN": "Dodaj domenę",
 		"BUTTON_ADD_ALIAS": "Dodaj Alias",
 		"DELETE_ARE_YOU_SURE": "Czy na pewno?",
-		"HTML_DOMAINS_HELPER": "Lista domen, do których można uzyskać dostęp poprzez tego klienta.\n<br \/>\nKliknij na nazwę, aby skonfigurować domenę.\n"
+		"HTML_DOMAINS_HELPER": "Lista domen, do których można uzyskać dostęp poprzez tego klienta.\n<br>\nKliknij na nazwę, aby skonfigurować domenę.\n"
 	},
 	"TAB_SECURITY": {
 		"LEGEND_SECURITY": "Bezpieczeństwo",
 		"LABEL_USE_IMAGE_PROXY": "Użyj lokalnego serwera proxy dla zewnętrznych obrazów",
-		"LABEL_ALLOW_OPEN_PGP": "Zezwalaj na używanie OpenPGP",
+		"LABEL_ALLOW_OPEN_PGP": "Zezwól na używanie OpenPGP",
 		"LABEL_SHOW_PHP_INFO": "Pokaż informacje o wersji PHP",
-		"LEGEND_ADMIN_PANEL_ACCESS_CREDENTIALS": "Dane dostępowe panelu administracyjnego",
+		"LEGEND_ADMIN_PANEL_ACCESS_CREDENTIALS": "Poświadczenia dostępu do panelu administracyjnego",
 		"LABEL_CURRENT_PASSWORD": "Bieżące hasło",
 		"LABEL_NEW_LOGIN": "Nowy login",
 		"LABEL_NEW_PASSWORD": "Nowe hasło",
 		"LABEL_REPEAT_PASSWORD": "Powtórz hasło",
 		"BUTTON_UPDATE_PASSWORD": "Zaktualizuj hasło",
 		"LEGEND_SSL": "SSL",
-		"LABEL_REQUIRE_VERIFICATION": "Wymagaj sprawdzania poprawności certyfikatów SSL (IMAP\/SMTP)",
-		"LABEL_ALLOW_SELF_SIGNED": "Zezwól na używanie certyfikatów podpisanych samodzielnie"
+		"LABEL_REQUIRE_VERIFICATION": "Wymagaj weryfikacji używanego certyfikatu SSL (IMAP\/SMTP)",
+		"LABEL_ALLOW_SELF_SIGNED": "Zezwól na certyfikaty z podpisem własnym"
 	},
 	"TAB_PACKAGES": {
 		"LABEL_ENABLE_PLUGINS": "Włącz obsługę wtyczek",
@@ -95,7 +99,7 @@
 	},
 	"TAB_ABOUT": {
 		"LEGEND_ABOUT": "O programie",
-		"LABEL_TAG_HINT": "Prosty, nowoczesny i szybki klient pocztowy",
+		"LABEL_TAG_HINT": "Prosty, nowoczesny i szybki klient poczty elektronicznej",
 		"LABEL_ALL_RIGHTS_RESERVED": "Wszystkie prawa zastrzeżone."
 	},
 	"POPUPS_DOMAIN_ALIAS": {
@@ -134,14 +138,13 @@
 		"BUTTON_CLOSE": "Zamknij",
 		"BUTTON_ADD": "Dodaj",
 		"BUTTON_UPDATE": "Zaktualizuj",
-		"NEW_DOMAIN_DESC": "Konfiguracja tej domeny pozwala na pracę<br \/>z adresami e-mail: <i>%NAME%<\/i>",
+		"NEW_DOMAIN_DESC": "Konfiguracja tej domeny pozwala na pracę<br>z adresami e-mail: <i>%NAME%<\/i>",
 		"WHITE_LIST_ALERT": "Lista użytkowników domeny, którzy mogą uzyskać dostęp z tego webmaila.\nUżyj spacji do rozdzielenia.\n"
 	},
 	"POPUPS_PLUGIN": {
 		"TITLE_PLUGIN": "Wtyczka",
 		"DESC_NOTHING_TO_CONFIGURE": "Brak opcji do skonfigurowania",
-		"BUTTON_CLOSE": "Zamknij",
-		"BUTTON_SAVE": "Zapisz"
+		"BUTTON_CLOSE": "Zamknij"
 	},
 	"POPUPS_ASK": {
 		"BUTTON_YES": "Yes",

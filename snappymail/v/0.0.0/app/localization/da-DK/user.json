@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Flere meddelelser",
 		"MENU_HEADERS": "Vis meddelelseoplysninger",
 		"MENU_VIEW_ORIGINAL": "Vis kilder",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Hent som .eml fil",
 		"MENU_FILTER_SIMILAR": "Find lignende meddelelser",
 		"MENU_PRINT": "Udskriv",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Vedhæftninger",
 		"MESSAGE_VIEW_DESC": "Vælg meddelelse i oversigten for visning.",
 		"MESSAGE_VIEW_MOVE_DESC": "Vælg modtagemappe i panelet til venstre.",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP signeret meddelelse (tryk for at verificere)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP krypteret meddelelse (tryk for at dekryptere)",
 		"LINK_DOWNLOAD_AS_ZIP": "Hent som zip-fil",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Overførsel af vedhæftninger igang.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Bed om kvittering for læsning",
 		"BUTTON_MARK_AS_IMPORTANT": "Markér som vigtig",
-		"BUTTON_OPEN_PGP": "OpenPGP (kun plain tekst)",
 		"BUTTON_REQUEST_DSN": "Bed om kvittering for modtagelse"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Handlingen kan ikke afbrydes når den er startet.",
 		"TITLE_CLEARING_PROCESS": "Tømmer mappe..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Importer OpenPGP nøgle",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Importer"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Vis OpenPGP nøgle",
-		"BUTTON_SELECT": "Vælg"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Generér OpenPGP nøgler",
-		"LABEL_KEY_BIT_LENGTH": "Nøglelængde",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generér"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP signér\/krypter",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Importer OpenPGP nøgle",
+		"POPUP_IMPORT_BUTTON": "Importer",
+		"POPUP_VIEW_TITLE": "Vis OpenPGP nøgle",
+		"POPUP_VIEW_BUTTON": "Vælg",
+		"POPUP_GENERATE_TITLE": "Generér OpenPGP nøgler",
+		"POPUP_GENERATE_BUTTON": "Generér",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Signér",
 		"LABEL_ENCRYPT": "Krypter",
-		"BUTTON_SIGN": "Signér",
-		"BUTTON_ENCRYPT": "Krypter",
-		"BUTTON_SIGN_AND_ENCRYPT": "Signér og krypter"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP dekrypter",
-		"LABEL_KEY": "Privat nøgle",
-		"BUTTON_DECRYPT": "Dekrypter"
+		"BUTTON_DECRYPT": "Dekrypter",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP signeret meddelelse",
+		"ENCRYPTED_MESSAGE": "OpenPGP krypteret meddelelse",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Accepteret signatur for %USER\"",
+		"ERROR": "OpenPGP fejl: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Opret filter?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Kontakter",
 		"LABEL_FOLDERS_NAME": "Mapper",
 		"LABEL_ACCOUNTS_NAME": "Kontoer",
-		"LABEL_IDENTITIES_NAME": "Identiteter",
 		"LABEL_FILTERS_NAME": "Filtre",
 		"LABEL_SECURITY_NAME": "Sikkerhed",
 		"LABEL_THEMES_NAME": "Temaer"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Brug samtaler",
 		"LABEL_REPLY_SAME_FOLDER": "Placer svar i samme mappe som oprindelig meddelelse",
 		"LABEL_SHOW_IMAGES": "Vis altid eksterne billeder",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Meddelelser per side",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Opdaterer...",
 		"DEFAULT_IDENTITY_LABEL": "standard"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Importer OpenPGP nøgle",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generer OpenPGP nøgler",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Importer nøgle",
+		"BUTTON_GENERATE_KEY_PAIR": "Generer nøgler",
 		"TITLE_PRIVATE": "Privat",
 		"TITLE_PUBLIC": "Offentlig",
-		"GENERATE_ONLY_HTTPS": "Kun HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Gem kladde automatisk"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Gem kladde automatisk",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Hjælp til tasteturgenveje",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Gem meddelelse",
 		"LABEL_SEND_MESSAGE": "Send meddelelse",
 		"LABEL_CLOSE_COMPOSE": "Luk forfatter mode"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Ingen offentlige nøgler fundet",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Ingen offentlige nøgler fundet tilhørende \"%EMAIL%\"",
-		"NO_PRIVATE_KEY_FOUND": "Ingen privat nøgle fundet",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Ingen privat nøgle fundet tilhørende \"%EMAIL%\"",
-		"ADD_A_PUBLICK_KEY": "Tilføj privat nøgle",
-		"SELECT_A_PRIVATE_KEY": "Vælg privat nøgle",
-		"UNVERIFIRED_SIGNATURE": "Ikke verificeret signatur",
-		"DECRYPTION_ERROR": "OpenPGP dekrypteringsfejl",
-		"GOOD_SIGNATURE": "Accepteret signatur for %USER\"",
-		"PGP_ERROR": "OpenPGP fejl: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Udfyld afsenderadresse",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Angiv mindst en modtager"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Ugyldigt tegn",

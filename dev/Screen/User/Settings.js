@@ -1,5 +1,5 @@
-import { Capa, Scope } from 'Common/Enums';
-import { keyScope, leftPanelDisabled, Settings } from 'Common/Globals';
+import { Scope } from 'Common/Enums';
+import { keyScope, leftPanelDisabled, SettingsCapa } from 'Common/Globals';
 import { runSettingsViewModelHooks } from 'Common/Plugins';
 import { initOnStartOrLangChange, i18n } from 'Common/Translator';
 
@@ -9,57 +9,51 @@ import { ThemeStore } from 'Stores/Theme';
 
 import { AbstractSettingsScreen, settingsAddViewModel } from 'Screen/AbstractSettings';
 
-import { GeneralUserSettings } from 'Settings/User/General';
-import { ContactsUserSettings } from 'Settings/User/Contacts';
-import { AccountsUserSettings } from 'Settings/User/Accounts';
-import { FiltersUserSettings } from 'Settings/User/Filters';
-import { SecurityUserSettings } from 'Settings/User/Security';
-import { FoldersUserSettings } from 'Settings/User/Folders';
-import { ThemesUserSettings } from 'Settings/User/Themes';
-import { OpenPgpUserSettings } from 'Settings/User/OpenPgp';
+import { UserSettingsGeneral } from 'Settings/User/General';
+import { UserSettingsContacts } from 'Settings/User/Contacts';
+import { UserSettingsAccounts } from 'Settings/User/Accounts';
+import { UserSettingsFilters } from 'Settings/User/Filters';
+import { UserSettingsSecurity } from 'Settings/User/Security';
+import { UserSettingsFolders } from 'Settings/User/Folders';
+import { UserSettingsThemes } from 'Settings/User/Themes';
 
 import { SystemDropDownUserView } from 'View/User/SystemDropDown';
-import { MenuSettingsUserView } from 'View/User/Settings/Menu';
-import { PaneSettingsUserView } from 'View/User/Settings/Pane';
+import { SettingsMenuUserView } from 'View/User/Settings/Menu';
+import { SettingsPaneUserView } from 'View/User/Settings/Pane';
 
 export class SettingsUserScreen extends AbstractSettingsScreen {
 	constructor() {
-		super([SystemDropDownUserView, MenuSettingsUserView, PaneSettingsUserView]);
+		super([SystemDropDownUserView, SettingsMenuUserView, SettingsPaneUserView]);
 
-		settingsAddViewModel(GeneralUserSettings, 'SettingsGeneral', 'SETTINGS_LABELS/LABEL_GENERAL_NAME', 'general', true);
+		const views = [
+			UserSettingsGeneral
+		];
 
 		if (AppUserStore.allowContacts()) {
-			settingsAddViewModel(ContactsUserSettings, 'SettingsContacts', 'SETTINGS_LABELS/LABEL_CONTACTS_NAME', 'contacts');
+			views.push(UserSettingsContacts);
 		}
 
-		if (Settings.capa(Capa.AdditionalAccounts) || Settings.capa(Capa.Identities)) {
-			settingsAddViewModel(
-				AccountsUserSettings,
-				'SettingsAccounts',
-				Settings.capa(Capa.AdditionalAccounts)
-					? 'SETTINGS_LABELS/LABEL_ACCOUNTS_NAME'
-					: 'SETTINGS_LABELS/LABEL_IDENTITIES_NAME',
-				'accounts'
-			);
+		if (SettingsCapa('AdditionalAccounts') || SettingsCapa('Identities')) {
+			views.push(UserSettingsAccounts);
 		}
 
-		if (Settings.capa(Capa.Sieve)) {
-			settingsAddViewModel(FiltersUserSettings, 'SettingsFilters', 'SETTINGS_LABELS/LABEL_FILTERS_NAME', 'filters');
+		if (SettingsCapa('Sieve')) {
+			views.push(UserSettingsFilters);
 		}
 
-		if (Settings.capa(Capa.AutoLogout)) {
-			settingsAddViewModel(SecurityUserSettings, 'SettingsSecurity', 'SETTINGS_LABELS/LABEL_SECURITY_NAME', 'security');
+		if (SettingsCapa('AutoLogout') || SettingsCapa('OpenPGP') || SettingsCapa('GnuPG')) {
+			views.push(UserSettingsSecurity);
 		}
 
-		settingsAddViewModel(FoldersUserSettings, 'SettingsFolders', 'SETTINGS_LABELS/LABEL_FOLDERS_NAME', 'folders');
+		views.push(UserSettingsFolders);
 
-		if (Settings.capa(Capa.Themes)) {
-			settingsAddViewModel(ThemesUserSettings, 'SettingsThemes', 'SETTINGS_LABELS/LABEL_THEMES_NAME', 'themes');
+		if (SettingsCapa('Themes')) {
+			views.push(UserSettingsThemes);
 		}
 
-		if (Settings.capa(Capa.OpenPGP)) {
-			settingsAddViewModel(OpenPgpUserSettings, 'SettingsOpenPGP', 'OpenPGP', 'openpgp');
-		}
+		views.forEach((item, index) =>
+			settingsAddViewModel(item, item.name.replace('User', ''), 0, 0, 0 === index)
+		);
 
 		runSettingsViewModelHooks(false);
 

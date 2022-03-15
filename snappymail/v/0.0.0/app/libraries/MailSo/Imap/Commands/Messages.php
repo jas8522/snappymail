@@ -12,8 +12,13 @@
 
 namespace MailSo\Imap\Commands;
 
+use MailSo\Imap\FetchResponse;
+use MailSo\Imap\Enumerations\FetchType;
 use MailSo\Imap\ResponseCollection;
+use MailSo\Imap\SequenceSet;
 use MailSo\Imap\Enumerations\ResponseType;
+use MailSo\Log\Enumerations\Type as LogType;
+use MailSo\Base\Exceptions\InvalidArgumentException;
 
 /**
  * @category MailSo
@@ -21,6 +26,209 @@ use MailSo\Imap\Enumerations\ResponseType;
  */
 trait Messages
 {
+	/**
+	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
+	 * @throws \MailSo\Net\Exceptions\Exception
+	 * @throws \MailSo\Imap\Exceptions\Exception
+	 */
+	public function Fetch(array $aInputFetchItems, string $sIndexRange, bool $bIndexIsUid) : array
+	{
+		if (!\strlen(\trim($sIndexRange)))
+		{
+			$this->writeLogException(new InvalidArgumentException, LogType::ERROR, true);
+		}
+
+		$aReturn = array();
+		$this->aFetchCallbacks = array();
+		try {
+			$aFetchItems = array(
+				FetchType::UID,
+				FetchType::RFC822_SIZE
+			);
+			foreach ($aInputFetchItems as $mFetchKey)
+			{
+				switch ($mFetchKey)
+				{
+					case FetchType::UID:
+					case FetchType::RFC822_SIZE:
+						// Already defined by default
+						break;
+
+					// Macro's
+					case FetchType::FULL:
+						$aFetchItems[] = FetchType::BODY;
+						// Falls through
+					case FetchType::ALL:
+						$aFetchItems[] = FetchType::ENVELOPE;
+						// Falls through
+					case FetchType::FAST:
+						$aFetchItems[] = FetchType::FLAGS;
+						$aFetchItems[] = FetchType::INTERNALDATE;
+						break;
+
+					default:
+						if (\is_string($mFetchKey)) {
+							$aFetchItems[] = $mFetchKey;
+						} else if (\is_array($mFetchKey) && 2 === \count($mFetchKey)
+							&& \is_string($mFetchKey[0]) && \is_callable($mFetchKey[1]))
+						{
+							$aFetchItems[] = $mFetchKey[0];
+							$this->aFetchCallbacks[$mFetchKey[0]] = $mFetchKey[1];
+						}
+						break;
+				}
+			}
+
+			$aParams = array($sIndexRange, $aFetchItems);
+
+			/**
+			 * TODO:
+			 *   https://datatracker.ietf.org/doc/html/rfc4551#section-3.3.1
+			 *     $aParams[1][] = FLAGS
+			 *     $aParams[] = (CHANGEDSINCE $modsequence)
+			 *   https://datatracker.ietf.org/doc/html/rfc4551#section-3.3.2
+			 *     $aParams[1][] = MODSEQ
+			 *   https://datatracker.ietf.org/doc/html/rfc5162#section-3.2
+			 *     $bIndexIsUid && $aParams[] = (CHANGEDSINCE $modsequence VANISHED)
+			 */
+
+			$this->SendRequest($bIndexIsUid ? 'UID FETCH' : 'FETCH', $aParams);
+			foreach ($this->yieldUntaggedResponses() as $oResponse) {
+				if (FetchResponse::isValidImapResponse($oResponse)) {
+					if (FetchResponse::hasUidAndSize($oResponse)) {
+						$aReturn[] = new FetchResponse($oResponse);
+					} else if ($this->oLogger) {
+						$this->oLogger->Write('Skipped Imap Response! ['.$oResponse.']', LogType::NOTICE);
+					}
+				}
+			}
+		} finally {
+			$this->aFetchCallbacks = array();
+		}
+
+		return $aReturn;
+	}
+
+	/**
+	 * Appends message to specified folder
+	 *
+	 * @param resource $rMessageAppendStream
+	 *
+	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
+	 * @throws \MailSo\Net\Exceptions\Exception
+	 * @throws \MailSo\Imap\Exceptions\Exception
+	 */
+	public function MessageAppendStream(string $sFolderName, $rMessageAppendStream, int $iStreamSize, array $aFlagsList = null, int &$iUid = null, int $iDateTime = 0) : ?int
+	{
+		$aParams = array(
+			$this->EscapeFolderName($sFolderName),
+			$aFlagsList
+		);
+		if (0 < $iDateTime) {
+			$aParams[] = $this->EscapeString(\gmdate('d-M-Y H:i:s', $iDateTime).' +0000');
+		}
+
+/*
+		// RFC 3516 || RFC 6855 section-4
+		if ($this->IsSupported('BINARY') || $this->IsSupported('UTF8=ACCEPT')) {
+			$aParams[] = '~{'.$iStreamSize.'}';
+		}
+*/
+		$aParams[] = '{'.$iStreamSize.'}';
+
+		$this->SendRequestGetResponse('APPEND', $aParams);
+
+		$this->writeLog('Write to connection stream', LogType::NOTE);
+
+		\MailSo\Base\Utils::MultipleStreamWriter($rMessageAppendStream, array($this->ConnectionResource()));
+
+		$this->sendRaw('');
+		$oResponse = $this->getResponse();
+
+		if (null !== $iUid) {
+			$oLast = $oResponse->getLast();
+			if ($oLast
+			 && ResponseType::TAGGED === $oLast->ResponseType
+			 && \is_array($oLast->OptionalResponse)
+			 && !empty($oLast->OptionalResponse[2])
+			 && \is_numeric($oLast->OptionalResponse[2])
+			 && 'APPENDUID' === \strtoupper($oLast->OptionalResponse[0])
+			) {
+				$iUid = (int) $oLast->OptionalResponse[2];
+			}
+		}
+
+		return $iUid;
+	}
+
+	/**
+	 * RFC 3502 MULTIAPPEND
+	public function MessageAppendStreams(string $sFolderName, $rMessageAppendStream, int $iStreamSize, array $aFlagsList = null, int &$iUid = null, int $iDateTime = 0) : ?int
+	*/
+
+	/**
+	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
+	 * @throws \MailSo\Net\Exceptions\Exception
+	 * @throws \MailSo\Imap\Exceptions\Exception
+	 */
+	public function MessageCopy(string $sToFolder, SequenceSet $oRange) : ResponseCollection
+	{
+		if (!\count($oRange)) {
+			$this->writeLogException(new InvalidArgumentException, LogType::ERROR, true);
+		}
+
+		return $this->SendRequestGetResponse(
+			$oRange->UID ? 'UID COPY' : 'COPY',
+			array((string) $oRange, $this->EscapeFolderName($sToFolder))
+		);
+	}
+
+	/**
+	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
+	 * @throws \MailSo\Net\Exceptions\Exception
+	 * @throws \MailSo\Imap\Exceptions\Exception
+	 */
+	public function MessageMove(string $sToFolder, SequenceSet $oRange) : ResponseCollection
+	{
+		if (!\count($oRange)) {
+			$this->writeLogException(new InvalidArgumentException, LogType::ERROR, true);
+		}
+
+		if (!$this->IsSupported('MOVE')) {
+			$this->writeLogException(
+				new \MailSo\IMAP\Exceptions\RuntimeException('Move is not supported'),
+				LogType::ERROR, true);
+		}
+
+		return $this->SendRequestGetResponse(
+			$oRange->UID ? 'UID MOVE' : 'MOVE',
+			array((string) $oRange, $this->EscapeFolderName($sToFolder))
+		);
+	}
+
+	/**
+	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
+	 * @throws \MailSo\Net\Exceptions\Exception
+	 * @throws \MailSo\Imap\Exceptions\Exception
+	 */
+	public function MessageStoreFlag(SequenceSet $oRange, array $aInputStoreItems, string $sStoreAction) : ?ResponseCollection
+	{
+		if (!\count($oRange) || !\strlen(\trim($sStoreAction)) || !\count($aInputStoreItems)) {
+			return null;
+		}
+
+		/**
+		 * TODO:
+		 *   https://datatracker.ietf.org/doc/html/rfc4551#section-3.2
+		 *     $sStoreAction[] = (UNCHANGEDSINCE $modsequence)
+		 */
+
+		return $this->SendRequestGetResponse(
+			$oRange->UID ? 'UID STORE' : 'STORE',
+			array((string) $oRange, $sStoreAction, $aInputStoreItems)
+		);
+	}
+
 	/**
 	 * See https://tools.ietf.org/html/rfc5256
 	 * @throws \MailSo\Base\Exceptions\InvalidArgumentException
@@ -33,14 +241,13 @@ trait Messages
 		$oSort->sCriterias = $sSearchCriterias;
 		$oSort->bUid = $bReturnUid;
 		$oSort->aSortTypes = $aSortTypes;
-		$oResponseCollection = $oSort->SendRequestGetResponse();
+		$oSort->SendRequest();
 		$aReturn = array();
-		foreach ($oResponseCollection as $oResponse) {
+		foreach ($this->yieldUntaggedResponses() as $oResponse) {
 			$iOffset = ($bReturnUid && 'UID' === $oResponse->StatusOrIndex && !empty($oResponse->ResponseList[2]) && 'SORT' === $oResponse->ResponseList[2]) ? 1 : 0;
-			if (ResponseType::UNTAGGED === $oResponse->ResponseType
-				&& ('SORT' === $oResponse->StatusOrIndex || $iOffset)
-				&& \is_array($oResponse->ResponseList)
-				&& 2 < \count($oResponse->ResponseList))
+			if (\is_array($oResponse->ResponseList)
+				&& 2 < \count($oResponse->ResponseList)
+				&& ('SORT' === $oResponse->StatusOrIndex || $iOffset))
 			{
 				$iLen = \count($oResponse->ResponseList);
 				for ($iIndex = 2 + $iOffset; $iIndex < $iLen; ++$iIndex) {
@@ -64,7 +271,8 @@ trait Messages
 		$oESearch->bUid = $bReturnUid;
 		$oESearch->sLimit = $sLimit;
 		$oESearch->sCharset = $sCharset;
-		return $this->getSimpleESearchOrESortResult($oESearch->SendRequestGetResponse(), $bReturnUid);
+		$oESearch->SendRequest();
+		return $this->getSimpleESearchOrESortResult($bReturnUid);
 	}
 
 	/**
@@ -80,7 +288,8 @@ trait Messages
 		$oSort->aSortTypes = $aSortTypes;
 		$oSort->aReturn = $aSearchReturn ?: ['ALL'];
 		$oSort->sLimit = $sLimit;
-		return $this->getSimpleESearchOrESortResult($oSort->SendRequestGetResponse(), $bReturnUid);
+		$oSort->SendRequest();
+		return $this->getSimpleESearchOrESortResult($bReturnUid);
 	}
 
 	/**
@@ -137,24 +346,22 @@ trait Messages
 	 * @throws \MailSo\Net\Exceptions\Exception
 	 * @throws \MailSo\Imap\Exceptions\Exception
 	 */
-	public function MessageSimpleThread(string $sSearchCriterias = 'ALL', bool $bReturnUid = true, string $sCharset = \MailSo\Base\Enumerations\Charset::UTF_8) : array
+	public function MessageSimpleThread(string $sSearchCriterias = 'ALL', bool $bReturnUid = true) : array
 	{
 		$oThread = new \MailSo\Imap\Requests\THREAD($this);
 		$oThread->sCriterias = $sSearchCriterias;
-		$oThread->sCharset = $sCharset;
 		$oThread->bUid = $bReturnUid;
 		return $oThread->SendRequestGetResponse();
 	}
 
-	private function getSimpleESearchOrESortResult(ResponseCollection $oResponseCollection, bool $bReturnUid) : array
+	private function getSimpleESearchOrESortResult(bool $bReturnUid) : array
 	{
 		$sRequestTag = $this->getCurrentTag();
 		$aResult = array();
-		foreach ($oResponseCollection as $oResponse) {
-			if (ResponseType::UNTAGGED === $oResponse->ResponseType
-				&& ('ESEARCH' === $oResponse->StatusOrIndex || 'SORT' === $oResponse->StatusOrIndex)
-				&& \is_array($oResponse->ResponseList)
+		foreach ($this->yieldUntaggedResponses() as $oResponse) {
+			if (\is_array($oResponse->ResponseList)
 				&& isset($oResponse->ResponseList[2][1])
+				&& ('ESEARCH' === $oResponse->StatusOrIndex || 'SORT' === $oResponse->StatusOrIndex)
 				&& 'TAG' === $oResponse->ResponseList[2][0] && $sRequestTag === $oResponse->ResponseList[2][1]
 				&& (!$bReturnUid || (!empty($oResponse->ResponseList[3]) && 'UID' === $oResponse->ResponseList[3]))
 			)

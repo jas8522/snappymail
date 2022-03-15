@@ -65,27 +65,29 @@ abstract class Upgrade
 			}
 			$sHash = $oMainAccount->CryptKey();
 			foreach ($aAccounts as $sEmail => $sToken) {
+				if ($oMainAccount->Email() == $sEmail) {
+					continue;
+				}
 				try {
 					$aNewAccounts[$sEmail] = [
 						'account',
 						$sEmail,
-						$sEmail,
-						'',
-						'',
-						'',
-						'',
-						$oMainAccount->Email(),
+						$sEmail, // sLogin
+						'',      // sPassword
+						'',      // sClientCert
+						'',      // sProxyAuthUser
+						'',      // sProxyAuthPassword
 						\hash_hmac('sha1', '', $sHash)
 					];
 					if (!$sToken) {
-						\error_log("ConvertInsecureAccount {$sEmail} no token");
+						\SnappyMail\Log::warning('UPGRADE', "ConvertInsecureAccount {$sEmail} no token");
 						continue;
 					}
-					$aAccountHash = \RainLoop\Utils::DecodeKeyValues($sToken);
+					$aAccountHash = static::DecodeKeyValues($sToken);
 					if (empty($aAccountHash[0]) || 'token' !== $aAccountHash[0] // simple token validation
 						|| 8 > \count($aAccountHash) // length checking
 					) {
-						\error_log("ConvertInsecureAccount {$sEmail} invalid aAccountHash: " . \print_r($aAccountHash,1));
+						\SnappyMail\Log::warning('UPGRADE', "ConvertInsecureAccount {$sEmail} invalid aAccountHash: " . \print_r($aAccountHash,1));
 						continue;
 					}
 					$aAccountHash[3] = Crypt::EncryptUrlSafe($aAccountHash[3], $sHash);
@@ -101,7 +103,7 @@ abstract class Upgrade
 						\hash_hmac('sha1', $aAccountHash[3], $sHash)
 					];
 				} catch (\Throwable $e) {
-					\error_log("ConvertInsecureAccount {$sEmail} failed");
+					\SnappyMail\Log::warning('UPGRADE', "ConvertInsecureAccount {$sEmail} failed");
 				}
 			}
 
@@ -126,7 +128,7 @@ abstract class Upgrade
 		if (!empty($sData)) {
 			$aData = \json_decode($sData, true);
 			if (!$aData) {
-				$aData = \RainLoop\Utils::DecodeKeyValues($sData);
+				$aData = static::DecodeKeyValues($sData);
 				if ($aData) {
 					$oActions->setContactsSyncData($oAccount, $aData);
 					return array(
@@ -141,4 +143,23 @@ abstract class Upgrade
 		return null;
 	}
 
+	/**
+	 * Decodes old less secure data
+	 */
+	private static function DecodeKeyValues(string $sData) : array
+	{
+		$sData = \MailSo\Base\Utils::UrlSafeBase64Decode($sData);
+		if (!\strlen($sData)) {
+			return '';
+		}
+		$sKey = \md5(APP_SALT);
+		$sData = \is_callable('xxtea_decrypt')
+			? \xxtea_decrypt($sData, $sKey)
+			: \MailSo\Base\Xxtea::decrypt($sData, $sKey);
+		try {
+			return \json_decode($sData, true, 512, JSON_THROW_ON_ERROR) ?: array();
+		} catch (\Throwable $e) {
+			return \unserialize($sData) ?: array();
+		}
+	}
 }

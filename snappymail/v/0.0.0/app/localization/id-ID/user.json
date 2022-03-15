@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Pesan lainnya",
 		"MENU_HEADERS": "Tampilkan header pesan",
 		"MENU_VIEW_ORIGINAL": "Tampilkan kode sumber",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Unduh sebagai berkas .eml",
 		"MENU_FILTER_SIMILAR": "Saring pesan seperti ini",
 		"MENU_PRINT": "Cetak",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Lampiran",
 		"MESSAGE_VIEW_DESC": "Pilih pesan pada daftar untuk menampilkannya di sini.",
 		"MESSAGE_VIEW_MOVE_DESC": "Klik pada nama folder pada panel kiri untuk memilih tujuan.",
-		"PGP_SIGNED_MESSAGE_DESC": "Pesan bertanda-tangan OpenPGP (klik untuk verifikasi)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "Pesan terenkripsi OpenPGP (klik untuk mendekripsi)",
 		"LINK_DOWNLOAD_AS_ZIP": "Unduh sebagai berkas zip",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Belum semua lampiran terunggah.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Minta pemberitahuan telah dibaca",
 		"BUTTON_MARK_AS_IMPORTANT": "Tandai sebagai pesan penting",
-		"BUTTON_OPEN_PGP": "OpenPGP (Teks Biasa)",
 		"BUTTON_REQUEST_DSN": "Minta pemberitahuan berhasil kirim"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Begitu dimulai, proses tidak dapat dibatalkan atau ditunda.",
 		"TITLE_CLEARING_PROCESS": "Membersihkan folder..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Impor kunci OpenPGP",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Impor"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Tampikan kunci OpenPGP",
-		"BUTTON_SELECT": "Pilih"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Buat kunci OpenPGP",
-		"LABEL_KEY_BIT_LENGTH": "Panjang kunci",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Buat"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP Tandatangan\/Enkripsi",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Impor kunci OpenPGP",
+		"POPUP_IMPORT_BUTTON": "Impor",
+		"POPUP_VIEW_TITLE": "Tampikan kunci OpenPGP",
+		"POPUP_VIEW_BUTTON": "Pilih",
+		"POPUP_GENERATE_TITLE": "Buat kunci OpenPGP",
+		"POPUP_GENERATE_BUTTON": "Buat",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Tandatangan",
 		"LABEL_ENCRYPT": "Enkripsi",
-		"BUTTON_SIGN": "Tandatangani",
-		"BUTTON_ENCRYPT": "Enkripsi",
-		"BUTTON_SIGN_AND_ENCRYPT": "Tandatangani dan Enkripsi"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP Deksipsi",
-		"LABEL_KEY": "Private Key",
-		"BUTTON_DECRYPT": "Deskripsi"
+		"BUTTON_DECRYPT": "Deskripsi",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "Pesan bertanda-tangan OpenPGP",
+		"ENCRYPTED_MESSAGE": "Pesan terenkripsi OpenPGP",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Tandatangan sah dari user %USER%",
+		"ERROR": "Kesalahan OpenPGP: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Buat filter?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Kontak",
 		"LABEL_FOLDERS_NAME": "Folder",
 		"LABEL_ACCOUNTS_NAME": "Akun",
-		"LABEL_IDENTITIES_NAME": "Identitas",
 		"LABEL_FILTERS_NAME": "Filter",
 		"LABEL_SECURITY_NAME": "Keamanan",
 		"LABEL_THEMES_NAME": "Tema"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Gunakan tread",
 		"LABEL_REPLY_SAME_FOLDER": "Tempatkan pesan balasan di folder pesan yang dibalas",
 		"LABEL_SHOW_IMAGES": "Selalu tampilkan gambar eksternal di dalam pesan",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Pesan di halaman",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Memperbarui...",
 		"DEFAULT_IDENTITY_LABEL": "Bawaan"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Impor kunci OpenPGP",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Buat kunci OpenPGP",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Impor kunci",
+		"BUTTON_GENERATE_KEY_PAIR": "Buat kunci",
 		"TITLE_PRIVATE": "Pribadi",
 		"TITLE_PUBLIC": "Publik",
-		"GENERATE_ONLY_HTTPS": "Hanya HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Simpan konsep otomatis"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Simpan konsep otomatis",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Bantuan pintasan keyboard",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Simpan pesan",
 		"LABEL_SEND_MESSAGE": "Kirim pesan",
 		"LABEL_CLOSE_COMPOSE": "Tutup buat pesan"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Tidak ada kunci publik",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Tidak ada kunci publik untuk \"%EMAIL%\" email",
-		"NO_PRIVATE_KEY_FOUND": "Tidak ada kunci privat",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Tidak ada kunci privat untuk \"%EMAIL%\" email",
-		"ADD_A_PUBLICK_KEY": "Tambah kunci publik",
-		"SELECT_A_PRIVATE_KEY": "Pilih sebuah kunci privat",
-		"UNVERIFIRED_SIGNATURE": "Tandatangan belum diverifikasi",
-		"DECRYPTION_ERROR": "Kesalahan dekripsi OpenPGP",
-		"GOOD_SIGNATURE": "Tandatangan sah dari user %USER%",
-		"PGP_ERROR": "Kesalahan OpenPGP: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Silahkan tentukan alamat ASAL email",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Silahkan tentukan setidaknya satu penerima"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Token tidak sah",

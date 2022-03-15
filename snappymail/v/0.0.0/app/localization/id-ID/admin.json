@@ -1,4 +1,7 @@
 {
+	"GLOBAL": {
+		"SAVE": "Simpan"
+	},
 	"LOGIN": {
 		"LABEL_LOGIN": "Login",
 		"LABEL_PASSWORD": "Password",
@@ -8,7 +11,7 @@
 	"TOP_PANEL": {
 		"LABEL_ADMIN_PANEL": "Panel Admin"
 	},
-	"TABS_LABELS": {
+	"SETTINGS_LABELS": {
 		"LABEL_GENERAL_NAME": "Umum",
 		"LABEL_LOGIN_NAME": "Login",
 		"LABEL_BRANDING_NAME": "Branding",
@@ -16,6 +19,7 @@
 		"LABEL_DOMAINS_NAME": "Domain",
 		"LABEL_SECURITY_NAME": "Keamanan",
 		"LABEL_PACKAGES_NAME": "Paket",
+		"LABEL_CONFIG_NAME": "Config",
 		"LABEL_ABOUT_NAME": "Tentang"
 	},
 	"TAB_GENERAL": {
@@ -34,7 +38,7 @@
 		"LABEL_ALLOW_IDENTITIES": "Izinkan identitas jamak",
 		"ALERT_DATA_ACCESS": "Data foldel RainLoop bisa diakses. Silahkan atur web server anda untuk menyembunyikan folder data dari akses eksternal. Baca selengkapnya di sini:",
 		"ALERT_WARNING": "Peringatan!",
-		"HTML_ALERT_WEAK_PASSWORD": "Anda menggunakan password admin bawaan.\n<br \/>\nAtas alasan keamanan, mohon\n<strong><a href=\"#\/security\">mengganti<\/a><\/strong>\npassword dengan frasa yang lainnya segera.\n"
+		"HTML_ALERT_WEAK_PASSWORD": "Anda menggunakan password admin bawaan.\n<br>\nAtas alasan keamanan, mohon\n<strong><a href=\"#\/security\">mengganti<\/a><\/strong>\npassword dengan frasa yang lainnya segera.\n"
 	},
 	"TAB_LOGIN": {
 		"LEGEND_LOGIN_SCREEN": "Laman login",
@@ -62,14 +66,14 @@
 		"BUTTON_TEST": "Ujicoba",
 		"ALERT_NOTICE": "Perhatian!",
 		"HTML_ALERT_DO_NOT_USE_THIS_DATABASE": "Jangan gunakan tipe database ini untuk jumlah user aktif yang besar.",
-		"HTML_ALERT_DOES_NOT_SUPPORTED": "Sistem anda tidak mendukung kontak\n<br \/>\nAnda harus memasang atau mengaktifkan <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong> extension pada server anda.\n"
+		"HTML_ALERT_DOES_NOT_SUPPORTED": "Sistem anda tidak mendukung kontak\n<br>\nAnda harus memasang atau mengaktifkan <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong> extension pada server anda.\n"
 	},
 	"TAB_DOMAINS": {
 		"LEGEND_DOMAINS": "Domain",
 		"BUTTON_ADD_DOMAIN": "Tambah domain",
 		"BUTTON_ADD_ALIAS": "Tambah alias",
 		"DELETE_ARE_YOU_SURE": "Anda yakin?",
-		"HTML_DOMAINS_HELPER": "Daftar domain webmail yang diizinkan mengakses.\n<br \/>\nKlik pada nama domain untuk mengatur domain.\n"
+		"HTML_DOMAINS_HELPER": "Daftar domain webmail yang diizinkan mengakses.\n<br>\nKlik pada nama domain untuk mengatur domain.\n"
 	},
 	"TAB_SECURITY": {
 		"LEGEND_SECURITY": "Keamanan",
@@ -134,14 +138,13 @@
 		"BUTTON_CLOSE": "Tutup",
 		"BUTTON_ADD": "Tambah",
 		"BUTTON_UPDATE": "Perbarui",
-		"NEW_DOMAIN_DESC": "Domain ini mengizinkan anda bekerja dengan alamat email <br \/>juga<i>%NAME%<\/i> ",
+		"NEW_DOMAIN_DESC": "Domain ini mengizinkan anda bekerja dengan alamat email <br>juga<i>%NAME%<\/i> ",
 		"WHITE_LIST_ALERT": "Daftar domain webmail user yang diizinkan diakses.\nGunakan spasi untuk pemisahnya\n"
 	},
 	"POPUPS_PLUGIN": {
 		"TITLE_PLUGIN": "Plugin",
 		"DESC_NOTHING_TO_CONFIGURE": "Tidak ada yang dikonfigurasi",
-		"BUTTON_CLOSE": "Tutup",
-		"BUTTON_SAVE": "Simpan"
+		"BUTTON_CLOSE": "Tutup"
 	},
 	"POPUPS_ASK": {
 		"BUTTON_YES": "Yes",

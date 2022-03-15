@@ -40,17 +40,44 @@
 	<div class="control-group">
 		<label data-i18n="SETTINGS_GENERAL/LABEL_MESSAGE_PER_PAGE"></label>
 		<div>
-			<input type="number" min="10" max="50" step="1" class="span1" data-bind="textInput: messagesPerPage"/>
+			<input type="number" min="10" max="50" step="1" class="span1" data-bind="textInput: messagesPerPage">
 			&nbsp;
-			<span data-bind="saveTrigger: mppTrigger"></span>
+			<span data-bind="saveTrigger: messagesPerPageTrigger"></span>
 		</div>
 	</div>
 	<div class="control-group">
+		<div>
+			<div data-bind="component: {
+				name: 'Checkbox',
+				params: {
+					label: 'SETTINGS_GENERAL/LABEL_USE_CHECKBOXES_IN_LIST',
+					value: useCheckboxesInList
+				}
+			}"></div>
+			<div data-bind="visible: threadsAllowed, component: {
+				name: 'Checkbox',
+				params: {
+					label: 'SETTINGS_GENERAL/LABEL_USE_THREADS',
+					value: useThreads
+				}
+			}"></div>
+			<div data-bind="component: {
+				name: 'Checkbox',
+				params: {
+					label: 'SETTINGS_GENERAL/LABEL_REPLY_SAME_FOLDER',
+					value: replySameFolder
+				}
+			}"></div>
+		</div>
+	</div>
+
+	<div class="legend" data-i18n="SHORTCUTS_HELP/TAB_MESSAGE_VIEW"></div>
+	<div class="control-group">
 		<label data-i18n="SETTINGS_GENERAL/LABEL_MARK_MESSAGE_READ_AFTER"></label>
 		<div>
-			<input type="number" min="0" step="1" class="span1" data-bind="textInput: messageReadDelay"/>
+			<input type="number" min="0" step="1" class="span1" data-bind="textInput: messageReadDelay">
 			&nbsp;
-			<span data-i18n="SETTINGS_GENERAL/SECONDS"></label>
+			<span data-i18n="SETTINGS_GENERAL/SECONDS"></span>
 			<span data-bind="saveTrigger: messageReadDelayTrigger"></span>
 		</div>
 	</div>
@@ -73,25 +100,11 @@
 			<div data-bind="component: {
 				name: 'Checkbox',
 				params: {
-					label: 'SETTINGS_GENERAL/LABEL_USE_CHECKBOXES_IN_LIST',
-					value: useCheckboxesInList
+					label: 'SETTINGS_GENERAL/LABEL_PREFER_HTML',
+					value: viewHTML
 				}
 			}"></div>
-			<br />
-			<div data-bind="visible: threadsAllowed, component: {
-				name: 'Checkbox',
-				params: {
-					label: 'SETTINGS_GENERAL/LABEL_USE_THREADS',
-					value: useThreads
-				}
-			}"></div>
-			<div data-bind="component: {
-				name: 'Checkbox',
-				params: {
-					label: 'SETTINGS_GENERAL/LABEL_REPLY_SAME_FOLDER',
-					value: replySameFolder
-				}
-			}"></div>
+			<em style="margin: 0 0 1em 2em;display: block;" data-i18n="SETTINGS_GENERAL/LABEL_PREFER_HTML_INFO"></em>
 		</div>
 	</div>
 
@@ -103,7 +116,7 @@
 					name: 'Checkbox',
 					params: {
 						label: 'SETTINGS_GENERAL/LABEL_CHROME_NOTIFICATION_DESC',
-						value: enableDesktopNotification,
+						value: desktopNotification,
 						enable: isDesktopNotificationAllowed,
 						inline: true
 					}
@@ -117,7 +130,7 @@
 					name: 'Checkbox',
 					params: {
 						label: 'SETTINGS_GENERAL/LABEL_SOUND_NOTIFICATION',
-						value: enableSoundNotification,
+						value: soundNotification,
 						inline: true
 					}
 				}"></div>

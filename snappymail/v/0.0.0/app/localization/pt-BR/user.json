@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Mais mensagens",
 		"MENU_HEADERS": "Mostrar cabeçalho das mensagens",
 		"MENU_VIEW_ORIGINAL": "Mostrar original",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Baixar como arquivo .eml",
 		"MENU_FILTER_SIMILAR": "Filtrar mensagens como esta",
 		"MENU_PRINT": "Imprimir",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Anexos",
 		"MESSAGE_VIEW_DESC": "Selecione uma mensagem para visualizá-la aqui.",
 		"MESSAGE_VIEW_MOVE_DESC": "Clique no nome da pasta no painel esquerdo para selecionar o destino.",
-		"PGP_SIGNED_MESSAGE_DESC": "Mensagem assinada com OpenPGP (clique para verificar)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "Mensagem criptografada com OpenPGP (clique para descriptografar)",
 		"LINK_DOWNLOAD_AS_ZIP": "Baixar como zip",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Alguns anexos ainda não foram completamente enviados",
 		"BUTTON_REQUEST_READ_RECEIPT": "Pedir recibo de leitura",
 		"BUTTON_MARK_AS_IMPORTANT": "Marcar como importante",
-		"BUTTON_OPEN_PGP": "OpenPGP (Somente Texto)",
 		"BUTTON_REQUEST_DSN": "Pedir recibo de entrega"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Uma vez iniciado, o processo não poderá ser interrompido ou cancelado.",
 		"TITLE_CLEARING_PROCESS": "Excluindo a pasta..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Importar chave OpenPGP",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Importar"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Ver chave OpenPGP",
-		"BUTTON_SELECT": "Selecionar"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Gerar chave OpenPGP",
-		"LABEL_KEY_BIT_LENGTH": "Tamanho da chave",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Gerar"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP Assinar\/Criptografar",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Importar chave OpenPGP",
+		"POPUP_IMPORT_BUTTON": "Importar",
+		"POPUP_VIEW_TITLE": "Ver chave OpenPGP",
+		"POPUP_VIEW_BUTTON": "Selecionar",
+		"POPUP_GENERATE_TITLE": "Gerar chave OpenPGP",
+		"POPUP_GENERATE_BUTTON": "Gerar",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Assinar",
 		"LABEL_ENCRYPT": "Criptografar",
-		"BUTTON_SIGN": "Assinar",
-		"BUTTON_ENCRYPT": "Criptografar",
-		"BUTTON_SIGN_AND_ENCRYPT": "Assinar e criptografar"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP Decrypt",
-		"LABEL_KEY": "Private Key",
-		"BUTTON_DECRYPT": "Decrypt"
+		"BUTTON_DECRYPT": "Decrypt",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "Mensagem assinada com OpenPGP",
+		"ENCRYPTED_MESSAGE": "Mensagem criptografada com OpenPGP",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Boa assinatura de %USER%",
+		"ERROR": "Erro OpenPGP: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Criar um filtro?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Contatos",
 		"LABEL_FOLDERS_NAME": "Pastas",
 		"LABEL_ACCOUNTS_NAME": "Contas",
-		"LABEL_IDENTITIES_NAME": "Identidades",
 		"LABEL_FILTERS_NAME": "Filtros",
 		"LABEL_SECURITY_NAME": "Segurança",
 		"LABEL_THEMES_NAME": "Temas"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Agrupar mensagens por conversa",
 		"LABEL_REPLY_SAME_FOLDER": "Colocar resposta na mesma pasta da mensagem respondida",
 		"LABEL_SHOW_IMAGES": "Sempre exibir imagens no corpo da mensagem",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Mensagens por Página",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Atualizando a lista de contas",
 		"DEFAULT_IDENTITY_LABEL": "padrão"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Importa chave OpenPGP",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Gerar chave OpenPGP",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Importa chave",
+		"BUTTON_GENERATE_KEY_PAIR": "Gerar chave",
 		"TITLE_PRIVATE": "Privado",
 		"TITLE_PUBLIC": "Público",
-		"GENERATE_ONLY_HTTPS": "HTTPS only",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Salvar automaticamente rascunho"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Salvar automaticamente rascunho",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Ajuda com os atalhos de teclado",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Salvar mensagem",
 		"LABEL_SEND_MESSAGE": "Enviar mensagem",
 		"LABEL_CLOSE_COMPOSE": "Fechar composição"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Nenhuma chave pública encontrada",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Nenhuma chave pública encontrada para o e-mail \"%EMAIL%\"",
-		"NO_PRIVATE_KEY_FOUND": "Nenhuma chave privada encontrada",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Nenhuma chave privada encontrada para o e-mail \"%EMAIL%\"",
-		"ADD_A_PUBLICK_KEY": "Adicionar uma chave pública",
-		"SELECT_A_PRIVATE_KEY": "Selecione a chave privada",
-		"UNVERIFIRED_SIGNATURE": "Assinatura não verificada",
-		"DECRYPTION_ERROR": "Erro de decripitação de OpenPGP",
-		"GOOD_SIGNATURE": "Boa assinatura de %USER%",
-		"PGP_ERROR": "Erro OpenPGP: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Por favor, especifique endereço de e-mail remetente",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Especifique pelo menos um destinatário"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Senha inválida",

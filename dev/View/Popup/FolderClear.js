@@ -2,16 +2,16 @@ import { i18n, getNotification } from 'Common/Translator';
 import { setFolderHash } from 'Common/Cache';
 
 import { MessageUserStore } from 'Stores/User/Message';
+import { MessagelistUserStore } from 'Stores/User/Messagelist';
 
 import Remote from 'Remote/User/Fetch';
 
 import { decorateKoCommands } from 'Knoin/Knoin';
 import { AbstractViewPopup } from 'Knoin/AbstractViews';
 
-class FolderClearPopupView extends AbstractViewPopup {
+export class FolderClearPopupView extends AbstractViewPopup {
 	constructor() {
 		super('FolderClear');
-		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			selectedFolder: null,
@@ -20,17 +20,11 @@ class FolderClearPopupView extends AbstractViewPopup {
 		});
 
 		this.addComputables({
-			folderFullNameForClear: () => {
+			dangerDescHtml: () => {
 				const folder = this.selectedFolder();
-				return folder ? folder.printableFullName() : '';
-			},
-
-			folderNameForClear: () => {
-				const folder = this.selectedFolder();
-				return folder ? folder.localName() : '';
-			},
-
-			dangerDescHtml: () => i18n('POPUPS_CLEAR_FOLDER/DANGER_DESC_HTML_1', { FOLDER: this.folderNameForClear() })
+//				return i18n('POPUPS_CLEAR_FOLDER/DANGER_DESC_HTML_1', { FOLDER: folder ? folder.fullName.replace(folder.delimiter, ' / ') : '' });
+				return i18n('POPUPS_CLEAR_FOLDER/DANGER_DESC_HTML_1', { FOLDER: folder ? folder.localName() : '' });
+			}
 		});
 
 		decorateKoCommands(this, {
@@ -45,7 +39,7 @@ class FolderClearPopupView extends AbstractViewPopup {
 		const folderToClear = this.selectedFolder();
 		if (folderToClear) {
 			MessageUserStore.message(null);
-			MessageUserStore.list([]);
+			MessagelistUserStore([]);
 
 			this.clearingProcess(true);
 
@@ -59,8 +53,8 @@ class FolderClearPopupView extends AbstractViewPopup {
 				if (iError) {
 					this.clearingError(getNotification(iError));
 				} else {
-					rl.app.reloadMessageList(true);
-					this.cancelCommand();
+					MessagelistUserStore.reload(true);
+					this.close();
 				}
 			}, {
 				Folder: folderToClear.fullName
@@ -73,5 +67,3 @@ class FolderClearPopupView extends AbstractViewPopup {
 		this.selectedFolder(folder || null);
 	}
 }
-
-export { FolderClearPopupView, FolderClearPopupView as default };

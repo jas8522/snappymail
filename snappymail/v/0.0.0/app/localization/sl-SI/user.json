@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Več sporočil",
 		"MENU_HEADERS": "Pokaži glavo sporočila",
 		"MENU_VIEW_ORIGINAL": "Pokaži izvorno",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Prenesi kot .eml datoteko",
 		"MENU_FILTER_SIMILAR": "Filtriraj sporočila, kot je to",
 		"MENU_PRINT": "Natisni",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Priloge",
 		"MESSAGE_VIEW_DESC": "Izberite sporočilo s seznama za ogled.",
 		"MESSAGE_VIEW_MOVE_DESC": "Za izbor cilja kliknite na ime mape na levi strani.",
-		"PGP_SIGNED_MESSAGE_DESC": "Sporočilo, podpisano z OpenPGP  (kliknite za overovitev)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "Sporočilo, šifrirano z OpenPGP (kliknite za dešifriranje)",
 		"LINK_DOWNLOAD_AS_ZIP": "Prenesi kot .zip datoteko",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Priloge še niso bile naložene v celoti.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Zahtevaj potrdilo o branju",
 		"BUTTON_MARK_AS_IMPORTANT": "Označi kot pomembno",
-		"BUTTON_OPEN_PGP": "OpenPGP (Navadno besedilo)",
 		"BUTTON_REQUEST_DSN": "Zahtevaj potrdilo o dostavi"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Tega postopka ne bo mogoče preklicati ali zaustaviti.",
 		"TITLE_CLEARING_PROCESS": "Čistim mapo."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Uvoz OpenPGP ključa",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Uvozi"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Ogled OpenPGP ključa",
-		"BUTTON_SELECT": "Izberi"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Generiraj OpenPGP ključe",
-		"LABEL_KEY_BIT_LENGTH": "Dolžina ključa",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generiraj"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP podpis\/šifriranje",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Uvoz OpenPGP ključa",
+		"POPUP_IMPORT_BUTTON": "Uvozi",
+		"POPUP_VIEW_TITLE": "Ogled OpenPGP ključa",
+		"POPUP_VIEW_BUTTON": "Izberi",
+		"POPUP_GENERATE_TITLE": "Generiraj OpenPGP ključe",
+		"POPUP_GENERATE_BUTTON": "Generiraj",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Podpis",
 		"LABEL_ENCRYPT": "Šifriranje",
-		"BUTTON_SIGN": "Podpiši",
-		"BUTTON_ENCRYPT": "Šifriraj",
-		"BUTTON_SIGN_AND_ENCRYPT": "Podpiši in šifriraj"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP dešifriranje",
-		"LABEL_KEY": "Zasebni ključ",
-		"BUTTON_DECRYPT": "Dešifriraj"
+		"BUTTON_DECRYPT": "Dešifriraj",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "Sporočilo, podpisano z OpenPGP",
+		"ENCRYPTED_MESSAGE": "Sporočilo, šifrirano z OpenPGP",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Dober podpis od %USER%",
+		"ERROR": "OpenPGP napaka: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Ustvarim filter?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Stiki",
 		"LABEL_FOLDERS_NAME": "Mape",
 		"LABEL_ACCOUNTS_NAME": "Računi",
-		"LABEL_IDENTITIES_NAME": "Identitete",
 		"LABEL_FILTERS_NAME": "Filtri",
 		"LABEL_SECURITY_NAME": "Varnost",
 		"LABEL_THEMES_NAME": "Teme"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Uporabi niti",
 		"LABEL_REPLY_SAME_FOLDER": "Shrani odgovore v mapo sporočila, na katerega se odgovarja",
 		"LABEL_SHOW_IMAGES": "Vedno prikaži zunanje slike v telesu sporočila",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Sporočil na strani",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Posodabljanje...",
 		"DEFAULT_IDENTITY_LABEL": "privzeto"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Uvozi OpenPGP ključ",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Generiraj OpenPGP ključe",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Uvozi ključ",
+		"BUTTON_GENERATE_KEY_PAIR": "Generiraj ključe",
 		"TITLE_PRIVATE": "Zasebni",
 		"TITLE_PUBLIC": "Javni",
-		"GENERATE_ONLY_HTTPS": "Samo HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Samodejno shrani osnutek"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Samodejno shrani osnutek",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Tipkovne bližnjice",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Shrani sporočilo",
 		"LABEL_SEND_MESSAGE": "Pošlji sporočilo",
 		"LABEL_CLOSE_COMPOSE": "Zapri sestavljanje"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Ni najdenih javnih ključev",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Ni najdenih javnih ključev za naslov \"%EMAIL%\"",
-		"NO_PRIVATE_KEY_FOUND": "Ni najdenega zasebnega ključa",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Ni najdenega zasebnega ključa za naslov \"%EMAIL%\"",
-		"ADD_A_PUBLICK_KEY": "Dodaj javni ključ",
-		"SELECT_A_PRIVATE_KEY": "Izberite zasebni ključ",
-		"UNVERIFIRED_SIGNATURE": "Neoverjen podpis",
-		"DECRYPTION_ERROR": "OpenPGP napaka dešifriranja",
-		"GOOD_SIGNATURE": "Dober podpis od %USER%",
-		"PGP_ERROR": "OpenPGP napaka: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Določite naslov pošiljatelja\/-ice",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Navedite vsaj enega\/-o prejemnika\/-co"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Neveljaven žeton",

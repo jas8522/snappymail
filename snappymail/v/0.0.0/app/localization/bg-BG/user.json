@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Още съобщения",
 		"MENU_HEADERS": "Покажи хедъра на съобщението",
 		"MENU_VIEW_ORIGINAL": "Покажи източника",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Изтегли като .eml файл",
 		"MENU_FILTER_SIMILAR": "Филтрирай съобщения като това",
 		"MENU_PRINT": "Принтирай",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Прикрепени файлове",
 		"MESSAGE_VIEW_DESC": "Изберете съобщение, за да го видите тук.",
 		"MESSAGE_VIEW_MOVE_DESC": "Изберете цел от папките в лявото поле",
-		"PGP_SIGNED_MESSAGE_DESC": "Подписано с OpenPGP (кликни за проверка)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "Шифровано с OpenPGP (кликни за проверка)",
 		"LINK_DOWNLOAD_AS_ZIP": "Свали като ZIP файл",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Все още не са качени всички прикрепени файлове",
 		"BUTTON_REQUEST_READ_RECEIPT": "Поискайте разписка за прочитане на съобщението",
 		"BUTTON_MARK_AS_IMPORTANT": "Отбележи като важно",
-		"BUTTON_OPEN_PGP": "OpenPGP (Чист текст)",
 		"BUTTON_REQUEST_DSN": "Уведомяване при доставка"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Веднъж започнат, този процес не може да бъде прекратен или отказан.",
 		"TITLE_CLEARING_PROCESS": "Прочистване на папката..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Внасяне на OpenPGP ключ",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Внеси"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Виж OpenPGP ключа",
-		"BUTTON_SELECT": "Избери"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Създаване на OpenPGP ключове",
-		"LABEL_KEY_BIT_LENGTH": "Дължина на ключа",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Създай"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "Подпиши\/шифровай с OpenPGP",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Внасяне на OpenPGP ключ",
+		"POPUP_IMPORT_BUTTON": "Внеси",
+		"POPUP_VIEW_TITLE": "Виж OpenPGP ключа",
+		"POPUP_VIEW_BUTTON": "Избери",
+		"POPUP_GENERATE_TITLE": "Създаване на OpenPGP ключове",
+		"POPUP_GENERATE_BUTTON": "Създай",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Подпиши",
 		"LABEL_ENCRYPT": "Шифровай",
-		"BUTTON_SIGN": "Подпиши",
-		"BUTTON_ENCRYPT": "Шифровай",
-		"BUTTON_SIGN_AND_ENCRYPT": "Подпиши и шифровай"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "Дешифриране с OpenPGP",
-		"LABEL_KEY": "Частен ключ",
-		"BUTTON_DECRYPT": "Дешифрирай"
+		"BUTTON_DECRYPT": "Дешифрирай",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "Подписано с OpenPGP",
+		"ENCRYPTED_MESSAGE": "Шифровано с OpenPGP",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Валиден подпис за %USER%",
+		"ERROR": "OpenPGP грешка: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Създай филтър?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Контакти",
 		"LABEL_FOLDERS_NAME": "Папки",
 		"LABEL_ACCOUNTS_NAME": "Акаунти",
-		"LABEL_IDENTITIES_NAME": "Идентичности",
 		"LABEL_FILTERS_NAME": "Филтри",
 		"LABEL_SECURITY_NAME": "Сигурност",
 		"LABEL_THEMES_NAME": "Теми"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Използвай групиране на съобщенията",
 		"LABEL_REPLY_SAME_FOLDER": "Постави отговорите с папката на отговаряното съобщение",
 		"LABEL_SHOW_IMAGES": "Винаги показвай външни картинки в текста на съобщението",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Съобщения на страница",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Обновяване на списъка с акаунти",
 		"DEFAULT_IDENTITY_LABEL": "по подразбиране"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Внеси OpenPGP ключ",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Генерирай OpenPGP ключ",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Внеси ключ",
+		"BUTTON_GENERATE_KEY_PAIR": "Генерирай ключ",
 		"TITLE_PRIVATE": "Частен",
 		"TITLE_PUBLIC": "Публичен",
-		"GENERATE_ONLY_HTTPS": "Само през HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Автоматично запазване на чернова"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Автоматично запазване на чернова",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Помощ за клавишните комбинации",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Запази съобщението",
 		"LABEL_SEND_MESSAGE": "Изпрати съобщението",
 		"LABEL_CLOSE_COMPOSE": "Затвори създаването"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Няма публични ключове",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Няма публичен ключ за \"%EMAIL%\"",
-		"NO_PRIVATE_KEY_FOUND": "Няма частен ключ",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Няма частен ключ за \"%EMAIL%\"",
-		"ADD_A_PUBLICK_KEY": "Добави публичен ключ",
-		"SELECT_A_PRIVATE_KEY": "Избери частен ключ",
-		"UNVERIFIRED_SIGNATURE": "Непроверен подпис",
-		"DECRYPTION_ERROR": "Грешка при дешифрирането",
-		"GOOD_SIGNATURE": "Валиден подпис за %USER%",
-		"PGP_ERROR": "OpenPGP грешка: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Моля въведете email адрес От",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Моля въведете поне един получател"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Невалиден токен",

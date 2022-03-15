@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "Fleiri skilaboð",
 		"MENU_HEADERS": "Sýna skilaboðahausa",
 		"MENU_VIEW_ORIGINAL": "Sýna upprunalegt",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "Sækja sem .eml skrá",
 		"MENU_FILTER_SIMILAR": "Sía skilaboð eins og þessi",
 		"MENU_PRINT": "Prenta",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Viðhengi",
 		"MESSAGE_VIEW_DESC": "Veldu skilaboð úr listanum til að skoða hér.",
 		"MESSAGE_VIEW_MOVE_DESC": "Smelltu á heiti möppu á spjaldinu til vinstri til að velja áfangastaðinn.",
-		"PGP_SIGNED_MESSAGE_DESC": "Skeyti undirritað með OpenPGP (smelltu til að sannvotta)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "Skeyti dulritað með OpenPGP (smelltu til að afkóða)",
 		"LINK_DOWNLOAD_AS_ZIP": "Sækja sem .zip skrá",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Ekki er búið að senda inn öll viðhengi.",
 		"BUTTON_REQUEST_READ_RECEIPT": "Biðja um staðfestingu á lestri",
 		"BUTTON_MARK_AS_IMPORTANT": "Merkja sem mikilvægt",
-		"BUTTON_OPEN_PGP": "OpenPGP (einungis hreinn texti)",
 		"BUTTON_REQUEST_DSN": "Biðja um staðfestingu á afhendingu"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Það er ekki hægt að hætta við aðgerðina eftir að búið er að keyra hana.",
 		"TITLE_CLEARING_PROCESS": "Tæmi möppu..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "Flytja inn OpenPGP-lykil",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "Flytja inn"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "Skoða OpenPGP-lykil",
-		"BUTTON_SELECT": "Velja"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "Búa til OpenPGP-lykla",
-		"LABEL_KEY_BIT_LENGTH": "Lengd lykils",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Útbúa"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "Undirrita\/Dulrita OpenPGP",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "Flytja inn OpenPGP-lykil",
+		"POPUP_IMPORT_BUTTON": "Flytja inn",
+		"POPUP_VIEW_TITLE": "Skoða OpenPGP-lykil",
+		"POPUP_VIEW_BUTTON": "Velja",
+		"POPUP_GENERATE_TITLE": "Búa til OpenPGP-lykla",
+		"POPUP_GENERATE_BUTTON": "Útbúa",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Undirrita",
 		"LABEL_ENCRYPT": "Dulrita",
-		"BUTTON_SIGN": "Undirrita",
-		"BUTTON_ENCRYPT": "Dulrita",
-		"BUTTON_SIGN_AND_ENCRYPT": "Undirrita og dulrita"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "Afkóða OpenPGP",
-		"LABEL_KEY": "Einkalykill",
-		"BUTTON_DECRYPT": "Afkóða"
+		"BUTTON_DECRYPT": "Afkóða",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "Skeyti undirritað með OpenPGP",
+		"ENCRYPTED_MESSAGE": "Skeyti dulritað með OpenPGP",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Gild undirritun frá %USER%",
+		"ERROR": "OpenPGP villa: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Búa til síu?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Tengiliðir",
 		"LABEL_FOLDERS_NAME": "Möppur",
 		"LABEL_ACCOUNTS_NAME": "Aðgangar",
-		"LABEL_IDENTITIES_NAME": "Auðkenni",
 		"LABEL_FILTERS_NAME": "Síur",
 		"LABEL_SECURITY_NAME": "Öryggi",
 		"LABEL_THEMES_NAME": "Þemu"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Nota þræði",
 		"LABEL_REPLY_SAME_FOLDER": "Setja svör í möppu skilaboðanna sem er verið að svara",
 		"LABEL_SHOW_IMAGES": "Sýna ávallt myndir í skilaboðum",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Skilaboð á síðu",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Uppfæri aðgangslista",
 		"DEFAULT_IDENTITY_LABEL": "sjálfgefið"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "Flytja inn OpenPGP-lykil",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Búa til OpenPGP-lykla",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Flytja inn lykil",
+		"BUTTON_GENERATE_KEY_PAIR": "Búa til lykla",
 		"TITLE_PRIVATE": "Einkalykill",
 		"TITLE_PUBLIC": "Dreifilykill",
-		"GENERATE_ONLY_HTTPS": "Einungis HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Vista drög sjálfkrafa"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Vista drög sjálfkrafa",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Hjálp fyrir flýtilykla",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Vista skilaboð",
 		"LABEL_SEND_MESSAGE": "Senda skilaboð",
 		"LABEL_CLOSE_COMPOSE": "Loka ritli"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Engir dreifilyklar fundust",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Engir dreifilyklar fundust fyrir \"%EMAIL%\" póstfangið",
-		"NO_PRIVATE_KEY_FOUND": "Enginn einkalykill fannst",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Engir einkalyklar fundust fyrir \"%EMAIL%\" póstfangið",
-		"ADD_A_PUBLICK_KEY": "Bættu við dreifilykli",
-		"SELECT_A_PRIVATE_KEY": "Veldu einkalykil",
-		"UNVERIFIRED_SIGNATURE": "Óstaðfest undirritun",
-		"DECRYPTION_ERROR": "OpenPGP afkóðunarvilla",
-		"GOOD_SIGNATURE": "Gild undirritun frá %USER%",
-		"PGP_ERROR": "OpenPGP villa: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Tilgreindu FRÁ tölvupóstfang",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Tiltaktu að minnsta kosti einn viðtakanda"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Rangt tákn",

@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "المزيد من الرسائل",
 		"MENU_HEADERS": "Show message headers",
 		"MENU_VIEW_ORIGINAL": "إظهار المصدر",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": ".eml التنزيل كملف",
 		"MENU_FILTER_SIMILAR": "تصفية رسائل مثل هذه",
 		"MENU_PRINT": "طباعة",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "الملحقات",
 		"MESSAGE_VIEW_DESC": "حدد رسالة من القائمة ليتم عرضها هنا",
 		"MESSAGE_VIEW_MOVE_DESC": "Click folder name in the left panel to select the destination.",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP signed message (click to verify)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP encrypted message (click to decrypt)",
 		"LINK_DOWNLOAD_AS_ZIP": "zip تنزيل كـ",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "لم تنتهي عملية الإرفاق بعد",
 		"BUTTON_REQUEST_READ_RECEIPT": "اطلب اعلاماً بالقراءة",
 		"BUTTON_MARK_AS_IMPORTANT": "تحديده كـ هام",
-		"BUTTON_OPEN_PGP": "OpenPGP (Plain Text Only)",
 		"BUTTON_REQUEST_DSN": "اطلب اعلاماً بايصال البريد"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "في حال بدء العملية , فلا يمكن ايقافها او الغائها",
 		"TITLE_CLEARING_PROCESS": "...يتم دمج المجلد"
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "OpenPGP استيراد مفتاح",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "استيراد"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "عرض OpenPGP key",
-		"BUTTON_SELECT": "تحديد"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "OpenPGP توليد مفتاح",
-		"LABEL_KEY_BIT_LENGTH": "طول المفتاح",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "قم بالتوليد"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP Sign\/Encrypt",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "OpenPGP استيراد مفتاح",
+		"POPUP_IMPORT_BUTTON": "استيراد",
+		"POPUP_VIEW_TITLE": "عرض OpenPGP key",
+		"POPUP_VIEW_BUTTON": "تحديد",
+		"POPUP_GENERATE_TITLE": "OpenPGP توليد مفتاح",
+		"POPUP_GENERATE_BUTTON": "قم بالتوليد",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "تسجيل",
 		"LABEL_ENCRYPT": "تشفير",
-		"BUTTON_SIGN": "تسجيل",
-		"BUTTON_ENCRYPT": "تشفير",
-		"BUTTON_SIGN_AND_ENCRYPT": "سجل و قم بالتشفير"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP فك تشفير",
-		"LABEL_KEY": "مفتاح خاص",
-		"BUTTON_DECRYPT": "فك تشفير"
+		"BUTTON_DECRYPT": "فك تشفير",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP signed message",
+		"ENCRYPTED_MESSAGE": "OpenPGP encrypted message",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "توقيع جيد من  %USER%",
+		"ERROR": "OpenPGP error: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "إنشاء عامل تصفية؟",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "جهات الإتصال",
 		"LABEL_FOLDERS_NAME": "المجلدات",
 		"LABEL_ACCOUNTS_NAME": "الحسابات",
-		"LABEL_IDENTITIES_NAME": "الهويات",
 		"LABEL_FILTERS_NAME": "عوامل التصفية",
 		"LABEL_SECURITY_NAME": "الأمان",
 		"LABEL_THEMES_NAME": "المظاهر العامة"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "إستخدام المواضيع",
 		"LABEL_REPLY_SAME_FOLDER": "ضع الردود في مجلد الرسالة التي يتم الرد عليها",
 		"LABEL_SHOW_IMAGES": "قم دائماَ بعرض الصور القادمة في الرسالة",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "الرسائل في الصفحة",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "..جاري التحميل",
 		"DEFAULT_IDENTITY_LABEL": "الافتراضي"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "OpenPGP إستيراد مفتاح",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "OpenPGP توليد مفتاح",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": " إستيراد مفتاح",
+		"BUTTON_GENERATE_KEY_PAIR": " توليد مفتاح",
 		"TITLE_PRIVATE": "خاص",
 		"TITLE_PUBLIC": "عام",
-		"GENERATE_ONLY_HTTPS": "HTTPS فقط",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "مساعدة في إختصارات لوحة المفاتيح",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "حفظ الرسالة",
 		"LABEL_SEND_MESSAGE": "إرسال الرسالة",
 		"LABEL_CLOSE_COMPOSE": "إغلاق الرسالة"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "لم يتم إيجاد المفتاح العام",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "لم يتم إيجاد مفتاح عام\"%EMAIL%\" email",
-		"NO_PRIVATE_KEY_FOUND": "لم يتم إيجاد مفتاح خاص",
-		"NO_PRIVATE_KEY_FOUND_FOR": "لم يتم إيجاد المفتاح الخاص لـ \"%EMAIL%\" email",
-		"ADD_A_PUBLICK_KEY": "Add a public key",
-		"SELECT_A_PRIVATE_KEY": "Select a private key",
-		"UNVERIFIRED_SIGNATURE": "توقيع غير موثق",
-		"DECRYPTION_ERROR": "OpenPGP خطأ فك تشفير",
-		"GOOD_SIGNATURE": "توقيع جيد من  %USER%",
-		"PGP_ERROR": "OpenPGP error: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "يرجى التأكد من الإيميل",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "يرجى تحديد مستلم واحد على الأقل"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "خاطىء token",

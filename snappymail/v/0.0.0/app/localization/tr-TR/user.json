@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "More messages",
 		"MENU_HEADERS": "İleti başlıklarını göster",
 		"MENU_VIEW_ORIGINAL": "Kaynağı görüntüle",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": ".eml dosyası olarak indir",
 		"MENU_FILTER_SIMILAR": "Bunun gibi iletileri filtrele",
 		"MENU_PRINT": "yazdır",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "Ekler",
 		"MESSAGE_VIEW_DESC": "Burada görüntülemek için listeden mesaj seçin.",
 		"MESSAGE_VIEW_MOVE_DESC": "Click folder name in the left panel to select the destination.",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP imzalı mesaj (onay için tıklayın)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP şifreli mesaj (çözmek için tıklayın)",
 		"LINK_DOWNLOAD_AS_ZIP": "Download as zip",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Not all attachments have been uploaded yet",
 		"BUTTON_REQUEST_READ_RECEIPT": "Okundu bilgisi iste",
 		"BUTTON_MARK_AS_IMPORTANT": "Mark as important",
-		"BUTTON_OPEN_PGP": "OpenPGP (Plain Text Only)",
 		"BUTTON_REQUEST_DSN": "Request a delivery receipt"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "Bu işlem bir kez başladıktan sonra, işlem durdurulamaz veya iptal edilemez.",
 		"TITLE_CLEARING_PROCESS": "Klasör temizleniyor..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "OpenPGP key'i içe aktar",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "İçe aktar"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "OpenPGP key'i göster",
-		"BUTTON_SELECT": "Seç"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "OpenPGP key'leri Oluştur",
-		"LABEL_KEY_BIT_LENGTH": "Key Uzunluğu",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "Oluştur"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP Giriş\/Şifrele",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "OpenPGP key'i içe aktar",
+		"POPUP_IMPORT_BUTTON": "İçe aktar",
+		"POPUP_VIEW_TITLE": "OpenPGP key'i göster",
+		"POPUP_VIEW_BUTTON": "Seç",
+		"POPUP_GENERATE_TITLE": "OpenPGP key'leri Oluştur",
+		"POPUP_GENERATE_BUTTON": "Oluştur",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Giriş Yap",
 		"LABEL_ENCRYPT": "Şifrele",
-		"BUTTON_SIGN": "Giriş Yap",
-		"BUTTON_ENCRYPT": "Şifrele",
-		"BUTTON_SIGN_AND_ENCRYPT": "Giriş Yap and şifrele"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP Decrypt",
-		"LABEL_KEY": "Private Key",
-		"BUTTON_DECRYPT": "Decrypt"
+		"BUTTON_DECRYPT": "Decrypt",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP imzalı mesaj",
+		"ENCRYPTED_MESSAGE": "OpenPGP şifreli mesaj",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Geçerli imza %USER%",
+		"ERROR": "OpenPGP hatası: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Create a filter?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "Kişi Listesi",
 		"LABEL_FOLDERS_NAME": "Klasörler",
 		"LABEL_ACCOUNTS_NAME": "Hesaplar",
-		"LABEL_IDENTITIES_NAME": "Kimlikler",
 		"LABEL_FILTERS_NAME": "Filtreler",
 		"LABEL_SECURITY_NAME": "Güvenlik",
 		"LABEL_THEMES_NAME": "Temalar"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "Konuları kullanın",
 		"LABEL_REPLY_SAME_FOLDER": "Klasördeki cevapları mesajlarda göster",
 		"LABEL_SHOW_IMAGES": "Herzaman gelen maillerdeki resimleri görüntüle.",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "Messages on page",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "Hesap listesi güncelleniyor",
 		"DEFAULT_IDENTITY_LABEL": "default"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "OpenPGP Key İçe Aktar",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "OpenPGP Key Oluştur",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "Key İçe Aktar",
+		"BUTTON_GENERATE_KEY_PAIR": "Key Oluştur",
 		"TITLE_PRIVATE": "Private",
 		"TITLE_PUBLIC": "Public",
-		"GENERATE_ONLY_HTTPS": "HTTPS only",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Klavye kısayolları yardım",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Mesajı Kaydet",
 		"LABEL_SEND_MESSAGE": "Mesajı Gönder",
 		"LABEL_CLOSE_COMPOSE": "Oluşturulanı Kapat"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "Public key bulunamadı",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "Public key bulunamadı %EMAIL%",
-		"NO_PRIVATE_KEY_FOUND": "Private key bulunamadı",
-		"NO_PRIVATE_KEY_FOUND_FOR": "Private key bulunamadı %EMAIL%",
-		"ADD_A_PUBLICK_KEY": "Add a public key",
-		"SELECT_A_PRIVATE_KEY": "Özel anahtari seç",
-		"UNVERIFIRED_SIGNATURE": "Doğrulanmamış imza",
-		"DECRYPTION_ERROR": "OpenPGP çözme hatası",
-		"GOOD_SIGNATURE": "Geçerli imza %USER%",
-		"PGP_ERROR": "OpenPGP hatası: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Lütfen bir gönderici belirtin",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "En az bir alıcı belirtin"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "Geçersiz token",

@@ -122,21 +122,10 @@ class SmtpClient extends \MailSo\Net\NetClient
 		$sLogin = \MailSo\Base\Utils::IdnToAscii(\MailSo\Base\Utils::Trim($aCredentials['Login']));
 		$sPassword = $aCredentials['Password'];
 
-//		$encrypted = !empty(\stream_get_meta_data($this->ConnectionResource())['crypto']);
 		$type = '';
-		$types = [
-			// if !$encrypted:
-			'SCRAM-SHA-256' => 1,
-			'SCRAM-SHA-1' => 1,
-			// if $encrypted:
-			'CRAM-MD5' => $aCredentials['UseAuthCramMd5IfSupported'],
-			'PLAIN' => $aCredentials['UseAuthPlainIfSupported'],
-			'OAUTHBEARER' => $aCredentials['UseAuthOAuth2IfSupported'],
-			'XOAUTH2' => $aCredentials['UseAuthOAuth2IfSupported'],
-			'LOGIN' => 1, // $encrypted
-		];
-		foreach ($types as $sasl_type => $active) {
-			if ($active && $this->IsAuthSupported($sasl_type) && \SnappyMail\SASL::isSupported($sasl_type)) {
+		$aCredentials['SASLMechanisms'][] = 'LOGIN';
+		foreach ($aCredentials['SASLMechanisms'] as $sasl_type) {
+			if ($this->IsAuthSupported($sasl_type) && \SnappyMail\SASL::isSupported($sasl_type)) {
 				$type = $sasl_type;
 				break;
 			}
@@ -167,8 +156,12 @@ class SmtpClient extends \MailSo\Net\NetClient
 
 		try
 		{
-			switch ($type)
-			{
+			if (0 === \strpos($type, 'SCRAM-')) {
+				// RFC 5802
+				$sResult = $this->sendRequestWithCheck($SASL->authenticate($sLogin, $sPassword, $sResult), 234, '');
+				$sResult = $this->sendRequestWithCheck($SASL->challenge($sResult), 235, '', true);
+				$SASL->verify($sResult);
+			} else switch ($type) {
 			// RFC 4616
 			case 'PLAIN':
 			case 'XOAUTH2':
@@ -190,14 +183,6 @@ class SmtpClient extends \MailSo\Net\NetClient
 					);
 				}
 				$this->sendRequestWithCheck($SASL->authenticate($sLogin, $sPassword, $sResult), 235, '', true);
-				break;
-
-			// RFC 5802
-			case 'SCRAM-SHA-1':
-			case 'SCRAM-SHA-256':
-				$sResult = $this->sendRequestWithCheck($SASL->authenticate($sLogin, $sPassword, $sResult), 234, '');
-				$sResult = $this->sendRequestWithCheck($SASL->challenge($sResult), 235, '', true);
-				$SASL->verify($sResult);
 				break;
 			}
 		}
@@ -432,8 +417,7 @@ class SmtpClient extends \MailSo\Net\NetClient
 
 		$this->ehloOrHelo($sEhloHost);
 
-		if (\MailSo\Net\Enumerations\ConnectionSecurityType::UseStartTLS(
-			$this->IsSupported('STARTTLS'), $this->iSecurityType, $this->HasSupportedAuth()))
+		if ($this->IsSupported('STARTTLS') && \MailSo\Net\Enumerations\ConnectionSecurityType::UseStartTLS($this->iSecurityType, $this->HasSupportedAuth()))
 		{
 			$this->sendRequestWithCheck('STARTTLS', 220);
 			$this->EnableCrypto();

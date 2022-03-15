@@ -5,6 +5,7 @@ namespace RainLoop\Actions;
 use RainLoop\Enumerations\Capa;
 use RainLoop\Exceptions\ClientException;
 use RainLoop\Notifications;
+use RainLoop\Providers\Suggestions;
 use RainLoop\Utils;
 
 trait User
@@ -14,6 +15,22 @@ trait User
 	use Filters;
 	use Folders;
 	use Messages;
+	use Pgp;
+
+	/**
+	 * @var \RainLoop\Providers\Suggestions
+	 */
+	private $oSuggestionsProvider = null;
+
+	public function SuggestionsProvider(): Suggestions
+	{
+		if (null === $this->oSuggestionsProvider) {
+			$this->oSuggestionsProvider = new Suggestions(
+				$this->fabrica('suggestions'));
+		}
+
+		return $this->oSuggestionsProvider;
+	}
 
 	/**
 	 * @throws \MailSo\Base\Exceptions\Exception
@@ -22,7 +39,6 @@ trait User
 	{
 		$sEmail = \MailSo\Base\Utils::Trim($this->GetActionParam('Email', ''));
 		$sPassword = $this->GetActionParam('Password', '');
-		$sLanguage = $this->GetActionParam('Language', '');
 		$bSignMe = !empty($this->GetActionParam('SignMe', 0));
 
 		$oAccount = null;
@@ -34,7 +50,8 @@ trait User
 
 		$this->SetAuthToken($oAccount);
 
-		if ($oAccount && \strlen($sLanguage))
+		$sLanguage = $this->GetActionParam('Language', '');
+		if ($oAccount && $sLanguage)
 		{
 			$oSettings = $this->SettingsProvider()->Load($oAccount);
 			if ($oSettings)
@@ -58,7 +75,7 @@ trait User
 	 */
 	public function DoAttachmentsActions() : array
 	{
-		if (!$this->GetCapa(false, Capa::ATTACHMENTS_ACTIONS))
+		if (!$this->GetCapa(Capa::ATTACHMENTS_ACTIONS))
 		{
 			return $this->FalseResponse(__FUNCTION__);
 		}
@@ -200,14 +217,9 @@ trait User
 
 	public function DoLogout() : array
 	{
-		$oAccount = $this->getAccountFromToken(false);
-		if ($oAccount) {
-			if ($oAccount instanceof \RainLoop\Model\MainAccount) {
-				$this->ClearSignMeData();
-				Utils::ClearCookie(self::AUTH_SPEC_TOKEN_KEY);
-			}
-			Utils::ClearCookie(self::AUTH_ADDITIONAL_TOKEN_KEY);
-		}
+		$bMain = true; // empty($_COOKIE[self::AUTH_ADDITIONAL_TOKEN_KEY]);
+		$this->Logout($bMain);
+		$bMain && $this->ClearSignMeData();
 		return $this->TrueResponse(__FUNCTION__);
 	}
 
@@ -219,11 +231,9 @@ trait User
 
 		$bMainCache = false;
 		$bFilesCache = false;
-		$bVersionsCache = false;
 
-		$iOneDay1 = 60 * 60 * 23;
-		$iOneDay2 = 60 * 60 * 25;
-		$iOneDay3 = 60 * 60 * 30;
+		$iOneDay1 = 3600 * 23;
+		$iOneDay2 = 3600 * 25;
 
 		$sTimers = $this->StorageProvider()->Get(null,
 			\RainLoop\Providers\Storage\Enumerations\StorageType::NOBODY, 'Cache/Timers', '');
@@ -232,7 +242,6 @@ trait User
 
 		$iMainCacheTime = !empty($aTimers[0]) && \is_numeric($aTimers[0]) ? (int) $aTimers[0] : 0;
 		$iFilesCacheTime = !empty($aTimers[1]) && \is_numeric($aTimers[1]) ? (int) $aTimers[1] : 0;
-		$iVersionsCacheTime = !empty($aTimers[2]) && \is_numeric($aTimers[2]) ? (int) $aTimers[2] : 0;
 
 		if (0 === $iMainCacheTime || $iMainCacheTime + $iOneDay1 < \time())
 		{
@@ -246,19 +255,13 @@ trait User
 			$iFilesCacheTime = \time();
 		}
 
-		if (0 === $iVersionsCacheTime || $iVersionsCacheTime + $iOneDay3 < \time())
-		{
-			$bVersionsCache = true;
-			$iVersionsCacheTime = \time();
-		}
-
-		if ($bMainCache || $bFilesCache || $bVersionsCache)
+		if ($bMainCache || $bFilesCache)
 		{
 			if (!$this->StorageProvider()->Put(null,
 				\RainLoop\Providers\Storage\Enumerations\StorageType::NOBODY, 'Cache/Timers',
-				\implode(',', array($iMainCacheTime, $iFilesCacheTime, $iVersionsCacheTime))))
+				\implode(',', array($iMainCacheTime, $iFilesCacheTime))))
 			{
-				$bMainCache = $bFilesCache = $bVersionsCache = false;
+				$bMainCache = $bFilesCache = false;
 			}
 		}
 
@@ -267,6 +270,10 @@ trait User
 			$this->Logger()->Write('Cacher GC: Begin');
 			$this->Cacher()->GC(48);
 			$this->Logger()->Write('Cacher GC: End');
+
+			$this->Logger()->Write('Storage GC: Begin');
+			$this->StorageProvider()->GC();
+			$this->Logger()->Write('Storage GC: End');
 		}
 		else if ($bFilesCache)
 		{
@@ -301,7 +308,7 @@ trait User
 			$oSettings->SetConf('Language', $this->ValidateLanguage($oConfig->Get('webmail', 'language', 'en')));
 		}
 
-		if ($this->GetCapa(false, Capa::THEMES, $oAccount))
+		if ($this->GetCapa(Capa::THEMES))
 		{
 			$this->setSettingsFromParams($oSettingsLocal, 'Theme', 'string', function ($sTheme) use ($self) {
 				return $self->ValidateTheme($sTheme);
@@ -312,7 +319,7 @@ trait User
 			$oSettingsLocal->SetConf('Theme', $this->ValidateTheme($oConfig->Get('webmail', 'theme', 'Default')));
 		}
 
-		$this->setSettingsFromParams($oSettings, 'MPP', 'int', function ($iValue) {
+		$this->setSettingsFromParams($oSettings, 'MessagesPerPage', 'int', function ($iValue) {
 			return \min(50, \max(10, $iValue));
 		});
 
@@ -323,6 +330,7 @@ trait User
 		});
 
 		$this->setSettingsFromParams($oSettings, 'EditorDefaultType', 'string');
+		$this->setSettingsFromParams($oSettings, 'ViewHTML', 'bool');
 		$this->setSettingsFromParams($oSettings, 'ShowImages', 'bool');
 		$this->setSettingsFromParams($oSettings, 'RemoveColors', 'bool');
 		$this->setSettingsFromParams($oSettings, 'ContactsAutosave', 'bool');
@@ -347,7 +355,7 @@ trait User
 	{
 		$oAccount = $this->initMailClientConnection();
 
-		if (!$this->GetCapa(false, Capa::QUOTA, $oAccount))
+		if (!$this->GetCapa(Capa::QUOTA))
 		{
 			return $this->DefaultResponse(__FUNCTION__, array(0, 0, 0, 0));
 		}
@@ -443,7 +451,7 @@ trait User
 	{
 		$oAccount = $this->getAccountFromToken();
 
-		if (!$this->GetCapa(false, Capa::USER_BACKGROUND, $oAccount))
+		if (!$this->GetCapa(Capa::USER_BACKGROUND))
 		{
 			return $this->FalseResponse(__FUNCTION__);
 		}
@@ -500,7 +508,7 @@ trait User
 					}
 				}
 
-			}, $sFolder, $iUid, true, $sMimeIndex);
+			}, $sFolder, $iUid, $sMimeIndex);
 
 		$aValues['FileHash'] = '';
 		if ($mResult)
@@ -536,7 +544,7 @@ trait User
 					break;
 
 				case 'bool':
-					$oSettings->SetConf($sConfigName, !empty($sValue));
+					$oSettings->SetConf($sConfigName, !empty($sValue) && 'false' !== $sValue);
 					break;
 			}
 		}

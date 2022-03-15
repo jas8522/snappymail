@@ -1,9 +1,10 @@
 import ko from 'ko';
 import { SettingsGet } from 'Common/Globals';
-import { pInt, addObservablesTo } from 'Common/Utils';
+import { pInt } from 'Common/Utils';
+import { addObservablesTo, koArrayWithDestroy } from 'External/ko';
 import Remote from 'Remote/User/Fetch';
 
-export const ContactUserStore = ko.observableArray();
+export const ContactUserStore = koArrayWithDestroy();
 
 ContactUserStore.loading = ko.observable(false).extend({ debounce: 200 });
 ContactUserStore.importing = ko.observable(false).extend({ debounce: 200 });

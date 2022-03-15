@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "さらに読み込む",
 		"MENU_HEADERS": "メールのヘッダーを表示",
 		"MENU_VIEW_ORIGINAL": "メールのソースを表示",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": ".emlファイルでダウンロード",
 		"MENU_FILTER_SIMILAR": "このようなメッセージをフィルタ",
 		"MENU_PRINT": "印刷",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "添付ファイル",
 		"MESSAGE_VIEW_DESC": "選択したメールがここに表示されます。",
 		"MESSAGE_VIEW_MOVE_DESC": "左側のパネルでフォルダ名をクリックして移動先を選択します。",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP 署名済みメッセージ (クリックして検証)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP 暗号化メッセージ (クリックして復号化)",
 		"LINK_DOWNLOAD_AS_ZIP": "Zip としてダウンロード",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "すべての添付ファイルがアップロードされているわけではありません。",
 		"BUTTON_REQUEST_READ_RECEIPT": "開封確認を要求する",
 		"BUTTON_MARK_AS_IMPORTANT": "重要フラグをつける",
-		"BUTTON_OPEN_PGP": "OpenPGP (プレーンテキストのみ)",
 		"BUTTON_REQUEST_DSN": "配信確認を要求する"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "一度始めると、中止やキャンセルができません。",
 		"TITLE_CLEARING_PROCESS": "フォルダを消去しています..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "OpenPGP キーをインポート",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "インポート"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "OpenPGP キーを表示",
-		"BUTTON_SELECT": "選択"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "OpenPGP キーを生成",
-		"LABEL_KEY_BIT_LENGTH": "キーの長さ",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "生成"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP 署名\/暗号化",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "OpenPGP キーをインポート",
+		"POPUP_IMPORT_BUTTON": "インポート",
+		"POPUP_VIEW_TITLE": "OpenPGP キーを表示",
+		"POPUP_VIEW_BUTTON": "選択",
+		"POPUP_GENERATE_TITLE": "OpenPGP キーを生成",
+		"POPUP_GENERATE_BUTTON": "生成",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "署名",
 		"LABEL_ENCRYPT": "暗号化",
-		"BUTTON_SIGN": "署名",
-		"BUTTON_ENCRYPT": "暗号化",
-		"BUTTON_SIGN_AND_ENCRYPT": "署名と暗号化"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP 復号化",
-		"LABEL_KEY": "秘密鍵",
-		"BUTTON_DECRYPT": "復号化"
+		"BUTTON_DECRYPT": "復号化",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP 署名済みメッセージ",
+		"ENCRYPTED_MESSAGE": "OpenPGP 暗号化メッセージ",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "%USER% からの正しい署名",
+		"ERROR": "OpenPGP エラー: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "フィルターを作成しますか?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "連絡先",
 		"LABEL_FOLDERS_NAME": "フォルダー",
 		"LABEL_ACCOUNTS_NAME": "アカウント",
-		"LABEL_IDENTITIES_NAME": "表示名",
 		"LABEL_FILTERS_NAME": "フィルター",
 		"LABEL_SECURITY_NAME": "セキュリティ",
 		"LABEL_THEMES_NAME": "テーマ"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "スレッドを使う",
 		"LABEL_REPLY_SAME_FOLDER": "返信したメッセージのフォルダに送信メールを置く",
 		"LABEL_SHOW_IMAGES": "外部画像を常に表示する",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "1ページに表示する件数",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "更新中",
 		"DEFAULT_IDENTITY_LABEL": "デフォルト"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "OpenPGP キーをインポート",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "OpenPGP キーを生成",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "キーをインポート",
+		"BUTTON_GENERATE_KEY_PAIR": "キーを生成",
 		"TITLE_PRIVATE": "プライベート",
 		"TITLE_PUBLIC": "パブリック",
-		"GENERATE_ONLY_HTTPS": "HTTPS only",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "下書きを自動的に保存する"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "下書きを自動的に保存する",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "キーボード ショートカット ヘルプ",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "メッセージを保存",
 		"LABEL_SEND_MESSAGE": "メッセージを送信",
 		"LABEL_CLOSE_COMPOSE": "作成画面を閉じる"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "公開鍵が見つかりません",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "メールアドレス \"%EMAIL%\" の公開鍵が見つかりません",
-		"NO_PRIVATE_KEY_FOUND": "秘密鍵が見つかりません",
-		"NO_PRIVATE_KEY_FOUND_FOR": "メールアドレス \"%EMAIL%\" の秘密鍵が見つかりません",
-		"ADD_A_PUBLICK_KEY": "公開鍵の追加",
-		"SELECT_A_PRIVATE_KEY": "秘密鍵を選択してください",
-		"UNVERIFIRED_SIGNATURE": "未確認の署名",
-		"DECRYPTION_ERROR": "OpenPGP 復号化エラー",
-		"GOOD_SIGNATURE": "%USER% からの正しい署名",
-		"PGP_ERROR": "OpenPGP エラー: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "FROMのメールアドレスを指定してください",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "少なくても1つの受信者を指定してください"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "無効なトークン",

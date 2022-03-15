@@ -1,6 +1,6 @@
 import { Notification } from 'Common/Enums';
-import { ClientSideKeyName } from 'Common/EnumsUser';
-import { SettingsGet } from 'Common/Globals';
+import { ClientSideKeyNameLastSignMe } from 'Common/EnumsUser';
+import { SettingsGet, fireEvent } from 'Common/Globals';
 import { getNotification, translatorReload, convertLangName } from 'Common/Translator';
 
 import { LanguageStore } from 'Stores/Language';
@@ -14,14 +14,15 @@ import { AbstractViewLogin } from 'Knoin/AbstractViews';
 
 import { LanguagesPopupView } from 'View/Popup/Languages';
 
-const SignMeOff = 0,
+const
+	SignMeOff = 0,
 	SignMeOn = 1,
 	SignMeUnused = 2;
 
 
-class LoginUserView extends AbstractViewLogin {
+export class LoginUserView extends AbstractViewLogin {
 	constructor() {
-		super('Login');
+		super();
 
 		this.addObservables({
 			loadingDesc: SettingsGet('LoadingDescription'),
@@ -89,7 +90,7 @@ class LoginUserView extends AbstractViewLogin {
 	submitCommand(self, event) {
 		let form = event.target.form,
 			data = new FormData(form),
-			valid = form.reportValidity();
+			valid = form.reportValidity() && fireEvent('sm-user-login', data);
 
 		this.emailError(!this.email());
 		this.passwordError(!this.password());
@@ -101,6 +102,10 @@ class LoginUserView extends AbstractViewLogin {
 			data.set('SignMe', this.signMe() ? 1 : 0);
 			Remote.request('Login',
 				(iError, oData) => {
+					fireEvent('sm-user-login-response', {
+						error: iError,
+						data: oData
+					});
 					if (iError) {
 						this.submitRequest(false);
 						if (Notification.InvalidInputArgument == iError) {
@@ -111,13 +116,12 @@ class LoginUserView extends AbstractViewLogin {
 						this.submitErrorAddidional((oData && oData.ErrorMessageAdditional) || '');
 					} else {
 						rl.setData(oData.Result);
-//						rl.route.reload();
 					}
 				},
 				data
 			);
 
-			Local.set(ClientSideKeyName.LastSignMe, this.signMe() ? '-1-' : '-0-');
+			Local.set(ClientSideKeyNameLastSignMe, this.signMe() ? '-1-' : '-0-');
 		}
 
 		return valid;
@@ -126,8 +130,7 @@ class LoginUserView extends AbstractViewLogin {
 	onBuild(dom) {
 		super.onBuild(dom);
 
-		const signMeLocal = Local.get(ClientSideKeyName.LastSignMe),
-			signMe = (SettingsGet('SignMe') || '').toLowerCase();
+		const signMe = (SettingsGet('SignMe') || '').toLowerCase();
 
 		switch (signMe) {
 			case 'defaultoff':
@@ -136,7 +139,7 @@ class LoginUserView extends AbstractViewLogin {
 					'defaulton' === signMe ? SignMeOn : SignMeOff
 				);
 
-				switch (signMeLocal) {
+				switch (Local.get(ClientSideKeyNameLastSignMe)) {
 					case '-1-':
 						this.signMeType(SignMeOn);
 						break;
@@ -157,5 +160,3 @@ class LoginUserView extends AbstractViewLogin {
 		showScreenPopup(LanguagesPopupView, [this.language, this.languages(), LanguageStore.userLanguage()]);
 	}
 }
-
-export { LoginUserView };

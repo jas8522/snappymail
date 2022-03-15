@@ -1,17 +1,15 @@
-import ko from 'ko';
+import { koComputable } from 'External/ko';
 
 import { i18n, trigger as translatorTrigger } from 'Common/Translator';
 
-import { MessageUserStore } from 'Stores/User/Message';
+import { MessagelistUserStore } from 'Stores/User/Messagelist';
 
-import { decorateKoCommands } from 'Knoin/Knoin';
 import { AbstractViewPopup } from 'Knoin/AbstractViews';
 import { FolderUserStore } from 'Stores/User/Folder';
 
-class AdvancedSearchPopupView extends AbstractViewPopup {
+export class AdvancedSearchPopupView extends AbstractViewPopup {
 	constructor() {
 		super('AdvancedSearch');
-		this.viewNoUserSelect = true;
 
 		this.addObservables({
 			from: '',
@@ -26,11 +24,11 @@ class AdvancedSearchPopupView extends AbstractViewPopup {
 			unseen: false
 		});
 
-		this.showMultisearch = ko.computed(() => FolderUserStore.hasCapability('MULTISEARCH'));
+		this.showMultisearch = koComputable(() => FolderUserStore.hasCapability('MULTISEARCH'));
 
-		let prefix = 'SEARCH/LABEL_ADV_DATE_';
-		this.selectedDates = ko.computed(() => {
+		this.selectedDates = koComputable(() => {
 			translatorTrigger();
+			let prefix = 'SEARCH/LABEL_ADV_DATE_';
 			return [
 				{ id: -1, name: i18n(prefix + 'ALL') },
 				{ id: 3, name: i18n(prefix + '3_DAYS') },
@@ -42,28 +40,24 @@ class AdvancedSearchPopupView extends AbstractViewPopup {
 			];
 		});
 
-		prefix = 'SEARCH/LABEL_ADV_SUBFOLDERS_';
-		this.selectedTree = ko.computed(() => {
+		this.selectedTree = koComputable(() => {
 			translatorTrigger();
+			let prefix = 'SEARCH/LABEL_ADV_SUBFOLDERS_';
 			return [
 				{ id: '', name: i18n(prefix + 'NONE') },
 				{ id: 'subtree-one', name: i18n(prefix + 'SUBTREE_ONE') },
 				{ id: 'subtree', name: i18n(prefix + 'SUBTREE') }
 			];
 		});
-
-		decorateKoCommands(this, {
-			searchCommand: 1
-		});
 	}
 
-	searchCommand() {
+	submitForm() {
 		const search = this.buildSearchString();
 		if (search) {
-			MessageUserStore.mainMessageListSearch(search);
+			MessagelistUserStore.mainSearch(search);
 		}
 
-		this.cancelCommand();
+		this.close();
 	}
 
 	parseSearchStringValue(search) {
@@ -129,5 +123,3 @@ class AdvancedSearchPopupView extends AbstractViewPopup {
 		this.parseSearchStringValue(search);
 	}
 }
-
-export { AdvancedSearchPopupView, AdvancedSearchPopupView as default };

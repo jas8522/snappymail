@@ -1,22 +1,22 @@
 import ko from 'ko';
 
-import { inFocus, addObservablesTo, addComputablesTo, addSubscribablesTo } from 'Common/Utils';
-import { Scope } from 'Common/Enums';
-import { keyScope, Settings, leftPanelDisabled } from 'Common/Globals';
-import { ViewType } from 'Knoin/Knoin';
+import { addObservablesTo, addComputablesTo, addSubscribablesTo } from 'External/ko';
+import { keyScope, SettingsGet, leftPanelDisabled } from 'Common/Globals';
+import { ViewTypePopup, showScreenPopup } from 'Knoin/Knoin';
+
+import { SaveSettingsStep } from 'Common/Enums';
 
 class AbstractView {
 	constructor(templateID, type)
 	{
 //		Object.defineProperty(this, 'viewModelTemplateID', { value: templateID });
-		this.viewModelTemplateID = templateID;
+		this.viewModelTemplateID = templateID || this.constructor.name.replace('UserView', '');
 		this.viewType = type;
 		this.viewModelDom = null;
-		this.viewNoUserSelect = false;
 
 		this.keyScope = {
-			scope: Scope.None,
-			previous: Scope.None,
+			scope: 'none',
+			previous: 'none',
 			set: function() {
 				this.previous = keyScope();
 				keyScope(this.scope);
@@ -29,8 +29,8 @@ class AbstractView {
 
 /*
 	onBuild() {}
-	onBeforeShow() {}
-	onShow() {}
+	beforeShow() {} // Happens before: hidden = false
+	onShow() {}       // Happens after: hidden = false
 	onHide() {}
 */
 
@@ -56,52 +56,46 @@ export class AbstractViewPopup extends AbstractView
 {
 	constructor(name)
 	{
-		super('Popups' + name, ViewType.Popup);
-		if (name in Scope) {
-			this.keyScope.scope = Scope[name];
-		}
-		this.bDisabeCloseOnEsc = false;
-		this.modalVisibility = ko.observable(false).extend({ rateLimit: 0 });
-	}
-/*
-	onShowWithDelay() {}
-	onHideWithDelay() {}
-
-	cancelCommand() {}
-	closeCommand() {}
-*/
-	/**
-	 * @returns {void}
-	 */
-	registerPopupKeyDown() {
-		addEventListener('keydown', event => {
-			if (event && this.modalVisibility()) {
-				if (!this.bDisabeCloseOnEsc && 'Escape' == event.key) {
-					this.cancelCommand();
-					return false;
-				} else if ('Backspace' == event.key && !inFocus()) {
-					return false;
-				}
+		super('Popups' + name, ViewTypePopup);
+		this.keyScope.scope = name;
+		this.modalVisible = ko.observable(false).extend({ rateLimit: 0 });
+		shortcuts.add('escape,close', '', name, () => {
+			if (this.modalVisible() && false !== this.onClose()) {
+				this.close();
+				return false;
 			}
-
 			return true;
 		});
 	}
+
+	// Happens when user hits Escape or Close key
+	// return false to prevent closing
+	onClose() {}
+
+/*
+	beforeShow() {} // Happens before showModal()
+	onShow() {}       // Happens after  showModal()
+	afterShow() {}    // Happens after  showModal() animation transitionend
+	onHide() {}       // Happens before animation transitionend
+	afterHide() {}    // Happens after  animation transitionend
+
+	close() {}
+*/
 }
 
-export class AbstractViewCenter extends AbstractView
-{
-	constructor(templateID)
-	{
-		super(templateID, ViewType.Content);
-	}
+AbstractViewPopup.showModal = function(params = []) {
+	showScreenPopup(this, params);
+}
+
+AbstractViewPopup.hidden = function() {
+	return !this.__vm || !this.__vm.modalVisible();
 }
 
 export class AbstractViewLeft extends AbstractView
 {
 	constructor(templateID)
 	{
-		super(templateID, ViewType.Left);
+		super(templateID, 'Left');
 		this.leftPanelDisabled = leftPanelDisabled;
 	}
 }
@@ -110,25 +104,55 @@ export class AbstractViewRight extends AbstractView
 {
 	constructor(templateID)
 	{
-		super(templateID, ViewType.Right);
+		super(templateID, 'Right');
 	}
 }
 
-/*
 export class AbstractViewSettings
 {
+/*
 	onBuild(viewModelDom) {}
-	onBeforeShow() {}
+	beforeShow() {}
 	onShow() {}
 	onHide() {}
 	viewModelDom
-}
 */
+	addSetting(name, valueCb)
+	{
+		let prop = name[0].toLowerCase() + name.slice(1),
+			trigger = prop + 'Trigger';
+		addObservablesTo(this, {
+			[prop]: SettingsGet(name),
+			[trigger]: SaveSettingsStep.Idle,
+		});
+		addSubscribablesTo(this, {
+			[prop]: (value => {
+				this[trigger](SaveSettingsStep.Animate);
+				valueCb && valueCb(value);
+				rl.app.Remote.saveSetting(name, value,
+					iError => {
+						this[trigger](iError ? SaveSettingsStep.FalseResult : SaveSettingsStep.TrueResult);
+						setTimeout(() => this[trigger](SaveSettingsStep.Idle), 1000);
+					}
+				);
+			}).debounce(999),
+		});
+	}
 
-export class AbstractViewLogin extends AbstractViewCenter {
+	addSettings(names)
+	{
+		names.forEach(name => {
+			let prop = name[0].toLowerCase() + name.slice(1);
+			this[prop] || (this[prop] = ko.observable(SettingsGet(name)));
+			this[prop].subscribe(value => rl.app.Remote.saveSetting(name, value));
+		});
+	}
+}
+
+export class AbstractViewLogin extends AbstractView {
 	constructor(templateID) {
-		super(templateID);
-		this.hideSubmitButton = Settings.app('hideSubmitButton');
+		super(templateID, 'Content');
+		this.hideSubmitButton = SettingsGet('hideSubmitButton');
 		this.formError = ko.observable(false).extend({ falseTimeout: 500 });
 	}
 

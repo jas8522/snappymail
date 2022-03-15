@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "More messages",
 		"MENU_HEADERS": "顯示詳細資訊",
 		"MENU_VIEW_ORIGINAL": "顯示原始內容",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "作為 .eml 文件下載",
 		"MENU_FILTER_SIMILAR": "過濾郵件如此",
 		"MENU_PRINT": "列印郵件",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "附件",
 		"MESSAGE_VIEW_DESC": "在此查看列表中選中的郵件。",
 		"MESSAGE_VIEW_MOVE_DESC": "Click folder name in the left panel to select the destination.",
-		"PGP_SIGNED_MESSAGE_DESC": "OpenPGP signed message (click to verify)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "OpenPGP encrypted message (click to decrypt)",
 		"LINK_DOWNLOAD_AS_ZIP": "Download as zip",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "Not all attachments have been uploaded yet",
 		"BUTTON_REQUEST_READ_RECEIPT": "Request a read receipt",
 		"BUTTON_MARK_AS_IMPORTANT": "Mark as important",
-		"BUTTON_OPEN_PGP": "OpenPGP (Plain Text Only)",
 		"BUTTON_REQUEST_DSN": "Request a delivery receipt"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "一旦操作執行，不可中斷和撤銷！",
 		"TITLE_CLEARING_PROCESS": "資料夾清理中..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "導入 OpenPGP 密鑰",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "導入"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "查看 OpenPGP 密鑰",
-		"BUTTON_SELECT": "選擇"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "生成 OpenPGP 密鑰",
-		"LABEL_KEY_BIT_LENGTH": "密鑰長度",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "生成"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "OpenPGP Sign\/Encrypt",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "導入 OpenPGP 密鑰",
+		"POPUP_IMPORT_BUTTON": "導入",
+		"POPUP_VIEW_TITLE": "查看 OpenPGP 密鑰",
+		"POPUP_VIEW_BUTTON": "選擇",
+		"POPUP_GENERATE_TITLE": "生成 OpenPGP 密鑰",
+		"POPUP_GENERATE_BUTTON": "生成",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "Sign",
 		"LABEL_ENCRYPT": "Encrypt",
-		"BUTTON_SIGN": "Sign",
-		"BUTTON_ENCRYPT": "Encrypt",
-		"BUTTON_SIGN_AND_ENCRYPT": "Sign and encrypt"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "OpenPGP Decrypt",
-		"LABEL_KEY": "Private Key",
-		"BUTTON_DECRYPT": "Decrypt"
+		"BUTTON_DECRYPT": "Decrypt",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "OpenPGP signed message",
+		"ENCRYPTED_MESSAGE": "OpenPGP encrypted message",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "Good signature from %USER%",
+		"ERROR": "OpenPGP error: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "Create a filter?",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "連絡人",
 		"LABEL_FOLDERS_NAME": "資料夾",
 		"LABEL_ACCOUNTS_NAME": "帳戶",
-		"LABEL_IDENTITIES_NAME": "簽名",
 		"LABEL_FILTERS_NAME": "Filters",
 		"LABEL_SECURITY_NAME": "安全",
 		"LABEL_THEMES_NAME": "主題"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "使用對話",
 		"LABEL_REPLY_SAME_FOLDER": "將回復的郵件放置到其回復的郵件所在資料夾",
 		"LABEL_SHOW_IMAGES": "總是顯示外部圖片資訊",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "封郵件每頁",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "更新帳戶列表中",
 		"DEFAULT_IDENTITY_LABEL": "default"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "導入 OpenPGP Key",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "生成 OpenPGP 密鑰",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "導入 Key",
+		"BUTTON_GENERATE_KEY_PAIR": "生成 密鑰",
 		"TITLE_PRIVATE": "私有",
 		"TITLE_PUBLIC": "公開",
-		"GENERATE_ONLY_HTTPS": "HTTPS only",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "Automatically save draft",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "Keyboard shortcuts help",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "Save message",
 		"LABEL_SEND_MESSAGE": "Send message",
 		"LABEL_CLOSE_COMPOSE": "Close compose"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "No public keys found",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "No public keys found for \"%EMAIL%\" email",
-		"NO_PRIVATE_KEY_FOUND": "No private key found",
-		"NO_PRIVATE_KEY_FOUND_FOR": "No private key found for \"%EMAIL%\" email",
-		"ADD_A_PUBLICK_KEY": "Add a public key",
-		"SELECT_A_PRIVATE_KEY": "Select a private key",
-		"UNVERIFIRED_SIGNATURE": "Unverified signature",
-		"DECRYPTION_ERROR": "OpenPGP decryption error",
-		"GOOD_SIGNATURE": "Good signature from %USER%",
-		"PGP_ERROR": "OpenPGP error: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "Please specify FROM email address",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "Please specify at least one recipient"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "無效標記",

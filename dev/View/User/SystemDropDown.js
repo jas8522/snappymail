@@ -3,8 +3,8 @@ import { AccountUserStore } from 'Stores/User/Account';
 import { MessageUserStore } from 'Stores/User/Message';
 //import { FolderUserStore } from 'Stores/User/Folder';
 
-import { Capa, Scope } from 'Common/Enums';
-import { /*root,*/ settings } from 'Common/Links';
+import { Scope } from 'Common/Enums';
+import { settings } from 'Common/Links';
 
 import { showScreenPopup } from 'Knoin/Knoin';
 import { AbstractViewRight } from 'Knoin/AbstractViews';
@@ -13,27 +13,28 @@ import { KeyboardShortcutsHelpPopupView } from 'View/Popup/KeyboardShortcutsHelp
 import { AccountPopupView } from 'View/Popup/Account';
 import { ContactsPopupView } from 'View/Popup/Contacts';
 
-import { doc, Settings/*, SettingsGet*/, leftPanelDisabled } from 'Common/Globals';
+import { doc, leftPanelDisabled, fireEvent, SettingsCapa, registerShortcut } from 'Common/Globals';
 
 import { ThemeStore } from 'Stores/Theme';
 
 import Remote from 'Remote/User/Fetch';
 import { getNotification } from 'Common/Translator';
 //import { clearCache } from 'Common/Cache';
+//import { koComputable } from 'External/ko';
 
 export class SystemDropDownUserView extends AbstractViewRight {
 	constructor() {
-		super('SystemDropDown');
+		super();
 
-		this.allowAccounts = Settings.capa(Capa.AdditionalAccounts);
+		this.allowAccounts = SettingsCapa('AdditionalAccounts');
 
 		this.accountEmail = AccountUserStore.email;
 
 		this.accounts = AccountUserStore.accounts;
 		this.accountsLoading = AccountUserStore.loading;
 /*
-		this.accountsUnreadCount = : ko.computed(() => 0);
-		this.accountsUnreadCount = : ko.computed(() => AccountUserStore.accounts().reduce((result, item) => result + item.count(), 0));
+		this.accountsUnreadCount = : koComputable(() => 0);
+		this.accountsUnreadCount = : koComputable(() => AccountUserStore.accounts().reduce((result, item) => result + item.count(), 0));
 */
 
 		this.addObservables({
@@ -48,11 +49,12 @@ export class SystemDropDownUserView extends AbstractViewRight {
 	}
 
 	stopPlay() {
-		dispatchEvent(new CustomEvent('audio.api.stop'));
+		fireEvent('audio.api.stop');
 	}
 
 	accountClick(account, event) {
-		if (account && 0 === event.button) {
+		let email = account && account.email;
+		if (email && 0 === event.button && AccountUserStore.email() != email) {
 			AccountUserStore.loading(true);
 			event.preventDefault();
 			event.stopPropagation();
@@ -60,7 +62,7 @@ export class SystemDropDownUserView extends AbstractViewRight {
 				(iError/*, oData*/) => {
 					if (iError) {
 						AccountUserStore.loading(false);
-						alert(getNotification(iError).replace('%EMAIL%', account.email));
+						alert(getNotification(iError).replace('%EMAIL%', email));
 						if (account.isAdditional()) {
 							showScreenPopup(AccountPopupView, [account]);
 						}
@@ -71,20 +73,19 @@ export class SystemDropDownUserView extends AbstractViewRight {
 //						MessageUserStore.setMessage();
 //						MessageUserStore.purgeMessageBodyCache();
 //						MessageUserStore.hideMessageBodies();
-						MessageUserStore.list([]);
+						MessagelistUserStore([]);
 //						FolderUserStore.folderList([]);
-						Remote.foldersReload(value => {
+						loadFolders(value => {
 							if (value) {
 //								4. Change to INBOX = reload MessageList
-//								MessageUserStore.setMessageList();
+//								MessagelistUserStore.setMessageList();
 							}
 						});
 						AccountUserStore.loading(false);
 */
-//						rl.route.reload();
-						location.reload();
+						rl.route.reload();
 					}
-				}, {Email:account.email}
+				}, {Email:email}
 			);
 		}
 		return true;
@@ -95,7 +96,7 @@ export class SystemDropDownUserView extends AbstractViewRight {
 	}
 
 	settingsClick() {
-		rl.route.setHash(settings());
+		hasher.setHash(settings());
 	}
 
 	settingsHelp() {
@@ -113,7 +114,7 @@ export class SystemDropDownUserView extends AbstractViewRight {
 	toggleLayout()
 	{
 		const mobile = !ThemeStore.isMobile();
-		doc.cookie = 'rllayout=' + (mobile ? 'mobile' : 'desktop');
+		doc.cookie = 'rllayout=' + (mobile ? 'mobile' : 'desktop') + '; samesite=strict';
 		ThemeStore.isMobile(mobile);
 		leftPanelDisabled(mobile);
 	}
@@ -123,16 +124,16 @@ export class SystemDropDownUserView extends AbstractViewRight {
 	}
 
 	onBuild() {
-		shortcuts.add('m,contextmenu', '', [Scope.MessageList, Scope.MessageView, Scope.Settings], () => {
+		registerShortcut('m', '', [Scope.MessageList, Scope.MessageView, Scope.Settings], () => {
 			if (!this.viewModelDom.hidden) {
-				MessageUserStore.messageFullScreenMode(false);
+				MessageUserStore.fullScreen(false);
 				this.accountMenuDropdownTrigger(true);
 				return false;
 			}
 		});
 
 		// shortcuts help
-		shortcuts.add('?,f1,help', '', [Scope.MessageList, Scope.MessageView, Scope.Settings], () => {
+		registerShortcut('?,f1,help', '', [Scope.MessageList, Scope.MessageView, Scope.Settings], () => {
 			if (!this.viewModelDom.hidden) {
 				showScreenPopup(KeyboardShortcutsHelpPopupView);
 				return false;

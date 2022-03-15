@@ -20,11 +20,7 @@ abstract class Utils
 
 	public static function NormalizeCharset(string $sEncoding, bool $bAsciAsUtf8 = false) : string
 	{
-		$sEncoding = \strtolower($sEncoding);
-
-		$sEncoding = \preg_replace('/^iso8/', 'iso-8', $sEncoding);
-		$sEncoding = \preg_replace('/^cp-([\d])/', 'cp$1', $sEncoding);
-		$sEncoding = \preg_replace('/^windows?12/', 'windows-12', $sEncoding);
+		$sEncoding = \preg_replace('/^iso8/', 'iso-8', \strtolower($sEncoding));
 
 		switch ($sEncoding)
 		{
@@ -32,37 +28,39 @@ abstract class Utils
 			case 'ascii':
 			case 'us-asci':
 			case 'us-ascii':
-				$sEncoding = $bAsciAsUtf8 ? Enumerations\Charset::UTF_8 :
+				return $bAsciAsUtf8 ? Enumerations\Charset::UTF_8 :
 					Enumerations\Charset::ISO_8859_1;
-				break;
+
 			case 'unicode-1-1-utf-7':
 			case 'unicode-1-utf-7':
 			case 'unicode-utf-7':
-				$sEncoding = 'utf-7';
-				break;
+				return 'utf-7';
+
 			case 'utf8':
 			case 'utf-8':
-				$sEncoding = Enumerations\Charset::UTF_8;
-				break;
+				return Enumerations\Charset::UTF_8;
+
 			case 'utf7imap':
 			case 'utf-7imap':
 			case 'utf7-imap':
 			case 'utf-7-imap':
-				$sEncoding = 'utf7-imap';
-				break;
+				return 'utf7-imap';
+
 			case 'ks-c-5601-1987':
 			case 'ks_c_5601-1987':
 			case 'ks_c_5601_1987':
-				$sEncoding = 'euc-kr';
-				break;
+				return 'euc-kr';
+
 			case 'x-gbk':
-				$sEncoding = 'gb2312';
-				break;
+				return 'gb2312';
+
 			case 'iso-8859-i':
 			case 'iso-8859-8-i':
-				$sEncoding = 'iso-8859-8';
-				break;
+				return 'iso-8859-8';
 		}
+
+		$sEncoding = \preg_replace('/^cp-([\d])/', 'cp$1', $sEncoding);
+		$sEncoding = \preg_replace('/^windows?12/', 'windows-12', $sEncoding);
 
 		return $sEncoding;
 	}
@@ -886,112 +884,47 @@ abstract class Utils
 
 	public static function RecRmDir(string $sDir) : bool
 	{
-		if (\is_dir($sDir))
-		{
-			$aObjects = \scandir($sDir);
-			foreach ($aObjects as $sObject)
-			{
-				if ('.' !== $sObject && '..' !== $sObject)
-				{
-//					if ('dir' === \filetype($sDir.'/'.$sObject))
-					if (\is_dir($sDir.'/'.$sObject))
-					{
-						self::RecRmDir($sDir.'/'.$sObject);
-					}
-					else
-					{
-						\unlink($sDir.'/'.$sObject);
-					}
+		\clearstatcache();
+		if (\is_dir($sDir)) {
+			$iterator = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator($sDir, \FilesystemIterator::SKIP_DOTS),
+				\RecursiveIteratorIterator::CHILD_FIRST);
+			foreach ($iterator as $path) {
+				if ($path->isDir()) {
+					\rmdir($path);
+				} else {
+					\unlink($path);
 				}
 			}
-
+			\clearstatcache();
+//			\realpath_cache_size() && \clearstatcache(true);
 			return \rmdir($sDir);
 		}
 
 		return false;
 	}
 
-	public static function RecTimeDirRemove(string $sTempPath, int $iTime2Kill, int $iNow = 0) : bool
+	public static function RecTimeDirRemove(string $sDir, int $iTime2Kill) : bool
 	{
-		$iNow = $iNow ?: \time();
-		$iFileCount = 0;
-
-		$sTempPath = \rtrim($sTempPath, '\\/');
-		if (\is_dir($sTempPath))
-		{
-			$rDirH = \opendir($sTempPath);
-			if ($rDirH)
-			{
-				$bRemoveAllDirs = true;
-				while (($sFile = \readdir($rDirH)) !== false)
-				{
-					if ('.' !== $sFile && '..' !== $sFile)
-					{
-						if (\is_dir($sTempPath.'/'.$sFile))
-						{
-							if (!static::RecTimeDirRemove($sTempPath.'/'.$sFile, $iTime2Kill, $iNow))
-							{
-								$bRemoveAllDirs = false;
-							}
-						}
-						else
-						{
-							$iFileCount++;
-						}
-					}
-				}
-
-				\closedir($rDirH);
-			}
-
-			if ($iFileCount > 0)
-			{
-				if (static::TimeFilesRemove($sTempPath, $iTime2Kill, $iNow))
-				{
-					return \rmdir($sTempPath);
+		\clearstatcache();
+		if (\is_dir($sDir)) {
+			$iTime = \time() - $iTime2Kill;
+			$iterator = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator($sDir, \FilesystemIterator::SKIP_DOTS),
+				\RecursiveIteratorIterator::CHILD_FIRST);
+			foreach ($iterator as $path) {
+				if ($path->isFile() && $path->getMTime() < $iTime) {
+					\unlink($path);
+				} else if ($path->isDir() && !(new \FilesystemIterator($path))->valid()) {
+					\rmdir($path);
 				}
 			}
-			else
-			{
-				return $bRemoveAllDirs ? \rmdir($sTempPath) : false;
-			}
-
-			return false;
+			\clearstatcache();
+//			\realpath_cache_size() && \clearstatcache(true);
+			return !(new \FilesystemIterator($sDir))->valid() && \rmdir($sDir);
 		}
 
-		return true;
-	}
-
-	public static function TimeFilesRemove(string $sTempPath, int $iTime2Kill, int $iNow)
-	{
-		$bResult = true;
-
-		$sTempPath = \rtrim($sTempPath, '\\/');
-		if (\is_dir($sTempPath))
-		{
-			$rDirH = \opendir($sTempPath);
-			if ($rDirH)
-			{
-				while (($sFile = \readdir($rDirH)) !== false)
-				{
-					if ($sFile !== '.' && $sFile !== '..')
-					{
-						if ($iNow - \filemtime($sTempPath.'/'.$sFile) > $iTime2Kill)
-						{
-							\unlink($sTempPath.'/'.$sFile);
-						}
-						else
-						{
-							$bResult = false;
-						}
-					}
-				}
-
-				\closedir($rDirH);
-			}
-		}
-
-		return $bResult;
+		return false;
 	}
 
 	public static function Utf8Truncate(string $sUtfString, int $iLength) : string
@@ -1102,52 +1035,6 @@ abstract class Utils
 		return $aResult;
 	}
 
-	public static function PrepareFetchSequence(array $aSequence) : string
-	{
-		$aResult = array();
-		if (\count($aSequence))
-		{
-			$iStart = null;
-			$iPrev = null;
-
-			foreach ($aSequence as $sItem)
-			{
-				// simple protection
-				if (false !== \strpos($sItem, ':'))
-				{
-					$aResult[] = $sItem;
-					continue;
-				}
-
-				$iItem = (int) $sItem;
-				if (null === $iStart || null === $iPrev)
-				{
-					$iStart = $iItem;
-					$iPrev = $iItem;
-					continue;
-				}
-
-				if ($iPrev === $iItem - 1)
-				{
-					$iPrev = $iItem;
-				}
-				else
-				{
-					$aResult[] = $iStart === $iPrev ? $iStart : $iStart.':'.$iPrev;
-					$iStart = $iItem;
-					$iPrev = $iItem;
-				}
-			}
-
-			if (null !== $iStart && null !== $iPrev)
-			{
-				$aResult[] = $iStart === $iPrev ? $iStart : $iStart.':'.$iPrev;
-			}
-		}
-
-		return \implode(',', $aResult);
-	}
-
 	/**
 	 * @param resource $fResource
 	 */
@@ -1181,7 +1068,7 @@ abstract class Utils
 	public static function MultipleStreamWriter($rRead, array $aWrite, int $iBufferLen = 8192, bool $bResetTimeLimit = true, bool $bFixCrLf = false, bool $bRewindOnComplete = false) : int
 	{
 		$mResult = false;
-		if ($rRead && \count($aWrite))
+		if (\is_resource($rRead) && \count($aWrite))
 		{
 			$mResult = 0;
 			while (!\feof($rRead))
@@ -1193,7 +1080,7 @@ abstract class Utils
 					break;
 				}
 
-				if (0 === $iBufferLen || '' === $sBuffer)
+				if ('' === $sBuffer)
 				{
 					break;
 				}
@@ -1256,24 +1143,29 @@ abstract class Utils
 		return (false === $sResult) ? $sStr : $sResult;
 	}
 
-	public static function FunctionExistsAndEnabled($mFunctionNameOrNames) : bool
+	public static function FunctionsExistAndEnabled(array $aFunctionNames) : bool
 	{
-		if (\is_array($mFunctionNameOrNames))
-		{
-			foreach ($mFunctionNameOrNames as $sFunctionName)
-			{
-				if (!static::FunctionExistsAndEnabled($sFunctionName))
-				{
-					return false;
-				}
+		foreach ($aFunctionNames as $sFunctionName) {
+			if (!static::FunctionExistsAndEnabled($sFunctionName)) {
+				return false;
 			}
-
-			return true;
 		}
+		return true;
+	}
 
-		return !empty($mFunctionNameOrNames)
-			&& \function_exists($mFunctionNameOrNames)
-			&& !\is_callable($mFunctionNameOrNames);
+	private static $disabled_functions = null;
+	public static function FunctionExistsAndEnabled(string $sFunctionName) : bool
+	{
+		if (null === static::$disabled_functions) {
+			static::$disabled_functions = \array_map('trim', \explode(',', \ini_get('disable_functions')));
+		}
+/*
+		$disabled_classes = \explode(',', \ini_get('disable_classes'));
+		\in_array($function, $disabled_classes);
+*/
+		return \function_exists($sFunctionName)
+			&& !\in_array($sFunctionName, static::$disabled_functions);
+//			&& \is_callable($mFunctionNameOrNames);
 	}
 
 	public static function ClearNullBite($mValue) : string

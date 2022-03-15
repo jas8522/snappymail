@@ -136,6 +136,8 @@
 		"BUTTON_THREAD_MORE": "پیام‌های بیشتر",
 		"MENU_HEADERS": "نمایش سرصفحه پیام",
 		"MENU_VIEW_ORIGINAL": "نمایش منبع",
+		"HTML_VIEW": "View HTML message",
+		"PLAIN_VIEW": "View plain text message",
 		"MENU_DOWNLOAD_ORIGINAL": "دریافت با پسوند eml.",
 		"MENU_FILTER_SIMILAR": " فیلتر کردن پیام‌های مشابه",
 		"MENU_PRINT": "چاپ",
@@ -146,8 +148,6 @@
 		"PRINT_LABEL_ATTACHMENTS": "پیوست‌ها",
 		"MESSAGE_VIEW_DESC": "پیام را در لیست جهت مشاهده انتخاب کنید",
 		"MESSAGE_VIEW_MOVE_DESC": "بر روی نام شاخه در پنل سمت راست جهت انتخاب مقصد کلیک کنید",
-		"PGP_SIGNED_MESSAGE_DESC": "پیام توسط  OpenPGP امضاء شد (برای بررسی کلیک کنید)",
-		"PGP_ENCRYPTED_MESSAGE_DESC": "پیام توسط  OpenPGP رمزنگاری شد (برای خارج شدن از حالت رمز کلیک کنید)",
 		"LINK_DOWNLOAD_AS_ZIP": "دریافت با پسوند zip",
 		"SPAM_SCORE": "Spam Score",
 		"HAS_VIRUS_WARNING": "WARNING: virus detected"
@@ -212,7 +212,6 @@
 		"ATTACHMENTS_UPLOAD_ERROR_DESC": "همه پیوست‌ها هنوز بارگذاری نشده است.",
 		"BUTTON_REQUEST_READ_RECEIPT": "درخواست دریافت رسید خواندن",
 		"BUTTON_MARK_AS_IMPORTANT": "علامت زدن به عنوان مهم",
-		"BUTTON_OPEN_PGP": "OpenPGP (فقط متن ساده)",
 		"BUTTON_REQUEST_DSN": "درخواست دریافت رسید تحویل درمقصد"
 	},
 	"POPUPS_ASK": {
@@ -250,31 +249,24 @@
 		"DANGER_DESC_HTML_2": "زمانی که این عملیات شروع شود قابل لغو یا انصراف نیست.",
 		"TITLE_CLEARING_PROCESS": "خالی کردن شاخه..."
 	},
-	"POPUPS_IMPORT_OPEN_PGP_KEY": {
-		"TITLE_IMPORT_OPEN_PGP_KEY": "واردکردن کلید OpenPGP",
-		"BUTTON_IMPORT_OPEN_PGP_KEY": "وارد‌کردن"
-	},
-	"POPUPS_VIEW_OPEN_PGP_KEY": {
-		"TITLE_VIEW_OPEN_PGP_KEY": "مشاهده کلید OpenGPG",
-		"BUTTON_SELECT": "انتخاب"
-	},
-	"POPUPS_GENERATE_OPEN_PGP_KEYS": {
-		"TITLE_GENERATE_OPEN_PGP_KEYS": "تولید کلید‌های OpenPGP",
-		"LABEL_KEY_BIT_LENGTH": "طول کلید",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "تولید"
-	},
-	"POPUPS_COMPOSE_OPEN_PGP": {
-		"TITLE_COMPOSE_OPEN_PGP": "امضاء\/رمزنگاری OpenPGP",
+	"OPENPGP": {
+		"POPUP_IMPORT_TITLE": "واردکردن کلید OpenPGP",
+		"POPUP_IMPORT_BUTTON": "وارد‌کردن",
+		"POPUP_VIEW_TITLE": "مشاهده کلید OpenGPG",
+		"POPUP_VIEW_BUTTON": "انتخاب",
+		"POPUP_GENERATE_TITLE": "تولید کلید‌های OpenPGP",
+		"POPUP_GENERATE_BUTTON": "تولید",
+		"LABEL_KEY_TYPE": "Type",
 		"LABEL_SIGN": "امضاء",
 		"LABEL_ENCRYPT": "رمزنگاری",
-		"BUTTON_SIGN": "امضاء",
-		"BUTTON_ENCRYPT": "رمزنگاری",
-		"BUTTON_SIGN_AND_ENCRYPT": "امضاء و رمزنگاری"
-	},
-	"POPUPS_MESSAGE_OPEN_PGP": {
-		"TITLE_MESSAGE_OPEN_PGP": "رمزگشایی OpenPGP",
-		"LABEL_KEY": "کلید خصوصی",
-		"BUTTON_DECRYPT": "رمزگشایی"
+		"BUTTON_DECRYPT": "رمزگشایی",
+		"BUTTON_VERIFY": "Verify",
+		"SIGNED_MESSAGE": "پیام توسط  OpenPGP امضاء شد",
+		"ENCRYPTED_MESSAGE": "پیام توسط  OpenPGP رمزنگاری شد",
+		"STORE_IN_GNUPG": "Store on server in GnuPG",
+		"BACKUP_ON_SERVER": "Store (encrypted) on server",
+		"GOOD_SIGNATURE": "امضای صحیح از %USER%",
+		"ERROR": "خطای OpenPGP: %ERROR%"
 	},
 	"POPUPS_FILTER": {
 		"TITLE_CREATE_FILTER": "یک فیلتر ایجاد شود؟",
@@ -355,7 +347,6 @@
 		"LABEL_CONTACTS_NAME": "تماس‌ها",
 		"LABEL_FOLDERS_NAME": "پوشه‌ها",
 		"LABEL_ACCOUNTS_NAME": "حساب‌های کاربری",
-		"LABEL_IDENTITIES_NAME": "شناسه‌ها",
 		"LABEL_FILTERS_NAME": "فیلترها",
 		"LABEL_SECURITY_NAME": "امنیت",
 		"LABEL_THEMES_NAME": "پوسته‌ها"
@@ -396,6 +387,8 @@
 		"LABEL_USE_THREADS": "استفاده از حالت موضوعی",
 		"LABEL_REPLY_SAME_FOLDER": " جوابها را در پوشه‌ای که پیامها در آن جواب داده شده است قراردهید",
 		"LABEL_SHOW_IMAGES": "همیشه تصاویر بیرونی را در بدنه پیام‌ها نشان بده",
+		"LABEL_PREFER_HTML": "Prefer HTML to plain text",
+		"LABEL_PREFER_HTML_INFO": "Messages sometimes come in both formats. This option controls whether you want the HTML part or the plain text part to be displayed.",
 		"LABEL_REMOVE_COLORS": "Remove background and text colors from message body",
 		"LABEL_MESSAGE_PER_PAGE": "پیام‌ها در صفحه",
 		"LABEL_MARK_MESSAGE_READ_AFTER": "Mark message as read after",
@@ -458,13 +451,13 @@
 		"LOADING_PROCESS": "بروزرسانی...",
 		"DEFAULT_IDENTITY_LABEL": "پیش‌فرض"
 	},
-	"SETTINGS_OPEN_PGP": {
-		"BUTTON_ADD_OPEN_PGP_KEY": "وارد کردن کلید OpenPGP",
-		"BUTTON_GENERATE_OPEN_PGP_KEYS": "تولید کلیدهای OpenPGP",
+	"SETTINGS_OPENPGP": {
+		"BUTTON_IMPORT_KEY": "وارد کردن کلید",
+		"BUTTON_GENERATE_KEY_PAIR": "تولید کلیدهای",
 		"TITLE_PRIVATE": "خصوصی",
 		"TITLE_PUBLIC": "عمومی",
-		"GENERATE_ONLY_HTTPS": "تنها HTTPS",
-		"LABEL_ALLOW_DRAFT_AUTOSAVE": "ذخیره خودکار پیش‌نویس"
+		"LABEL_ALLOW_DRAFT_AUTOSAVE": "ذخیره خودکار پیش‌نویس",
+		"GET_MAILVELOPE": "Get Mailvelope browser add-on."
 	},
 	"SHORTCUTS_HELP": {
 		"LEGEND_SHORTCUTS_HELP": "راهنمای میانبر‌های کیبرد",
@@ -504,20 +497,6 @@
 		"LABEL_SAVE_MESSAGE": "ذخیره پیام",
 		"LABEL_SEND_MESSAGE": "فرستادن پیام",
 		"LABEL_CLOSE_COMPOSE": "بستن صفحه ایجاد"
-	},
-	"PGP_NOTIFICATIONS": {
-		"NO_PUBLIC_KEYS_FOUND": "کلید عمومی پیدا نشد",
-		"NO_PUBLIC_KEYS_FOUND_FOR": "هیچ کلید عمومی برای آدرس پست الکترونیک \"%EMAIL%\" پیدا نشد",
-		"NO_PRIVATE_KEY_FOUND": "هیچ کلید خصوصی پیدا نشد",
-		"NO_PRIVATE_KEY_FOUND_FOR": "هیچ کلید خصوصی برای آدرس پست الکترونیک \"%EMAIL%\" پیدا نشد",
-		"ADD_A_PUBLICK_KEY": "اضافه کردن کلید عمومی",
-		"SELECT_A_PRIVATE_KEY": "انتخاب کلید خصوصی",
-		"UNVERIFIRED_SIGNATURE": "امضای تایید نشده",
-		"DECRYPTION_ERROR": "خطای رمزگشایی در OpenPGP",
-		"GOOD_SIGNATURE": "امضای صحیح از %USER%",
-		"PGP_ERROR": "خطای OpenPGP: %ERROR%",
-		"SPECIFY_FROM_EMAIL": "لطفا قسمت FROM را مشخص نمایید",
-		"SPECIFY_AT_LEAST_ONE_RECIPIENT": "لطفا حداقل یک گیرنده را مشخص نمایید"
 	},
 	"NOTIFICATIONS": {
 		"INVALID_TOKEN": "توکن نامعتبر",

@@ -7,9 +7,9 @@ import { ThemeStore } from 'Stores/Theme';
 
 import { AbstractViewRight } from 'Knoin/AbstractViews';
 
-export class PaneSettingsUserView extends AbstractViewRight {
+export class SettingsPaneUserView extends AbstractViewRight {
 	constructor() {
-		super('SettingsPane');
+		super();
 
 		this.isMobile = ThemeStore.isMobile;
 		this.leftPanelDisabled = leftPanelDisabled;
@@ -26,6 +26,6 @@ export class PaneSettingsUserView extends AbstractViewRight {
 	}
 
 	backToMailBoxClick() {
-		rl.route.setHash(mailbox(getFolderInboxName()));
+		hasher.setHash(mailbox(getFolderInboxName()));
 	}
 }

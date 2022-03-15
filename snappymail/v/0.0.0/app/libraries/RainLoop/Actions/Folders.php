@@ -19,11 +19,42 @@ trait Folders
 		);
 	}
 
+	/**
+	 * Appends uploaded rfc822 message to mailbox
+	 * @throws \MailSo\Base\Exceptions\Exception
+	 */
+	public function Append(): bool
+	{
+		$oAccount = $this->initMailClientConnection();
+
+		$sFolderFullName = $this->GetActionParam('Folder', '');
+
+		if ($oAccount
+		 && !empty($sFolderFullName)
+		 && !empty($_FILES['AppendFile'])
+		 && \is_uploaded_file($_FILES['AppendFile']['tmp_name'])
+		 && \UPLOAD_ERR_OK == $_FILES['AppendFile']['error']
+		 && $this->oConfig->Get('labs', 'allow_message_append', false)
+		) {
+			$sSavedName = 'append-post-' . \md5($sFolderFullName . $_FILES['AppendFile']['name'] . $_FILES['AppendFile']['tmp_name']);
+			if ($this->FilesProvider()->MoveUploadedFile($oAccount, $sSavedName, $_FILES['AppendFile']['tmp_name'])) {
+				$iMessageStreamSize = $this->FilesProvider()->FileSize($oAccount, $sSavedName);
+				$rMessageStream = $this->FilesProvider()->GetFile($oAccount, $sSavedName);
+
+				$this->MailClient()->MessageAppendStream($rMessageStream, $iMessageStreamSize, $sFolderFullName);
+
+				$this->FilesProvider()->Clear($oAccount, $sSavedName);
+			}
+		}
+
+		return $this->DefaultResponse(__FUNCTION__, true);
+	}
+
 	public function DoFolders() : array
 	{
 		$oAccount = $this->initMailClientConnection();
 
-		$HideUnsubscribed = $this->Config()->Get('labs', 'use_imap_list_subscribe', true);
+		$HideUnsubscribed = false;
 		$oSettingsLocal = $this->SettingsProvider(true)->Load($oAccount);
 		if ($oSettingsLocal instanceof \RainLoop\Settings) {
 			$HideUnsubscribed = (bool) $oSettingsLocal->GetConf('HideUnsubscribed', $HideUnsubscribed);
@@ -37,8 +68,6 @@ trait Folders
 
 			$this->Plugins()->RunHook('filter.folders-post', array($oAccount, $oFolderCollection));
 
-			$oSettingsLocal = $this->SettingsProvider(true)->Load($oAccount);
-
 			$aSystemFolders = array();
 			$this->recFoldersTypes($oAccount, $oFolderCollection, $aSystemFolders);
 
@@ -48,7 +77,7 @@ trait Folders
 				});
 			}
 
-			if ($this->Config()->Get('labs', 'autocreate_system_folders', true))
+			if ($this->Config()->Get('labs', 'autocreate_system_folders', false))
 			{
 				$bDoItAgain = false;
 
@@ -110,19 +139,17 @@ trait Folders
 							}
 
 							$sFullNameToCheck = $mFolderNameToCreate;
-							if (\strlen(\trim($sParent)))
+							if (\strlen($sParent))
 							{
 								$sFullNameToCheck = $sParent.$sDelimiter.$sFullNameToCheck;
 							}
 
-							if (!$oFolderCollection->GetByFullName($sFullNameToCheck))
+							if (!isset($oFolderCollection[$sFullNameToCheck]))
 							{
 								try
 								{
-									if ($this->MailClient()->FolderCreate($mFolderNameToCreate, $sParent, true, $sDelimiter))
-									{
-										$bDoItAgain = true;
-									}
+									$this->MailClient()->FolderCreate($mFolderNameToCreate, $sParent, true, $sDelimiter);
+									$bDoItAgain = true;
 								}
 								catch (\Throwable $oException)
 								{
@@ -150,7 +177,7 @@ trait Folders
 				$this->Plugins()->RunHook('filter.folders-complete', array($oAccount, $oFolderCollection));
 
 				$aQuota = null;
-				if ($this->GetCapa(false, Capa::QUOTA, $this->getAccountFromToken())) {
+				if ($this->GetCapa(Capa::QUOTA)) {
 					try {
 //						$aQuota = $this->MailClient()->Quota();
 						$aQuota = $this->MailClient()->QuotaRoot();
@@ -175,7 +202,6 @@ trait Folders
 						'quotaUsage' => $aQuota ? $aQuota[0] * 1024 : null,
 						'quotaLimit' => $aQuota ? $aQuota[1] * 1024 : null,
 						'Namespace' => $sNamespace,
-						'FoldersHash' => \md5(\implode("\x0", $this->recFoldersNames($oFolderCollection))),
 						'IsThreadsSupported' => $this->MailClient()->IsThreadsSupported(),
 						'Optimized' => $oFolderCollection->Optimized,
 						'CountRec' => $oFolderCollection->TotalCount,
@@ -195,18 +221,19 @@ trait Folders
 
 		try
 		{
-			$sFolderNameInUtf = $this->GetActionParam('Folder', '');
-			$sFolderParentFullName = $this->GetActionParam('Parent', '');
+			$oFolder = $this->MailClient()->FolderCreate(
+				$this->GetActionParam('Folder', ''),
+				$this->GetActionParam('Parent', ''),
+				!!$this->GetActionParam('Subscribe', 1)
+			);
 
-			$this->MailClient()->FolderCreate($sFolderNameInUtf, $sFolderParentFullName,
-				!!$this->Config()->Get('labs', 'use_imap_list_subscribe', true));
+//			FolderInformation(string $sFolderName, int $iPrevUidNext = 0, array $aUids = array())
+			return $this->DefaultResponse(__FUNCTION__, $oFolder);
 		}
 		catch (\Throwable $oException)
 		{
 			throw new ClientException(Notifications::CantCreateFolder, $oException);
 		}
-
-		return $this->TrueResponse(__FUNCTION__);
 	}
 
 	public function DoFolderSetMetadata() : array
@@ -302,7 +329,7 @@ trait Folders
 			$this->MailClient()->FolderMove(
 				$this->GetActionParam('Folder', ''),
 				$this->GetActionParam('NewFolder', ''),
-				!!$this->Config()->Get('labs', 'use_imap_list_subscribe', true)
+				!!$this->GetActionParam('Subscribe', 1)
 			);
 		}
 		catch (\Throwable $oException)
@@ -326,7 +353,7 @@ trait Folders
 			$sFullName = $this->MailClient()->FolderRename(
 				$this->GetActionParam('Folder', ''),
 				$sName,
-				!!$this->Config()->Get('labs', 'use_imap_list_subscribe', true)
+				!!$this->GetActionParam('Subscribe', 1)
 			);
 		}
 		catch (\Throwable $oException)
@@ -350,10 +377,7 @@ trait Folders
 
 		try
 		{
-			$this->MailClient()->FolderDelete(
-				$this->GetActionParam('Folder', ''),
-				!!$this->Config()->Get('labs', 'use_imap_list_subscribe', true)
-			);
+			$this->MailClient()->FolderDelete($this->GetActionParam('Folder', ''));
 		}
 		catch (\MailSo\Mail\Exceptions\NonEmptyFolder $oException)
 		{
@@ -391,18 +415,14 @@ trait Folders
 	 */
 	public function DoFolderInformation() : array
 	{
-		$sFolder = $this->GetActionParam('Folder', '');
-		$iPrevUidNext = (int) $this->GetActionParam('UidNext', 0);
-		$aFlagsUids = \array_filter(\array_map('intval', $this->GetActionParam('FlagsUids', []) ?: []));
-
 		$this->initMailClientConnection();
 
-		$sForwardedFlag = $this->Config()->Get('labs', 'imap_forwarded_flag', '');
-		$sReadReceiptFlag = $this->Config()->Get('labs', 'imap_read_receipt_flag', '');
 		try
 		{
 			$aInboxInformation = $this->MailClient()->FolderInformation(
-				$sFolder, $iPrevUidNext, $aFlagsUids
+				$this->GetActionParam('Folder', ''),
+				(int) $this->GetActionParam('UidNext', 0),
+				new \MailSo\Imap\SequenceSet($this->GetActionParam('FlagsUids', []))
 			);
 			$aInboxInformation['Flags'] = $aInboxInformation['MessagesFlags'];
 			unset($aInboxInformation['MessagesFlags']);
@@ -472,27 +492,6 @@ trait Folders
 			$this->SettingsProvider(true)->Save($oAccount, $oSettingsLocal));
 	}
 
-	private function recFoldersNames(\MailSo\Mail\FolderCollection $oFolders) : array
-	{
-		$aResult = array();
-		if ($oFolders)
-		{
-			foreach ($oFolders as $oFolder)
-			{
-				$aResult[] = $oFolder->FullName()."|".
-					implode("|", $oFolder->FlagsLowerCase()).($oFolder->IsSubscribed() ? '1' : '0');
-
-				$oSub = $oFolder->SubFolders();
-				if ($oSub && 0 < $oSub->Count())
-				{
-					$aResult = \array_merge($aResult, $this->recFoldersNames($oSub));
-				}
-			}
-		}
-
-		return $aResult;
-	}
-
 	private function recFoldersTypes(\RainLoop\Model\Account $oAccount, \MailSo\Mail\FolderCollection $oFolders, array &$aResult, bool $bListFolderTypes = true) : void
 	{
 		if ($oFolders->Count())
@@ -512,15 +511,6 @@ trait Folders
 					)))
 					{
 						$aResult[$iFolderType] = $oFolder->FullName();
-					}
-				}
-
-				foreach ($oFolders as $oFolder)
-				{
-					$oSub = $oFolder->SubFolders();
-					if ($oSub && $oSub->Count())
-					{
-						$this->recFoldersTypes($oAccount, $oSub, $aResult, true);
 					}
 				}
 			}
@@ -545,15 +535,6 @@ trait Folders
 					{
 						$aResult[$iFolderType] = $oFolder->FullName();
 					}
-				}
-			}
-
-			foreach ($oFolders as $oFolder)
-			{
-				$oSub = $oFolder->SubFolders();
-				if ($oSub && $oSub->Count())
-				{
-					$this->recFoldersTypes($oAccount, $oSub, $aResult, false);
 				}
 			}
 		}

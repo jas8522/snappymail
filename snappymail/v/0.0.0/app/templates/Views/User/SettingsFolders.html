@@ -3,7 +3,7 @@
 	&nbsp;&nbsp;&nbsp;
 	<i class="icon-spinner" style="margin-top: 5px" data-bind="visible: loading"></i>
 </div>
-<div style="border-bottom: 1px solid rgba(128,128,128,0.5);margin-bottom:20px;" data-bind="visible: useImapSubscribe, component: {
+<div style="margin-bottom:20px;" data-bind="component: {
 	name: 'Checkbox',
 	params: {
 		label: 'SETTINGS_FOLDERS/HIDE_UNSUBSCRIBED',
@@ -15,13 +15,10 @@
 	<span data-i18n="SETTINGS_FOLDERS/BUTTON_CREATE"></span>
 </a>
 &nbsp;&nbsp;
-<a class="btn" data-bind="click: systemFolder">
-	<i class="fontastic">🔧</i>
-	<span data-i18n="SETTINGS_FOLDERS/BUTTON_SYSTEM"></span>
-</a>
+<a class="btn" data-bind="click: systemFolder" data-icon="🔧" data-i18n="SETTINGS_FOLDERS/BUTTON_SYSTEM"></a>
 <div class="alert folders-list-error" data-bind="visible: folderListOptimized">
 	<b data-i18n="SETTINGS_FOLDERS/TO_MANY_FOLDERS_DESC_1"></b>
-	<br />
+	<br>
 	<span data-i18n="SETTINGS_FOLDERS/TO_MANY_FOLDERS_DESC_2"></span>
 </div>
 <div class="alert folders-list-error" data-bind="visible: '' !== folderListError()">

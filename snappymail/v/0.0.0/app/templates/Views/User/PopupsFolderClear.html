@@ -1,5 +1,5 @@
 <header>
-	<a href="#" class="close" data-bind="command: cancelCommand">×</a>
+	<a href="#" class="close" data-bind="click: close">×</a>
 	<h3>
 		<span data-i18n="POPUPS_CLEAR_FOLDER/TITLE_CLEAR_FOLDER" data-bind="visible: !clearingProcess()"></span>
 		<span data-i18n="POPUPS_CLEAR_FOLDER/TITLE_CLEARING_PROCESS" data-bind="visible: clearingProcess"></span>
@@ -9,10 +9,10 @@
 	<i class="fontastic" style="color:red">⚠</i>
 	&nbsp;&nbsp;
 	<strong data-i18n="[html]POPUPS_CLEAR_FOLDER/DANGER_DESC_WARNING"></strong>
-	<br />
-	<br />
+	<br>
+	<br>
 	<span data-bind="html: dangerDescHtml"></span>
-	<br />
+	<br>
 	<span data-i18n="[html]POPUPS_CLEAR_FOLDER/DANGER_DESC_HTML_2"></span>
 </div>
 <footer>

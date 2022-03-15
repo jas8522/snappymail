@@ -1,4 +1,7 @@
 {
+	"GLOBAL": {
+		"SAVE": "Save"
+	},
 	"LOGIN": {
 		"LABEL_LOGIN": "Login",
 		"LABEL_PASSWORD": "Password",
@@ -8,7 +11,7 @@
 	"TOP_PANEL": {
 		"LABEL_ADMIN_PANEL": "Admin Panel"
 	},
-	"TABS_LABELS": {
+	"SETTINGS_LABELS": {
 		"LABEL_GENERAL_NAME": "General",
 		"LABEL_LOGIN_NAME": "Login",
 		"LABEL_BRANDING_NAME": "Branding",
@@ -16,6 +19,7 @@
 		"LABEL_DOMAINS_NAME": "Domains",
 		"LABEL_SECURITY_NAME": "Security",
 		"LABEL_PACKAGES_NAME": "Extensions",
+		"LABEL_CONFIG_NAME": "Config",
 		"LABEL_ABOUT_NAME": "About"
 	},
 	"TAB_GENERAL": {
@@ -34,7 +38,7 @@
 		"LABEL_ALLOW_IDENTITIES": "Allow multiple identities",
 		"ALERT_DATA_ACCESS": "Data folder is accessible. Please configure your web server to hide the data folder from external access. Read more here:",
 		"ALERT_WARNING": "Warning!",
-		"HTML_ALERT_WEAK_PASSWORD": "You are using the default admin password.\n<br \/>\nFor security reasons please\n<strong><a href=\"#\/security\">change<\/a><\/strong>\npassword to something else now.\n"
+		"HTML_ALERT_WEAK_PASSWORD": "You are using the default admin password.\n<br>\nFor security reasons please\n<strong><a href=\"#\/security\">change<\/a><\/strong>\npassword to something else now.\n"
 	},
 	"TAB_LOGIN": {
 		"LEGEND_LOGIN_SCREEN": "Login Screen",
@@ -62,14 +66,14 @@
 		"BUTTON_TEST": "Test",
 		"ALERT_NOTICE": "Notice!",
 		"HTML_ALERT_DO_NOT_USE_THIS_DATABASE": "Don't use this database type with a large number of active users.",
-		"HTML_ALERT_DOES_NOT_SUPPORTED": "Your system doesn't support contacts.\n<br \/>\nYou need to install or enable <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong> extension on your server.\n"
+		"HTML_ALERT_DOES_NOT_SUPPORTED": "Your system doesn't support contacts.\n<br>\nYou need to install or enable <strong>PDO (SQLite \/ MySQL \/ PostgreSQL)<\/strong> extension on your server.\n"
 	},
 	"TAB_DOMAINS": {
 		"LEGEND_DOMAINS": "Domains",
 		"BUTTON_ADD_DOMAIN": "Add Domain",
 		"BUTTON_ADD_ALIAS": "Add Alias",
 		"DELETE_ARE_YOU_SURE": "Are you sure?",
-		"HTML_DOMAINS_HELPER": "List of domains webmail is allowed to access.\n<br \/>\nClick on the name to configure the domain.\n"
+		"HTML_DOMAINS_HELPER": "List of domains webmail is allowed to access.\n<br>\nClick on the name to configure the domain.\n"
 	},
 	"TAB_SECURITY": {
 		"LEGEND_SECURITY": "Security",
@@ -134,14 +138,13 @@
 		"BUTTON_CLOSE": "Close",
 		"BUTTON_ADD": "Add",
 		"BUTTON_UPDATE": "Update",
-		"NEW_DOMAIN_DESC": "This domain configuration will allow you to work <br \/>with <i>%NAME%<\/i> email addresses.",
+		"NEW_DOMAIN_DESC": "This domain configuration will allow you to work <br>with <i>%NAME%<\/i> email addresses.",
 		"WHITE_LIST_ALERT": "List of domain users webmail is allowed to access.\nUse a space as delimiter.\n"
 	},
 	"POPUPS_PLUGIN": {
 		"TITLE_PLUGIN": "Extension",
 		"DESC_NOTHING_TO_CONFIGURE": "Nothing to configure",
-		"BUTTON_CLOSE": "Close",
-		"BUTTON_SAVE": "Save"
+		"BUTTON_CLOSE": "Close"
 	},
 	"POPUPS_ASK": {
 		"BUTTON_YES": "Yes",

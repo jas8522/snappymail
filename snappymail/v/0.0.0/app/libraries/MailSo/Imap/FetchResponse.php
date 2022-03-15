@@ -83,20 +83,13 @@ class FetchResponse
 		return $oResult;
 	}
 
-	public function GetFetchBodyStructure(string $sRfc822SubMimeIndex = '') : ?BodyStructure
+	public function GetFetchBodyStructure() : ?BodyStructure
 	{
 		$aBodyStructureArray = $this->GetFetchValue(Enumerations\FetchType::BODYSTRUCTURE);
 
-		if (\is_array($aBodyStructureArray))
-		{
-			if (\strlen($sRfc822SubMimeIndex))
-			{
-				return BodyStructure::NewInstanceFromRfc822SubPart($aBodyStructureArray, $sRfc822SubMimeIndex);
-			}
-			return BodyStructure::NewInstance($aBodyStructureArray);
-		}
-
-		return null;
+		return \is_array($aBodyStructureArray)
+			? BodyStructure::NewInstance($aBodyStructureArray)
+			: null;
 	}
 
 	/**
@@ -105,10 +98,6 @@ class FetchResponse
 	 */
 	public function GetFetchValue(string $sFetchItemName)
 	{
-		if (Enumerations\FetchType::INDEX === $sFetchItemName) {
-			return $this->oImapResponse->ResponseList[1];
-		}
-
 		if (isset($this->oImapResponse->ResponseList[3]) && \is_array($this->oImapResponse->ResponseList[3])) {
 			$bNextIsValue = false;
 			foreach ($this->oImapResponse->ResponseList[3] as $mItem) {
@@ -129,11 +118,9 @@ class FetchResponse
 	 * Like: BODY[HEADER.FIELDS (RETURN-PATH RECEIVED MIME-VERSION MESSAGE-ID CONTENT-TYPE FROM TO CC BCC SENDER REPLY-TO DELIVERED-TO IN-REPLY-TO REFERENCES DATE SUBJECT SENSITIVITY X-MSMAIL-PRIORITY IMPORTANCE X-PRIORITY X-DRAFT-INFO RETURN-RECEIPT-TO DISPOSITION-NOTIFICATION-TO X-CONFIRM-READING-TO AUTHENTICATION-RESULTS X-DKIM-AUTHENTICATION-RESULTS LIST-UNSUBSCRIBE X-SPAM-STATUS X-SPAMD-RESULT X-BOGOSITY X-VIRUS X-VIRUS-SCANNED X-VIRUS-STATUS)]
 	 * @return mixed
 	 */
-	public function GetHeaderFieldsValue(string $sRfc822SubMimeIndex = '') : string
+	public function GetHeaderFieldsValue() : string
 	{
 		$bNextIsValue = false;
-
-		$sRfc822SubMimeIndex = \strlen($sRfc822SubMimeIndex) ? ''.$sRfc822SubMimeIndex.'.' : '';
 
 		if (isset($this->oImapResponse->ResponseList[3]) && \is_array($this->oImapResponse->ResponseList[3]))
 		{
@@ -145,9 +132,9 @@ class FetchResponse
 				}
 
 				if (\is_string($mItem) && (
-					$mItem === 'BODY['.$sRfc822SubMimeIndex.'HEADER]' ||
-					0 === \strpos($mItem, 'BODY['.$sRfc822SubMimeIndex.'HEADER.FIELDS') ||
-					$mItem === 'BODY['.$sRfc822SubMimeIndex.'MIME]'))
+					$mItem === 'BODY[HEADER]' ||
+					0 === \strpos($mItem, 'BODY[HEADER.FIELDS') ||
+					$mItem === 'BODY[MIME]'))
 				{
 					$bNextIsValue = true;
 				}
@@ -157,43 +144,19 @@ class FetchResponse
 		return '';
 	}
 
-	private static function findFetchUidAndSize(array $aList) : bool
+	public static function isValidImapResponse(Response $oImapResponse) : bool
 	{
-		$bUid = false;
-		$bSize = false;
-		foreach ($aList as $mItem)
-		{
-			if (Enumerations\FetchType::UID === $mItem)
-			{
-				$bUid = true;
-			}
-			else if (Enumerations\FetchType::RFC822_SIZE === $mItem)
-			{
-				$bSize = true;
-			}
-		}
-		return $bUid && $bSize;
-	}
-
-	public static function IsValidFetchImapResponse(Response $oImapResponse) : bool
-	{
-		return (
-			$oImapResponse
-			&& true !== $oImapResponse->IsStatusResponse
+		return
+			true !== $oImapResponse->IsStatusResponse
 			&& Enumerations\ResponseType::UNTAGGED === $oImapResponse->ResponseType
-			&& 3 < count($oImapResponse->ResponseList) && 'FETCH' === $oImapResponse->ResponseList[2]
-			&& is_array($oImapResponse->ResponseList[3])
-		);
+			&& 3 < \count($oImapResponse->ResponseList) && 'FETCH' === $oImapResponse->ResponseList[2]
+			&& \is_array($oImapResponse->ResponseList[3]);
 	}
 
-	public static function IsNotEmptyFetchImapResponse(Response $oImapResponse) : bool
+	public static function hasUidAndSize(Response $oImapResponse) : bool
 	{
-		return (
-			$oImapResponse
-			&& self::IsValidFetchImapResponse($oImapResponse)
-			&& isset($oImapResponse->ResponseList[3])
-			&& self::findFetchUidAndSize($oImapResponse->ResponseList[3])
-		);
+		return \in_array(Enumerations\FetchType::UID, $oImapResponse->ResponseList[3])
+			&& \in_array(Enumerations\FetchType::RFC822_SIZE, $oImapResponse->ResponseList[3]);
 	}
 
 	/**

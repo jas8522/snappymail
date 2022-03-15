@@ -3,6 +3,7 @@
 namespace RainLoop\Model;
 
 use RainLoop\Utils;
+use RainLoop\Notifications;
 use RainLoop\Exceptions\ClientException;
 
 abstract class Account implements \JsonSerializable
@@ -106,7 +107,7 @@ abstract class Account implements \JsonSerializable
 
 	public function Hash() : string
 	{
-		return \md5(\implode(APP_SALT, [
+		return \sha1(\implode(APP_SALT, [
 			$this->sEmail,
 			$this->Domain()->IncHost(),
 			$this->Domain()->IncPort(),
@@ -142,20 +143,7 @@ abstract class Account implements \JsonSerializable
 		);
 	}
 
-	/**
-	 * @throws \RainLoop\Exceptions\ClientException
-	 */
-	public static function NewInstanceFromAuthToken(\RainLoop\Actions $oActions, string $sToken): ?self
-	{
-		return empty($sToken) ? null
-			: static::NewInstanceFromTokenArray(
-				$oActions,
-				Utils::DecodeKeyValues($sToken),
-				false
-			);
-	}
-
-	public static function NewInstanceByLogin(\RainLoop\Actions $oActions,
+	public static function NewInstanceFromCredentials(\RainLoop\Actions $oActions,
 		string $sEmail, string $sLogin, string $sPassword, string $sClientCert = '',
 		bool $bThrowException = false): ?self
 	{
@@ -175,7 +163,7 @@ abstract class Account implements \JsonSerializable
 					$oActions->Plugins()->RunHook('filter.account', array($oAccount));
 
 					if ($bThrowException && !$oAccount) {
-						throw new ClientException(Notifications::AuthError);
+						throw new ClientException(Notifications::AccountFilterError);
 					}
 				} else if ($bThrowException) {
 					throw new ClientException(Notifications::AccountNotAllowed);
@@ -194,7 +182,7 @@ abstract class Account implements \JsonSerializable
 		bool $bThrowExceptionOnFalse = false): ?self
 	{
 		if (!empty($aAccountHash[0]) && 'account' === $aAccountHash[0] && 7 <= \count($aAccountHash)) {
-			$oAccount = static::NewInstanceByLogin(
+			$oAccount = static::NewInstanceFromCredentials(
 				$oActions,
 				$aAccountHash[1] ?: '',
 				$aAccountHash[2] ?: '',
@@ -297,15 +285,36 @@ abstract class Account implements \JsonSerializable
 
 	private function netClientLogin(\MailSo\Net\NetClient $oClient, \RainLoop\Config\Application $oConfig, \RainLoop\Plugins\Manager $oPlugins, array $aCredentials) : bool
 	{
+/*
+		$encrypted = !empty(\stream_get_meta_data($oClient->ConnectionResource())['crypto']);
+		[crypto] => Array(
+			[protocol] => TLSv1.3
+			[cipher_name] => TLS_AES_256_GCM_SHA384
+			[cipher_bits] => 256
+			[cipher_version] => TLSv1.3
+		)
+*/
+		/**
+		 * TODO: move these to Admin -> Domains -> per Domain management?
+		 */
+		$aSASLMechanisms = [];
+		if ($oConfig->Get('labs', 'sasl_allow_scram_sha', false)) {
+			// https://github.com/the-djmaze/snappymail/issues/182
+			\array_push($aSASLMechanisms, 'SCRAM-SHA3-512', 'SCRAM-SHA-512', 'SCRAM-SHA-256', 'SCRAM-SHA-1');
+		}
+		if ($oConfig->Get('labs', 'sasl_allow_cram_md5', false)) {
+			$aSASLMechanisms[] = 'CRAM-MD5';
+		}
+		if ($oConfig->Get('labs', 'sasl_allow_plain', true)) {
+			$aSASLMechanisms[] = 'PLAIN';
+		}
 		$aCredentials = \array_merge(
 			$aCredentials,
 			array(
 				'Password' => $this->Password(),
 				'ProxyAuthUser' => $this->ProxyAuthUser(),
 				'ProxyAuthPassword' => $this->ProxyAuthPassword(),
-				'UseAuthPlainIfSupported' => !!$oConfig->Get('labs', 'imap_use_auth_plain', true),
-				'UseAuthCramMd5IfSupported' => !!$oConfig->Get('labs', 'imap_use_auth_cram_md5', true),
-				'UseAuthOAuth2IfSupported' => false
+				'SASLMechanisms' => $aSASLMechanisms
 			)
 		);
 
